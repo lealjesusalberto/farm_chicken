@@ -105,7 +105,7 @@ export function useGameEngine(user) {
       });
     }, 2500);
     return () => clearInterval(interval);
-  }, [syncFarm]);
+  }, [user]);
 
   const buyChicken = async (typeId) => {
     const type = CHICKEN_TYPES.find(t => t.id === typeId);
