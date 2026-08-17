@@ -373,3 +373,104 @@ body {
     border-radius: 20px;
   }
 }
+
+/* Tienda de Gallinas Modal Styles */
+.store-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.store-img-container {
+  width: 120px; 
+  height: 120px; 
+  margin-bottom: 1rem; 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  border-radius: 50%; 
+  background: var(--glass-bg); 
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.store-title {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.store-details {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+}
+
+.highlight-price {
+  color: white;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.highlight-income {
+  color: var(--accent-color);
+  font-weight: bold;
+}
+
+.bs-estimate {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  margin-top: -2px;
+}
+
+.store-btn {
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  .store-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+  }
+  
+  .store-item {
+    padding: 1rem !important;
+  }
+  
+  .store-img-container {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 0.5rem;
+  }
+  
+  .store-title {
+    font-size: 1rem;
+  }
+  
+  .store-details {
+    font-size: 0.8rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .highlight-price {
+    font-size: 0.95rem;
+  }
+  
+  .store-btn {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  /* Ajustar los tooltips en móvil para que no se salgan de pantalla */
+  .tooltip-container {
+    top: 5px !important;
+    right: 5px !important;
+  }
+  
+  .tooltip-container .tooltip-content {
+    right: 0;
+    left: auto;
+    transform: none;
+    width: 200px;
+  }
+}
+
