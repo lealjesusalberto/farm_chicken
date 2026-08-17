@@ -122,7 +122,7 @@ function Auth({ initialMode = false, onBack }) {
 }
 
 function MainApp({ user }) {
-  const { balance, chickens, buyChicken, collectEggs, rechargeBalance, incomePerDay, pendingRecharges } = useGameEngine(user);
+  const { balance, chickens, buyChicken, collectEggs, rechargeBalance, requestWithdrawal, incomePerDay, pendingRecharges } = useGameEngine(user);
   const { rate, loading: rateLoading } = useExchangeRate();
   const [showStore, setShowStore] = useState(false);
   const [showWallet, setShowWallet] = useState(false);
