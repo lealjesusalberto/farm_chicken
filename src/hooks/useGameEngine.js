@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { db } from '../firebase';
-import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, addDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, addDoc, onSnapshot } from 'firebase/firestore';
 import Swal from 'sweetalert2';
 
 const EGG_TIME = (23 * 60 * 60 * 1000) / 5; // 4.6 horas por huevo
@@ -44,69 +44,54 @@ export function useGameEngine(user) {
     return chickenData;
   };
 
-  const fetchPendingRecharges = useCallback(async () => {
+  useEffect(() => {
     if (!user) return;
-    try {
-      const q = query(collection(db, 'transactions'), where('userId', '==', user.uid), where('status', '==', 'pending'));
-      const snap = await getDocs(q);
-      setPendingRecharges(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    } catch (e) {
-      console.error("Error fetching pending recharges", e);
-    }
-  }, [user]);
 
-  const syncFarm = useCallback(async () => {
-    if (!user) return;
-    
-    try {
-      // 1. Obtener Saldo del Usuario desde Firestore
-      const userRef = doc(db, 'users', user.uid);
-      const userSnap = await getDoc(userRef);
-      if (userSnap.exists()) {
-        const data = userSnap.data();
+    // 1. Escuchar saldo y datos del usuario en TIEMPO REAL
+    const userRef = doc(db, 'users', user.uid);
+    const unsubUser = onSnapshot(userRef, async (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
         setBalance(data.balance || 0);
         if (!data.email) {
           await updateDoc(userRef, { email: user.email });
         }
       } else {
-        await setDoc(userRef, { 
-          balance: 0, 
-          role: 'player', 
-          email: user.email,
-          name: 'Usuario Recuperado',
-          phone: 'No registrado'
-        });
+        await setDoc(userRef, { balance: 0, role: 'player', email: user.email, name: 'Usuario Recuperado', phone: 'No registrado' });
         setBalance(0);
       }
+    });
 
-      // 2. Obtener Gallinas del Usuario
-      const q = query(collection(db, 'chickens'), where('userId', '==', user.uid));
-      const querySnapshot = await getDocs(q);
+    // 2. Escuchar gallinas
+    const qChickens = query(collection(db, 'chickens'), where('userId', '==', user.uid));
+    const unsubChickens = onSnapshot(qChickens, async (snap) => {
       const fetchedChickens = [];
-      
-      for (const docSnap of querySnapshot.docs) {
+      for (const docSnap of snap.docs) {
         const data = docSnap.data();
         const updatedData = calculatePendingEggs(data);
-        
-        // Si han puesto huevos mientras estábamos desconectados, guardarlo
         if (updatedData.currentEggs !== data.currentEggs) {
-          await updateDoc(docSnap.ref, {
-            currentEggs: updatedData.currentEggs,
-            lastEggTime: updatedData.lastEggTime
-          });
+          await updateDoc(docSnap.ref, { currentEggs: updatedData.currentEggs, lastEggTime: updatedData.lastEggTime });
         }
-        
         fetchedChickens.push({ id: docSnap.id, ...updatedData });
       }
-      
       setChickens(fetchedChickens);
-    } catch (e) {
-      console.error("Error al sincronizar con Firestore:", e);
-    }
+    });
+
+    // 3. Escuchar recargas/retiros pendientes en TIEMPO REAL
+    const qTx = query(collection(db, 'transactions'), where('userId', '==', user.uid), where('status', '==', 'pending'));
+    const unsubTx = onSnapshot(qTx, (snap) => {
+      setPendingRecharges(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+
+    return () => {
+      unsubUser();
+      unsubChickens();
+      unsubTx();
+    };
   }, [user]);
 
   useEffect(() => {
-    syncFarm();
+    if (!user) return;
     // Simular los huevos cayendo visualmente en tiempo real (cada 2.5s)
     const interval = setInterval(() => {
       setChickens(prev => {
@@ -141,7 +126,7 @@ export function useGameEngine(user) {
     };
     
     const docRef = await addDoc(collection(db, 'chickens'), newChicken);
-    setChickens(prev => [...prev, { id: docRef.id, ...newChicken }]);
+    // Ya no hacemos setChickens manualmente porque onSnapshot lo hará por nosotros
   };
 
   const collectEggs = async (chickenId) => {
@@ -152,15 +137,13 @@ export function useGameEngine(user) {
     const earnings = chicken.currentEggs * type.incomePerEgg;
     const newBalance = balance + earnings;
     
-    setBalance(newBalance);
-    setChickens(prev => prev.map(c => c.id === chickenId ? { ...c, currentEggs: 0, lastEggTime: Date.now() } : c));
-    
     // Guardar en Firestore
     const userRef = doc(db, 'users', user.uid);
     await updateDoc(userRef, { balance: newBalance });
     
     const chickenRef = doc(db, 'chickens', chickenId);
     await updateDoc(chickenRef, { currentEggs: 0, lastEggTime: Date.now() });
+    // setChickens(prev => ...) ya no es necesario aquí gracias a onSnapshot
   };
 
   const rechargeBalance = async (amountUsd, reference, amountBs) => {
@@ -176,7 +159,6 @@ export function useGameEngine(user) {
         createdAt: Date.now()
       });
       Swal.fire('Solicitud Enviada', `Se ha enviado una solicitud de recarga por ${amountBs} Bs (~$${amountUsd.toFixed(2)}). Espera la aprobación del administrador.`, 'success');
-      fetchPendingRecharges();
     } catch (e) {
       console.error(e);
       Swal.fire('Error', 'Error al enviar la solicitud', 'error');
@@ -211,7 +193,6 @@ export function useGameEngine(user) {
       });
       
       Swal.fire('Retiro Solicitado', `Has solicitado un retiro de $${amountUsd.toFixed(2)} USDT hacia la cuenta ${binanceId}.`, 'success');
-      fetchPendingRecharges();
     } catch (e) {
       console.error(e);
       Swal.fire('Error', 'Hubo un problema procesando el retiro', 'error');
