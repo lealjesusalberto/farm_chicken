@@ -25,16 +25,17 @@ export function Farm({ chickens, onCollect }) {
   }
 
   return (
-    <div className="glass-panel" style={{ 
-      padding: '2rem', minHeight: '450px', position: 'relative', overflow: 'hidden',
+    <div className="farm-game-area" style={{ 
+      minHeight: '100%', position: 'relative', overflow: 'hidden',
       backgroundImage: 'url(/img/farm_bg.jpg)',
       backgroundSize: 'cover',
       backgroundPosition: 'bottom center',
-      boxShadow: 'inset 0 0 0 1000px rgba(0,0,0,0.4)'
+      boxShadow: 'inset 0 0 0 1000px rgba(0,0,0,0.4)',
+      padding: '5rem 1rem 6rem 1rem' // Espacio para el header y el bottom bar
     }}>
-      <h2 style={{ marginBottom: '2rem', color: 'white', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>Tu Granja ({chickens.length} Gallinas)</h2>
+      <h2 className="hide-on-mobile" style={{ marginBottom: '2rem', color: 'white', textShadow: '0 2px 4px rgba(0,0,0,0.8)', textAlign: 'center' }}>Tu Granja ({chickens.length} Gallinas)</h2>
       
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3rem', justifyContent: 'center', zIndex: 1, position: 'relative' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3rem', justifyContent: 'center', zIndex: 1, position: 'relative', paddingBottom: '2rem' }}>
         {chickens.map((chicken) => {
           const type = CHICKEN_TYPES.find(c => c.id === chicken.typeId);
           const isDepleted = chicken.currentEggs >= 5;
