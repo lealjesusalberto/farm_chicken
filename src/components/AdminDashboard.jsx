@@ -83,11 +83,16 @@ export function AdminDashboard({ onLogout }) {
     <div className="admin-container" style={{ color: '#fff' }}>
       <div className="admin-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h2 style={{ fontSize: '2rem' }}>👑 Panel de Administrador</h2>
-        {!rateLoading && rate && (
-          <span style={{ fontSize: '1rem', background: 'rgba(74, 222, 128, 0.2)', color: '#4ade80', padding: '0.5rem 1rem', borderRadius: '8px', fontWeight: 'bold' }}>
-            BCV: {rate.toFixed(2)} Bs
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <span style={{ fontSize: '1rem', background: 'rgba(252, 213, 53, 0.2)', color: '#fcd535', padding: '0.5rem 1rem', borderRadius: '8px', fontWeight: 'bold' }}>
+            Economía: Binance (USDT)
           </span>
-        )}
+          {!rateLoading && rate && (
+            <span style={{ fontSize: '1rem', background: 'rgba(74, 222, 128, 0.2)', color: '#4ade80', padding: '0.5rem 1rem', borderRadius: '8px', fontWeight: 'bold' }}>
+              BCV: {rate.toFixed(2)} Bs
+            </span>
+          )}
+        </div>
         <button className="btn-primary" onClick={onLogout} style={{ background: '#ff4c4c', padding: '1rem 2rem' }}>Cerrar Sesión</button>
       </div>
 
@@ -101,8 +106,8 @@ export function AdminDashboard({ onLogout }) {
                 <li key={tx.id} className="admin-tx-item" style={{ padding: '1rem', background: 'rgba(0,0,0,0.3)', marginBottom: '1rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <p style={{ fontWeight: 'bold' }}>{tx.email}</p>
-                    <p style={{ color: '#4ade80', fontSize: '1.2rem', fontWeight: '800' }}>
-                      ${(tx.amount || 0).toFixed(2)} <span style={{ fontSize: '0.9rem', color: '#fff', fontWeight: 'normal' }}>({tx.amountBs} Bs)</span>
+                    <p style={{ color: '#fcd535', fontSize: '1.2rem', fontWeight: '800' }}>
+                      ${(tx.amount || 0).toFixed(2)} USDT
                     </p>
                     <p style={{ fontSize: '0.9rem', color: '#ffcc00' }}>Ref: {tx.reference}</p>
                     <p style={{ fontSize: '0.8rem', color: '#aaa' }}>{new Date(tx.createdAt).toLocaleString()}</p>

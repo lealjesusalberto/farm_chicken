@@ -80,7 +80,7 @@ export function LandingPage({ onLogin, onRegister }) {
             </div>
             <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>3. Retira tus Ganancias</h3>
             <p style={{ color: 'var(--text-muted)', lineHeight: '1.6' }}>
-              Vende los huevos y solicita el retiro de tus ganancias directamente a tu cuenta bancaria (Pago Móvil).
+              Vende los huevos y solicita el retiro de tus ganancias directamente a tu cuenta de Binance (USDT).
             </p>
           </div>
         </div>
@@ -89,9 +89,9 @@ export function LandingPage({ onLogin, onRegister }) {
       {/* Economy Section */}
       <section style={{ padding: '5rem 2rem', background: 'rgba(0,0,0,0.3)', marginTop: '2rem' }}>
         <div style={{ maxWidth: '1000px', margin: '0 auto', textAlign: 'center' }}>
-          <h2 style={{ fontSize: 'clamp(2rem, 5vw, 2.5rem)', marginBottom: '2rem' }}>Economía Segura y Transparente</h2>
+          <h2 style={{ fontSize: 'clamp(2rem, 5vw, 2.5rem)', marginBottom: '2rem' }}>Economía Global con Binance</h2>
           <p style={{ fontSize: '1.2rem', color: 'var(--text-muted)', marginBottom: '3rem', maxWidth: '800px', margin: '0 auto' }}>
-            Todas las transacciones de depósito (para comprar saldo) y retiro (para sacar tus ganancias) se realizan de forma segura mediante transferencias bancarias o Pago Móvil, supervisadas y aprobadas por administradores reales.
+            Todas las transacciones de depósito (para comprar saldo) y retiro (para sacar tus ganancias) se realizan de forma global e instantánea mediante Binance Pay (USDT), supervisadas y aprobadas por administradores reales.
           </p>
           <div style={{ display: 'inline-block' }}>
             <button className="btn-primary" onClick={onRegister} style={{ padding: '1rem 3rem', fontSize: '1.3rem' }}>

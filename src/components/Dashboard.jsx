@@ -30,16 +30,16 @@ export function Dashboard({ balance, incomePerDay, onRecharge, rate, pendingRech
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Saldo Disponible</p>
             <p style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Coins size={28} />
-              ${balance.toFixed(2)}
-              {rate && <span style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>~ {(balance * rate).toFixed(2)} Bs</span>}
+              ${balance.toFixed(2)} USDT
             </p>
+            {rate && <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '-0.5rem' }}>~ {(balance * rate).toFixed(2)} Bs</p>}
           </div>
           <div style={{ borderLeft: '1px solid var(--glass-border)', paddingLeft: '2rem' }}>
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Producción Diaria</p>
             <p style={{ fontSize: '1.2rem', color: 'var(--text-main)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <TrendingUp size={20} color="var(--accent-color)" /> +${incomePerDay.toFixed(2)}
-              {rate && <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>(~ {(incomePerDay * rate).toFixed(2)} Bs)</span>}
+              <TrendingUp size={20} color="var(--accent-color)" /> +${incomePerDay.toFixed(2)} USDT
             </p>
+            {rate && <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>~ {(incomePerDay * rate).toFixed(2)} Bs al día</p>}
           </div>
         </div>
         
@@ -64,7 +64,7 @@ export function Dashboard({ balance, incomePerDay, onRecharge, rate, pendingRech
             {pendingRecharges.map(tx => (
               <li key={tx.id} style={{ display: 'flex', justifyContent: 'space-between', color: '#ddd', fontSize: '0.85rem' }}>
                 <span>Ref: {tx.reference}</span>
-                <span style={{ fontWeight: 'bold' }}>{tx.amountBs} Bs (~${(tx.amount || 0).toFixed(2)})</span>
+                <span style={{ fontWeight: 'bold' }}>${(tx.amount || 0).toFixed(2)} USDT</span>
               </li>
             ))}
           </ul>
@@ -74,10 +74,10 @@ export function Dashboard({ balance, incomePerDay, onRecharge, rate, pendingRech
       {showRecharge && (
         <div className="recharge-modal" style={{ marginTop: '1rem', paddingTop: '1.5rem', borderTop: '1px solid var(--glass-border)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
           <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1.5rem', borderRadius: '8px' }}>
-            <h3 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Landmark size={20} /> Datos para Pago Móvil</h3>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Banco: <strong style={{ color: 'white' }}>Banco de Venezuela</strong></p>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Teléfono: <strong style={{ color: 'white' }}>04242098250</strong></p>
-            <p style={{ color: 'var(--text-muted)' }}>Cédula: <strong style={{ color: 'white' }}>20528300</strong></p>
+            <h3 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Landmark size={20} /> Datos de Binance Pay</h3>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Método: <strong style={{ color: '#fcd535' }}>Binance Pay</strong></p>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Pay ID: <strong style={{ color: 'white' }}>123456789</strong> <span style={{fontSize: '0.8rem'}}>(Ejemplo)</span></p>
+            <p style={{ color: 'var(--text-muted)' }}>Correo: <strong style={{ color: 'white' }}>admin@farmchicken.com</strong></p>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -88,27 +88,28 @@ export function Dashboard({ balance, incomePerDay, onRecharge, rate, pendingRech
             
             <input 
               type="number" 
-              placeholder="Monto transferido (en Bs)" 
+              placeholder="Monto enviado en USDT" 
               value={amountBs} 
               onChange={(e) => setAmountBs(e.target.value)} 
               style={{ padding: '0.8rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000' }} 
             />
             
-            {amountBs && rate && (
-              <p style={{ color: '#4ade80', fontSize: '0.9rem', textAlign: 'center', marginTop: '-0.5rem' }}>
-                Recibirás: ~ ${(Number(amountBs) / rate).toFixed(2)} USD
-              </p>
-            )}
-            
             <input 
               type="text" 
-              placeholder="Número de Referencia" 
+              placeholder="Número de Referencia (Ej: 123456789)" 
               value={reference} 
               onChange={(e) => setReference(e.target.value)} 
               style={{ padding: '0.8rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000' }} 
             />
             
-            <button className="btn-primary" onClick={handleRecharge} style={{ background: 'var(--accent-color)' }}>
+            <button className="btn-primary" onClick={() => {
+              const numUsdt = Number(amountBs);
+              if (numUsdt <= 0 || !reference) return Swal.fire('Atención', 'Ingresa un monto y referencia válidos', 'warning');
+              onRecharge(numUsdt, reference, numUsdt);
+              setShowRecharge(false);
+              setReference('');
+              setAmountBs('');
+            }} style={{ background: '#fcd535', color: '#000', fontWeight: 'bold' }}>
               Confirmar Solicitud
             </button>
           </div>
