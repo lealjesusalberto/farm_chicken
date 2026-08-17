@@ -2,10 +2,17 @@ import React, { useState } from 'react';
 import { Coins, TrendingUp, PlusCircle, Landmark, X } from 'lucide-react';
 import Swal from 'sweetalert2';
 
-export function Dashboard({ balance, incomePerDay, onRecharge, rate, pendingRecharges = [] }) {
+export function Dashboard({ balance, incomePerDay, onRecharge, onWithdraw, rate, pendingRecharges = [] }) {
   const [showRecharge, setShowRecharge] = useState(false);
+  const [showWithdraw, setShowWithdraw] = useState(false);
+  
+  // States para Recarga
   const [amountBs, setAmountBs] = useState('');
   const [reference, setReference] = useState('');
+
+  // States para Retiro
+  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [binanceId, setBinanceId] = useState('');
 
   const handleRecharge = () => {
     const numBs = Number(amountBs);
@@ -43,13 +50,21 @@ export function Dashboard({ balance, incomePerDay, onRecharge, rate, pendingRech
           </div>
         </div>
         
-        <div>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           <button 
             className="btn-primary" 
-            onClick={() => setShowRecharge(!showRecharge)}
+            onClick={() => { setShowRecharge(!showRecharge); setShowWithdraw(false); }}
             style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
           >
             <PlusCircle size={20} /> Recargar Saldo
+          </button>
+          
+          <button 
+            className="btn-primary" 
+            onClick={() => { setShowWithdraw(!showWithdraw); setShowRecharge(false); }}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#ff4c4c', color: 'white' }}
+          >
+            <Coins size={20} /> Retirar Ganancias
           </button>
         </div>
       </div>
@@ -63,8 +78,10 @@ export function Dashboard({ balance, incomePerDay, onRecharge, rate, pendingRech
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {pendingRecharges.map(tx => (
               <li key={tx.id} style={{ display: 'flex', justifyContent: 'space-between', color: '#ddd', fontSize: '0.85rem' }}>
-                <span>Ref: {tx.reference}</span>
-                <span style={{ fontWeight: 'bold' }}>${(tx.amount || 0).toFixed(2)} USDT</span>
+                <span>{tx.type === 'withdrawal' ? '📤 Retiro' : '📥 Recarga'} - Ref: {tx.reference || tx.binanceId}</span>
+                <span style={{ fontWeight: 'bold', color: tx.type === 'withdrawal' ? '#ff4c4c' : '#4ade80' }}>
+                  {tx.type === 'withdrawal' ? '-' : '+'}${(tx.amount || 0).toFixed(2)} USDT
+                </span>
               </li>
             ))}
           </ul>
@@ -111,6 +128,52 @@ export function Dashboard({ balance, incomePerDay, onRecharge, rate, pendingRech
               setAmountBs('');
             }} style={{ background: '#fcd535', color: '#000', fontWeight: 'bold' }}>
               Confirmar Solicitud
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showWithdraw && (
+        <div className="recharge-modal" style={{ marginTop: '1rem', paddingTop: '1.5rem', borderTop: '1px solid var(--glass-border)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+          <div style={{ background: 'rgba(255, 76, 76, 0.1)', padding: '1.5rem', borderRadius: '8px', border: '1px solid rgba(255,76,76,0.3)' }}>
+            <h3 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ff4c4c' }}><Coins size={20} /> Retirar Fondos</h3>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '0.5rem', fontSize: '0.9rem' }}>El monto será descontado inmediatamente de tu saldo y enviado a revisión.</p>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Los retiros se pagan exclusivamente por <strong>Binance Pay (USDT)</strong>.</p>
+            <p style={{ color: '#ffcc00', fontSize: '0.9rem', fontWeight: 'bold' }}>⚠️ Monto mínimo de retiro: $20 USDT</p>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3>Solicitar Retiro</h3>
+              <button onClick={() => setShowWithdraw(false)} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}><X size={20} /></button>
+            </div>
+            
+            <input 
+              type="number" 
+              placeholder="Monto a retirar en USDT" 
+              value={withdrawAmount} 
+              onChange={(e) => setWithdrawAmount(e.target.value)} 
+              style={{ padding: '0.8rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000' }} 
+            />
+            
+            <input 
+              type="text" 
+              placeholder="Tu Binance Pay ID o Correo" 
+              value={binanceId} 
+              onChange={(e) => setBinanceId(e.target.value)} 
+              style={{ padding: '0.8rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000' }} 
+            />
+            
+            <button className="btn-primary" onClick={() => {
+              const numUsdt = Number(withdrawAmount);
+              if (numUsdt < 20) return Swal.fire('Atención', 'El monto mínimo de retiro es de $20 USDT', 'warning');
+              if (!binanceId) return Swal.fire('Atención', 'Ingresa tu Binance ID', 'warning');
+              onWithdraw(numUsdt, binanceId);
+              setShowWithdraw(false);
+              setWithdrawAmount('');
+              setBinanceId('');
+            }} style={{ background: '#ff4c4c', color: '#fff', fontWeight: 'bold' }}>
+              Solicitar Retiro
             </button>
           </div>
         </div>

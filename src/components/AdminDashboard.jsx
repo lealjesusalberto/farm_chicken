@@ -42,24 +42,28 @@ export function AdminDashboard({ onLogout }) {
       const userSnap = await getDoc(userRef);
       if (!userSnap.exists()) return Swal.fire('Error', 'Usuario no encontrado', 'error');
       
-      const newBalance = (userSnap.data().balance || 0) + tx.amount;
-      await updateDoc(userRef, { balance: newBalance });
+      // Solo agregamos balance si es un depósito. El retiro ya descontó el balance.
+      if (tx.type !== 'withdrawal') {
+        const newBalance = (userSnap.data().balance || 0) + tx.amount;
+        await updateDoc(userRef, { balance: newBalance });
+      }
       
       const txRef = doc(db, 'transactions', tx.id);
       await updateDoc(txRef, { status: 'approved' });
       
-      Swal.fire('Aprobado', `Recarga de $${tx.amount.toFixed(2)} aprobada para ${tx.email}`, 'success');
+      Swal.fire('Aprobado', `Transacción de $${tx.amount.toFixed(2)} aprobada para ${tx.email}`, 'success');
       fetchData();
     } catch (e) {
       console.error(e);
-      Swal.fire('Error', 'Error aprobando recarga', 'error');
+      Swal.fire('Error', 'Error aprobando transacción', 'error');
     }
   };
 
   const handleReject = async (tx) => {
+    const isWithdrawal = tx.type === 'withdrawal';
     const result = await Swal.fire({
       title: '¿Estás seguro?',
-      text: `¿Quieres rechazar la recarga de $${tx.amount.toFixed(2)} para ${tx.email}?`,
+      text: `¿Quieres rechazar ${isWithdrawal ? 'el retiro' : 'la recarga'} de $${tx.amount.toFixed(2)} para ${tx.email}?`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Sí, rechazar',
@@ -70,8 +74,19 @@ export function AdminDashboard({ onLogout }) {
     
     try {
       const txRef = doc(db, 'transactions', tx.id);
+      
+      // Si rechazamos un retiro, debemos DEVOLVER el saldo al usuario
+      if (isWithdrawal) {
+        const userRef = doc(db, 'users', tx.userId);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          const refundedBalance = (userSnap.data().balance || 0) + tx.amount;
+          await updateDoc(userRef, { balance: refundedBalance });
+        }
+      }
+
       await updateDoc(txRef, { status: 'rejected' });
-      Swal.fire('Rechazado', 'La recarga ha sido rechazada', 'info');
+      Swal.fire('Rechazado', `La solicitud ha sido rechazada ${isWithdrawal ? '(saldo devuelto al jugador)' : ''}`, 'info');
       fetchData();
     } catch (e) {
       console.error(e);
@@ -105,11 +120,13 @@ export function AdminDashboard({ onLogout }) {
               {transactions.map(tx => (
                 <li key={tx.id} className="admin-tx-item" style={{ padding: '1rem', background: 'rgba(0,0,0,0.3)', marginBottom: '1rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <p style={{ fontWeight: 'bold' }}>{tx.email}</p>
-                    <p style={{ color: '#fcd535', fontSize: '1.2rem', fontWeight: '800' }}>
+                    <p style={{ fontWeight: 'bold', color: tx.type === 'withdrawal' ? '#ff4c4c' : '#fff' }}>
+                      {tx.type === 'withdrawal' ? '📤 RETIRO' : '📥 RECARGA'} - {tx.email}
+                    </p>
+                    <p style={{ color: tx.type === 'withdrawal' ? '#ff4c4c' : '#fcd535', fontSize: '1.2rem', fontWeight: '800' }}>
                       ${(tx.amount || 0).toFixed(2)} USDT
                     </p>
-                    <p style={{ fontSize: '0.9rem', color: '#ffcc00' }}>Ref: {tx.reference}</p>
+                    <p style={{ fontSize: '0.9rem', color: '#ffcc00' }}>{tx.type === 'withdrawal' ? `Binance Pay: ${tx.binanceId}` : `Ref: ${tx.reference}`}</p>
                     <p style={{ fontSize: '0.8rem', color: '#aaa' }}>{new Date(tx.createdAt).toLocaleString()}</p>
                   </div>
                   <div className="admin-tx-actions" style={{ display: 'flex', gap: '0.5rem' }}>

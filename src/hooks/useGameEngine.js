@@ -183,6 +183,41 @@ export function useGameEngine(user) {
     }
   };
 
+  const requestWithdrawal = async (amountUsd, binanceId) => {
+    if (amountUsd < 20) {
+      return Swal.fire('Error', 'El monto mínimo de retiro es de $20 USDT', 'error');
+    }
+    if (amountUsd > balance) {
+      return Swal.fire('Error', 'No tienes saldo suficiente para este retiro', 'error');
+    }
+    
+    try {
+      // 1. Descontar el saldo inmediatamente
+      const newBalance = balance - amountUsd;
+      setBalance(newBalance);
+      
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, { balance: newBalance });
+      
+      // 2. Registrar la solicitud
+      await addDoc(collection(db, 'transactions'), {
+        userId: user.uid,
+        email: user.email,
+        type: 'withdrawal',
+        amount: amountUsd,
+        binanceId: binanceId,
+        status: 'pending',
+        createdAt: Date.now()
+      });
+      
+      Swal.fire('Retiro Solicitado', `Has solicitado un retiro de $${amountUsd.toFixed(2)} USDT hacia la cuenta ${binanceId}.`, 'success');
+      fetchPendingRecharges();
+    } catch (e) {
+      console.error(e);
+      Swal.fire('Error', 'Hubo un problema procesando el retiro', 'error');
+    }
+  };
+
   const calculateMaxDailyIncome = () => {
     return chickens.reduce((acc, chicken) => {
       const type = CHICKEN_TYPES.find(c => c.id === chicken.typeId);
@@ -190,5 +225,5 @@ export function useGameEngine(user) {
     }, 0);
   };
 
-  return { balance, chickens, buyChicken, collectEggs, rechargeBalance, incomePerDay: calculateMaxDailyIncome() };
+  return { balance, chickens, buyChicken, collectEggs, rechargeBalance, requestWithdrawal, incomePerDay: calculateMaxDailyIncome(), pendingRecharges };
 }

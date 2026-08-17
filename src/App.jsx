@@ -187,6 +187,7 @@ function MainApp({ user }) {
               balance={balance} 
               incomePerDay={incomePerDay} 
               onRecharge={rechargeBalance} 
+              onWithdraw={requestWithdrawal}
               rate={rate}
               pendingRecharges={pendingRecharges}
             />
