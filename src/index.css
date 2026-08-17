@@ -337,3 +337,39 @@ body {
     flex: 1;
   }
 }
+
+/* Estilos para el Login/Registro */
+.auth-wrapper {
+  min-height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url('/img/farm_bg.jpg');
+  background-size: cover;
+  background-position: center;
+  box-shadow: inset 0 0 0 2000px rgba(15, 23, 42, 0.85); /* Dark overlay */
+  padding: 1rem;
+}
+
+.auth-panel {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.4s ease-out;
+}
+
+@media (max-width: 480px) {
+  .auth-panel {
+    padding: 2rem 1.5rem;
+    border-radius: 20px;
+  }
+}

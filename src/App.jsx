@@ -44,17 +44,24 @@ function Auth({ initialMode = false, onBack }) {
   };
 
   return (
-    <div className="glass-panel" style={{ padding: '2rem', maxWidth: '400px', margin: '5vh auto', textAlign: 'center', position: 'relative' }}>
+    <div className="auth-panel">
       <button 
         type="button" 
         onClick={onBack} 
-        style={{ position: 'absolute', top: '15px', left: '15px', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.9rem' }}
+        style={{ position: 'absolute', top: '20px', left: '20px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '0.9rem', padding: '0.5rem 1rem', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '0.3rem', transition: 'all 0.3s' }}
       >
         ← Volver
       </button>
 
-      <h2 style={{ marginBottom: '1.5rem', marginTop: '1rem' }}>{isRegister ? 'Crear Cuenta' : 'Iniciar Sesión'}</h2>
-      {error && <p style={{ color: '#ff4c4c', marginBottom: '1rem', fontSize: '0.9rem', fontWeight: 'bold' }}>{error}</p>}
+      <div style={{ marginTop: '1rem', marginBottom: '1.5rem' }}>
+        <img src="/img/app_icon.png" alt="Logo" style={{ width: '80px', height: '80px', borderRadius: '20px', marginBottom: '1rem', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }} />
+        <h2 style={{ fontSize: '1.8rem', color: '#fff', margin: 0 }}>{isRegister ? 'Crear Cuenta' : 'Iniciar Sesión'}</h2>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.5rem' }}>
+          {isRegister ? 'Únete a la granja más rentable' : 'Bienvenido de vuelta a tu granja'}
+        </p>
+      </div>
+
+      {error && <p style={{ background: 'rgba(255, 76, 76, 0.2)', color: '#ff4c4c', padding: '0.8rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem', fontWeight: 'bold' }}>{error}</p>}
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         
         {isRegister && (
@@ -184,7 +191,7 @@ export default function App() {
   if (!user) {
     if (showAuth) {
       return (
-        <div className="layout-container">
+        <div className="auth-wrapper">
           <Auth initialMode={isRegister} onBack={() => setShowAuth(false)} />
         </div>
       );
