@@ -307,6 +307,11 @@ body {
     grid-template-columns: 1fr !important;
   }
 
+  /* Admin Panel en móviles */
+  .admin-container {
+    padding: 1rem;
+  }
+
   .admin-header {
     flex-direction: column !important;
     align-items: flex-start !important;
@@ -315,5 +320,20 @@ body {
   
   .admin-grid {
     grid-template-columns: 1fr !important;
+  }
+
+  .admin-tx-item {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 1rem;
+  }
+
+  .admin-tx-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .admin-tx-actions button {
+    flex: 1;
   }
 }

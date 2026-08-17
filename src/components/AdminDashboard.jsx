@@ -80,7 +80,7 @@ export function AdminDashboard({ onLogout }) {
   };
 
   return (
-    <div style={{ padding: '2rem', color: '#fff' }}>
+    <div className="admin-container" style={{ color: '#fff' }}>
       <div className="admin-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h2 style={{ fontSize: '2rem' }}>👑 Panel de Administrador</h2>
         {!rateLoading && rate && (
@@ -91,14 +91,14 @@ export function AdminDashboard({ onLogout }) {
         <button className="btn-primary" onClick={onLogout} style={{ background: '#ff4c4c', padding: '1rem 2rem' }}>Cerrar Sesión</button>
       </div>
 
-      <div className="admin-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
+      <div className="admin-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
         {/* Solicitudes de Recarga */}
-        <div className="glass-panel" style={{ padding: '2rem' }}>
-          <h3>💸 Solicitudes de Recarga Pendientes</h3>
+        <div className="glass-panel" style={{ padding: '1.5rem' }}>
+          <h3>💸 Solicitudes Pendientes</h3>
           {loading ? <p>Cargando...</p> : transactions.length === 0 ? <p style={{ color: '#aaa', marginTop: '1rem' }}>No hay recargas pendientes.</p> : (
             <ul style={{ listStyle: 'none', padding: 0, marginTop: '1rem' }}>
               {transactions.map(tx => (
-                <li key={tx.id} style={{ padding: '1rem', background: 'rgba(0,0,0,0.3)', marginBottom: '1rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <li key={tx.id} className="admin-tx-item" style={{ padding: '1rem', background: 'rgba(0,0,0,0.3)', marginBottom: '1rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <p style={{ fontWeight: 'bold' }}>{tx.email}</p>
                     <p style={{ color: '#4ade80', fontSize: '1.2rem', fontWeight: '800' }}>
@@ -107,7 +107,7 @@ export function AdminDashboard({ onLogout }) {
                     <p style={{ fontSize: '0.9rem', color: '#ffcc00' }}>Ref: {tx.reference}</p>
                     <p style={{ fontSize: '0.8rem', color: '#aaa' }}>{new Date(tx.createdAt).toLocaleString()}</p>
                   </div>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <div className="admin-tx-actions" style={{ display: 'flex', gap: '0.5rem' }}>
                     <button onClick={() => handleApprove(tx)} style={{ cursor: 'pointer', border: 'none', borderRadius: '8px', background: '#4ade80', color: '#000', padding: '0.5rem 1rem', fontWeight: 'bold' }}>Aprobar</button>
                     <button onClick={() => handleReject(tx)} style={{ cursor: 'pointer', border: 'none', borderRadius: '8px', background: '#ff4c4c', color: '#fff', padding: '0.5rem 1rem', fontWeight: 'bold' }}>Rechazar</button>
                   </div>
