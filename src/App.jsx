@@ -17,23 +17,40 @@ function Auth({ initialMode = false, onBack }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [state, setState] = useState('');
+  const [country, setCountry] = useState('Venezuela');
   const [showPassword, setShowPassword] = useState(false);
   const [isRegister, setIsRegister] = useState(initialMode);
   const [error, setError] = useState('');
 
-  const VENEZUELA_STATES = [
-    "Amazonas", "Anzoátegui", "Apure", "Aragua", "Barinas", "Bolívar", "Carabobo", "Cojedes", "Delta Amacuro", "Falcón", "Guárico", "Lara", "Mérida", "Miranda", "Monagas", "Nueva Esparta", "Portuguesa", "Sucre", "Táchira", "Trujillo", "La Guaira", "Yaracuy", "Zulia", "Distrito Capital"
-  ];
+  const COUNTRIES = {
+    Venezuela: {
+      flag: '🇻🇪',
+      states: ["Amazonas", "Anzoátegui", "Apure", "Aragua", "Barinas", "Bolívar", "Carabobo", "Cojedes", "Delta Amacuro", "Falcón", "Guárico", "Lara", "Mérida", "Miranda", "Monagas", "Nueva Esparta", "Portuguesa", "Sucre", "Táchira", "Trujillo", "La Guaira", "Yaracuy", "Zulia", "Distrito Capital"]
+    },
+    Colombia: {
+      flag: '🇨🇴',
+      states: ["Amazonas", "Antioquia", "Arauca", "Atlántico", "Bolívar", "Boyacá", "Caldas", "Caquetá", "Casanare", "Cauca", "Cesar", "Chocó", "Córdoba", "Cundinamarca", "Guainía", "Guaviare", "Huila", "La Guajira", "Magdalena", "Meta", "Nariño", "Norte de Santander", "Putumayo", "Quindío", "Risaralda", "San Andrés", "Santander", "Sucre", "Tolima", "Valle del Cauca", "Vaupés", "Vichada", "Bogotá"]
+    },
+    Peru: {
+      flag: '🇵🇪',
+      states: ["Amazonas", "Áncash", "Apurímac", "Arequipa", "Ayacucho", "Cajamarca", "Callao", "Cusco", "Huancavelica", "Huánuco", "Ica", "Junín", "La Libertad", "Lambayeque", "Lima", "Loreto", "Madre de Dios", "Moquegua", "Pasco", "Piura", "Puno", "San Martín", "Tacna", "Tumbes", "Ucayali"]
+    },
+    Argentina: {
+      flag: '🇦🇷',
+      states: ["Buenos Aires", "Catamarca", "Chaco", "Chubut", "Córdoba", "Corrientes", "Entre Ríos", "Formosa", "Jujuy", "La Pampa", "La Rioja", "Mendoza", "Misiones", "Neuquén", "Río Negro", "Salta", "San Juan", "San Luis", "Santa Cruz", "Santa Fe", "Santiago del Estero", "Tierra del Fuego", "Tucumán", "CABA"]
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     try {
       if (isRegister) {
-        if (!name || !phone || !state) return setError('Todos los campos son obligatorios');
+        if (!name || !phone || !state || !country) return setError('Todos los campos son obligatorios');
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const { setDoc, doc } = await import('firebase/firestore');
         await setDoc(doc(db, 'users', userCredential.user.uid), {
-          name, phone, state, email, balance: 0
+          name, phone, country, state, email, balance: 0
         });
       } else {
         await signInWithEmailAndPassword(auth, email, password);
@@ -67,10 +84,19 @@ function Auth({ initialMode = false, onBack }) {
         {isRegister && (
           <>
             <input type="text" placeholder="Nombre Completo" value={name} onChange={e => setName(e.target.value)} style={{ padding: '1rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000' }} required={isRegister} />
-            <input type="tel" placeholder="Teléfono" value={phone} onChange={e => setPhone(e.target.value)} style={{ padding: '1rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000' }} required={isRegister} />
-            <select value={state} onChange={e => setState(e.target.value)} style={{ padding: '1rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000' }} required={isRegister}>
-              <option value="" disabled>Seleccione un Estado...</option>
-              {VENEZUELA_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <select value={country} onChange={e => { setCountry(e.target.value); setState(''); }} style={{ padding: '1rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000', cursor: 'pointer' }} required={isRegister}>
+                {Object.entries(COUNTRIES).map(([cName, cData]) => (
+                  <option key={cName} value={cName}>{cData.flag} {cName}</option>
+                ))}
+              </select>
+              <input type="tel" placeholder="Teléfono" value={phone} onChange={e => setPhone(e.target.value)} style={{ padding: '1rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000' }} required={isRegister} />
+            </div>
+
+            <select value={state} onChange={e => setState(e.target.value)} style={{ padding: '1rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000', cursor: 'pointer' }} required={isRegister}>
+              <option value="" disabled>Seleccione un Estado/Región...</option>
+              {COUNTRIES[country]?.states.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </>
         )}
