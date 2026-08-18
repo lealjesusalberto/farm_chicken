@@ -46,7 +46,7 @@ export function LandingPage({ onLogin, onRegister }) {
         
         <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
           <button className="btn-primary" onClick={onRegister} style={{ padding: '1rem 2.5rem', fontSize: '1.2rem', background: 'linear-gradient(135deg, #fcd535, #f97316)', color: '#000' }}>
-            <Play fill="#000" size={20} /> Entrar en Telegram
+            <Play fill="#000" size={20} /> Unirme Ahora
           </button>
           <button className="btn-primary" onClick={onLogin} style={{ padding: '1rem 2.5rem', fontSize: '1.2rem', background: 'rgba(255,255,255,0.1)', color: '#fff', boxShadow: 'none' }}>
             <LogIn size={20} /> Iniciar Sesión

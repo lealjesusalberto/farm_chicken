@@ -88,28 +88,28 @@ function Auth({ initialMode = false, onBack }) {
         
         {isRegister && (
           <>
-            <input type="text" placeholder="Nombre Completo" value={name} onChange={e => setName(e.target.value)} style={{ padding: '1rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000' }} required={isRegister} />
+            <input type="text" placeholder="Nombre Completo" value={name} onChange={e => setName(e.target.value)} style={{ padding: '1rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000', width: '100%', boxSizing: 'border-box' }} required={isRegister} />
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <select value={country} onChange={e => { setCountry(e.target.value); setState(''); }} style={{ padding: '1rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000', cursor: 'pointer' }} required={isRegister}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem' }}>
+              <select value={country} onChange={e => { setCountry(e.target.value); setState(''); }} style={{ padding: '1rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000', cursor: 'pointer', width: '100%', boxSizing: 'border-box' }} required={isRegister}>
                 {Object.entries(COUNTRIES).map(([cName, cData]) => (
                   <option key={cName} value={cName}>{cData.flag} {cName}</option>
                 ))}
               </select>
-              <input type="tel" placeholder="Teléfono" value={phone} onChange={e => setPhone(e.target.value)} style={{ padding: '1rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000' }} required={isRegister} />
+              <input type="tel" placeholder="Teléfono" value={phone} onChange={e => setPhone(e.target.value)} style={{ padding: '1rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000', width: '100%', boxSizing: 'border-box' }} required={isRegister} />
             </div>
 
-            <select value={state} onChange={e => setState(e.target.value)} style={{ padding: '1rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000', cursor: 'pointer' }} required={isRegister}>
+            <select value={state} onChange={e => setState(e.target.value)} style={{ padding: '1rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000', cursor: 'pointer', width: '100%', boxSizing: 'border-box' }} required={isRegister}>
               <option value="" disabled>Seleccione un Estado/Región...</option>
               {COUNTRIES[country]?.states.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </>
         )}
 
-        <input type="email" placeholder="Correo Electrónico" value={email} onChange={e => setEmail(e.target.value)} style={{ padding: '1rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000' }} required />
+        <input type="email" placeholder="Correo Electrónico" value={email} onChange={e => setEmail(e.target.value)} style={{ padding: '1rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000', width: '100%', boxSizing: 'border-box' }} required />
         
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-          <input type={showPassword ? "text" : "password"} placeholder="Contraseña (mín 6 letras)" value={password} onChange={e => setPassword(e.target.value)} style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000' }} required />
+          <input type={showPassword ? "text" : "password"} placeholder="Contraseña (mín 6 letras)" value={password} onChange={e => setPassword(e.target.value)} style={{ width: '100%', boxSizing: 'border-box', padding: '1rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000' }} required />
           <div style={{ position: 'absolute', right: '10px', cursor: 'pointer', color: '#666' }} onClick={() => setShowPassword(!showPassword)}>
             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </div>
