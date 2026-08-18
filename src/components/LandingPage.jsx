@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { Gamepad2, Landmark, Coins, LogIn, UserPlus, Users, Trophy, Wallet, CalendarDays, CheckCircle, Play } from 'lucide-react';
 
 export function LandingPage({ onLogin, onRegister }) {
-  const [investment, setInvestment] = useState(660);
+  const [investment, setInvestment] = useState(30);
 
-  // Estimación de ROI conservadora (Ejemplo: ~2.5% diario)
-  const dailyIncome = investment * 0.025;
+  // Estimación de ROI optimista (Mejor escenario: ~5% diario con clima a favor y leyendas)
+  const dailyIncome = investment * 0.05;
   const monthlyIncome = dailyIncome * 30;
   const sixMonthsIncome = dailyIncome * 180;
   const yearlyIncome = dailyIncome * 365;
@@ -60,28 +60,51 @@ export function LandingPage({ onLogin, onRegister }) {
         <section className="glass-panel" style={{ padding: '2rem', textAlign: 'center', marginBottom: '2rem', borderTop: '4px solid #f97316' }}>
           <h2 style={{ fontSize: '2rem', marginBottom: '2rem', color: '#fff' }}>¿CÓMO FUNCIONA?</h2>
           
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', alignItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
             {/* Step 1 */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <div style={{ background: '#4ade80', color: '#000', width: '30px', height: '30px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', marginBottom: '0.5rem' }}>1</div>
-              <h4 style={{ color: '#fff', marginBottom: '1rem' }}>COMPRA ANIMALES</h4>
-              <img src="/img/chicken_4.png" alt="Gallina" style={{ height: '90px', objectFit: 'contain' }} />
+              <h4 style={{ color: '#fff', marginBottom: '0.5rem', fontSize: '1rem' }}>COMPRA ANIMALES</h4>
+              <img src="/img/chicken_4.png" alt="Gallina" style={{ height: '70px', objectFit: 'contain', marginBottom: '0.5rem' }} />
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: '1.4' }}>Adquiere gallinas en la tienda para empezar a poblar tu granja.</p>
             </div>
             
             {/* Step 2 */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <div style={{ background: '#4ade80', color: '#000', width: '30px', height: '30px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', marginBottom: '0.5rem' }}>2</div>
-              <h4 style={{ color: '#fff', marginBottom: '1rem' }}>OBTÉN PRODUCTOS</h4>
-              <img src="/img/egg_4.png" alt="Huevos" style={{ height: '90px', objectFit: 'contain' }} />
+              <h4 style={{ color: '#fff', marginBottom: '0.5rem', fontSize: '1rem' }}>ALIMENTA</h4>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', height: '70px', marginBottom: '0.5rem' }}>
+                 <Gamepad2 size={40} color="#fcd535" />
+              </div>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: '1.4' }}>Compra maíz para mantener a tus gallinas sanas y produciendo.</p>
             </div>
 
             {/* Step 3 */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <div style={{ background: '#4ade80', color: '#000', width: '30px', height: '30px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', marginBottom: '0.5rem' }}>3</div>
-              <h4 style={{ color: '#fff', marginBottom: '1rem' }}>CAMBIA POR DINERO</h4>
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', height: '90px' }}>
-                 <Coins size={60} color="#4ade80" />
+              <h4 style={{ color: '#fff', marginBottom: '0.5rem', fontSize: '1rem' }}>RECOLECTA HUEVOS</h4>
+              <img src="/img/egg_4.png" alt="Huevos" style={{ height: '70px', objectFit: 'contain', marginBottom: '0.5rem' }} />
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: '1.4' }}>Recoge los huevos que tus gallinas ponen durante el ciclo.</p>
+            </div>
+
+            {/* Step 4 */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div style={{ background: '#4ade80', color: '#000', width: '30px', height: '30px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', marginBottom: '0.5rem' }}>4</div>
+              <h4 style={{ color: '#fff', marginBottom: '0.5rem', fontSize: '1rem' }}>INCUBA Y CLONA</h4>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', height: '70px', marginBottom: '0.5rem' }}>
+                 <Users size={40} color="#f97316" />
               </div>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: '1.4' }}>Usa la incubadora mística para descubrir leyendas originales.</p>
+            </div>
+
+            {/* Step 5 */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div style={{ background: '#4ade80', color: '#000', width: '30px', height: '30px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', marginBottom: '0.5rem' }}>5</div>
+              <h4 style={{ color: '#fff', marginBottom: '0.5rem', fontSize: '1rem' }}>CAMBIA POR DINERO</h4>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', height: '70px', marginBottom: '0.5rem' }}>
+                 <Coins size={50} color="#4ade80" />
+              </div>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: '1.4' }}>Vende tu producción por USDT directo a tu cuenta de Binance.</p>
             </div>
           </div>
         </section>
@@ -101,7 +124,7 @@ export function LandingPage({ onLogin, onRegister }) {
               <Wallet size={24} color="#f97316" />
               <div>
                 <p className="stat-label">Retirado hoy</p>
-                <p className="stat-value" style={{ color: '#4ade80' }}>$ 12,824</p>
+                <p className="stat-value" style={{ color: '#4ade80' }}>$ 1,432</p>
               </div>
             </div>
             
@@ -109,7 +132,7 @@ export function LandingPage({ onLogin, onRegister }) {
               <Users size={24} color="#3b82f6" />
               <div>
                 <p className="stat-label">Jugadores online</p>
-                <p className="stat-value">37,276 users</p>
+                <p className="stat-value">845 users</p>
               </div>
             </div>
 
@@ -117,7 +140,7 @@ export function LandingPage({ onLogin, onRegister }) {
               <Trophy size={24} color="#fcd535" />
               <div>
                 <p className="stat-label">Pago más alto de hoy</p>
-                <p className="stat-value" style={{ color: '#4ade80' }}>$ 2,151</p>
+                <p className="stat-value" style={{ color: '#4ade80' }}>$ 350</p>
               </div>
             </div>
 
@@ -125,7 +148,7 @@ export function LandingPage({ onLogin, onRegister }) {
               <UserPlus size={24} color="#4ade80" />
               <div>
                 <p className="stat-label">Unidos hoy</p>
-                <p className="stat-value">+26,168 users</p>
+                <p className="stat-value">+142 users</p>
               </div>
             </div>
 
@@ -133,7 +156,7 @@ export function LandingPage({ onLogin, onRegister }) {
               <Landmark size={24} color="#a855f7" />
               <div>
                 <p className="stat-label">Pagos realizados hoy</p>
-                <p className="stat-value" style={{ color: '#fcd535' }}>3,812 pagos</p>
+                <p className="stat-value" style={{ color: '#fcd535' }}>84 pagos</p>
               </div>
             </div>
 
@@ -141,7 +164,7 @@ export function LandingPage({ onLogin, onRegister }) {
               <Gamepad2 size={24} color="#ef4444" />
               <div>
                 <p className="stat-label">Huevos farmeados hoy</p>
-                <p className="stat-value">24,871,243</p>
+                <p className="stat-value">12,450</p>
               </div>
             </div>
           </div>
@@ -158,12 +181,12 @@ export function LandingPage({ onLogin, onRegister }) {
             </div>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', width: '100%' }}>
-              <button onClick={() => setInvestment(Math.max(10, investment - 10))} className="calc-btn">-</button>
+              <button onClick={() => setInvestment(Math.max(3, investment - 10))} className="calc-btn">-</button>
               <input 
                 type="range" 
-                min="10" 
+                min="3" 
                 max="2000" 
-                step="10" 
+                step="1" 
                 value={investment} 
                 onChange={(e) => setInvestment(Number(e.target.value))}
                 className="custom-slider"
@@ -173,7 +196,7 @@ export function LandingPage({ onLogin, onRegister }) {
             </div>
           </div>
 
-          <p style={{ color: 'var(--text-muted)', marginBottom: '1rem', fontWeight: 'bold' }}>Ingreso Estimado en Dinero Real (USDT)</p>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '1rem', fontWeight: 'bold' }}>Escenario Óptimo Estimado (Mejor Rendimiento + Bonos)</p>
           
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
             <div className="income-card">
