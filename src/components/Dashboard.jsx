@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { Coins, TrendingUp, PlusCircle, Landmark, X } from 'lucide-react';
 import Swal from 'sweetalert2';
 
-export function Dashboard({ balance, incomePerDay, onRecharge, onWithdraw, rate, pendingRecharges = [] }) {
+export function Dashboard({ balance, incomePerDay, onRecharge, onWithdraw, rate, pendingRecharges = [], userData }) {
   const [showRecharge, setShowRecharge] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   
   // States para Recarga
   const [amountBs, setAmountBs] = useState('');
@@ -53,18 +54,26 @@ export function Dashboard({ balance, incomePerDay, onRecharge, onWithdraw, rate,
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           <button 
             className="btn-primary" 
-            onClick={() => { setShowRecharge(!showRecharge); setShowWithdraw(false); }}
+            onClick={() => { setShowRecharge(!showRecharge); setShowWithdraw(false); setShowHistory(false); }}
             style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
           >
-            <PlusCircle size={20} /> Recargar Saldo
+            <PlusCircle size={20} /> Recargar
           </button>
           
           <button 
             className="btn-primary" 
-            onClick={() => { setShowWithdraw(!showWithdraw); setShowRecharge(false); }}
+            onClick={() => { setShowWithdraw(!showWithdraw); setShowRecharge(false); setShowHistory(false); }}
             style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#ff4c4c', color: 'white' }}
           >
-            <Coins size={20} /> Retirar Ganancias
+            <Coins size={20} /> Retirar
+          </button>
+          
+          <button 
+            className="btn-primary" 
+            onClick={() => { setShowHistory(!showHistory); setShowRecharge(false); setShowWithdraw(false); }}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#3b82f6', color: 'white' }}
+          >
+            <TrendingUp size={20} /> Historial
           </button>
         </div>
       </div>
@@ -176,6 +185,40 @@ export function Dashboard({ balance, incomePerDay, onRecharge, onWithdraw, rate,
               Solicitar Retiro
             </button>
           </div>
+        </div>
+      )}
+
+      {showHistory && (
+        <div className="history-modal" style={{ marginTop: '1rem', paddingTop: '1.5rem', borderTop: '1px solid var(--glass-border)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><TrendingUp size={20} /> Historial de Ingresos</h3>
+            <button onClick={() => setShowHistory(false)} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}><X size={20} /></button>
+          </div>
+          
+          {(!userData?.dailyIncome || Object.keys(userData.dailyIncome).length === 0) ? (
+            <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>Aún no has recolectado ganancias de tus gallinas.</p>
+          ) : (
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+              {Object.keys(userData.dailyIncome).sort((a, b) => b.localeCompare(a)).map(dateStr => {
+                const amount = userData.dailyIncome[dateStr];
+                
+                // Formatear la fecha
+                const today = new Date().toISOString().split('T')[0];
+                const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+                
+                let label = dateStr;
+                if (dateStr === today) label = 'Hoy';
+                else if (dateStr === yesterday) label = 'Ayer';
+                
+                return (
+                  <li key={dateStr} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '8px' }}>
+                    <span style={{ fontWeight: 'bold', color: '#fff', fontSize: '1.1rem' }}>{label}</span>
+                    <span style={{ fontWeight: 'bold', color: '#4ade80', fontSize: '1.1rem' }}>+${amount.toFixed(2)} USDT</span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
       )}
 

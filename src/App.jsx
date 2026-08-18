@@ -7,9 +7,33 @@ import { useGameEngine } from './hooks/useGameEngine';
 import { useExchangeRate } from './hooks/useExchangeRate';
 import { auth, db } from './firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
-import { Eye, EyeOff, ShoppingCart, Wallet, LogOut, Coins, TrendingUp, X } from 'lucide-react';
+import { LogOut, Coins, ShieldCheck, Wallet, ShoppingCart, TrendingUp, Link, Users, Eye, EyeOff, X } from 'lucide-react';
 import { LandingPage } from './components/LandingPage';
 import './App.css';
+import { collection, setDoc, doc, getCountFromServer, onSnapshot } from 'firebase/firestore';
+
+export const COUNTRIES = {
+  Venezuela: {
+    flag: '🇻🇪',
+    iconUrl: 'https://flagcdn.com/w80/ve.png',
+    states: ["Amazonas", "Anzoátegui", "Apure", "Aragua", "Barinas", "Bolívar", "Carabobo", "Cojedes", "Delta Amacuro", "Falcón", "Guárico", "Lara", "Mérida", "Miranda", "Monagas", "Nueva Esparta", "Portuguesa", "Sucre", "Táchira", "Trujillo", "La Guaira", "Yaracuy", "Zulia", "Distrito Capital"]
+  },
+  Colombia: {
+    flag: '🇨🇴',
+    iconUrl: 'https://flagcdn.com/w80/co.png',
+    states: ["Amazonas", "Antioquia", "Arauca", "Atlántico", "Bolívar", "Boyacá", "Caldas", "Caquetá", "Casanare", "Cauca", "Cesar", "Chocó", "Córdoba", "Cundinamarca", "Guainía", "Guaviare", "Huila", "La Guajira", "Magdalena", "Meta", "Nariño", "Norte de Santander", "Putumayo", "Quindío", "Risaralda", "San Andrés", "Santander", "Sucre", "Tolima", "Valle del Cauca", "Vaupés", "Vichada", "Bogotá"]
+  },
+  Peru: {
+    flag: '🇵🇪',
+    iconUrl: 'https://flagcdn.com/w80/pe.png',
+    states: ["Amazonas", "Áncash", "Apurímac", "Arequipa", "Ayacucho", "Cajamarca", "Callao", "Cusco", "Huancavelica", "Huánuco", "Ica", "Junín", "La Libertad", "Lambayeque", "Lima", "Loreto", "Madre de Dios", "Moquegua", "Pasco", "Piura", "Puno", "San Martín", "Tacna", "Tumbes", "Ucayali"]
+  },
+  Argentina: {
+    flag: '🇦🇷',
+    iconUrl: 'https://flagcdn.com/w80/ar.png',
+    states: ["Buenos Aires", "Catamarca", "Chaco", "Chubut", "Córdoba", "Corrientes", "Entre Ríos", "Formosa", "Jujuy", "La Pampa", "La Rioja", "Mendoza", "Misiones", "Neuquén", "Río Negro", "Salta", "San Juan", "San Luis", "Santa Cruz", "Santa Fe", "Santiago del Estero", "Tierra del Fuego", "Tucumán", "CABA"]
+  }
+};
 
 function Auth({ initialMode = false, onBack }) {
   const [email, setEmail] = useState('');
@@ -22,25 +46,6 @@ function Auth({ initialMode = false, onBack }) {
   const [isRegister, setIsRegister] = useState(initialMode);
   const [error, setError] = useState('');
 
-  const COUNTRIES = {
-    Venezuela: {
-      flag: '🇻🇪',
-      states: ["Amazonas", "Anzoátegui", "Apure", "Aragua", "Barinas", "Bolívar", "Carabobo", "Cojedes", "Delta Amacuro", "Falcón", "Guárico", "Lara", "Mérida", "Miranda", "Monagas", "Nueva Esparta", "Portuguesa", "Sucre", "Táchira", "Trujillo", "La Guaira", "Yaracuy", "Zulia", "Distrito Capital"]
-    },
-    Colombia: {
-      flag: '🇨🇴',
-      states: ["Amazonas", "Antioquia", "Arauca", "Atlántico", "Bolívar", "Boyacá", "Caldas", "Caquetá", "Casanare", "Cauca", "Cesar", "Chocó", "Córdoba", "Cundinamarca", "Guainía", "Guaviare", "Huila", "La Guajira", "Magdalena", "Meta", "Nariño", "Norte de Santander", "Putumayo", "Quindío", "Risaralda", "San Andrés", "Santander", "Sucre", "Tolima", "Valle del Cauca", "Vaupés", "Vichada", "Bogotá"]
-    },
-    Peru: {
-      flag: '🇵🇪',
-      states: ["Amazonas", "Áncash", "Apurímac", "Arequipa", "Ayacucho", "Cajamarca", "Callao", "Cusco", "Huancavelica", "Huánuco", "Ica", "Junín", "La Libertad", "Lambayeque", "Lima", "Loreto", "Madre de Dios", "Moquegua", "Pasco", "Piura", "Puno", "San Martín", "Tacna", "Tumbes", "Ucayali"]
-    },
-    Argentina: {
-      flag: '🇦🇷',
-      states: ["Buenos Aires", "Catamarca", "Chaco", "Chubut", "Córdoba", "Corrientes", "Entre Ríos", "Formosa", "Jujuy", "La Pampa", "La Rioja", "Mendoza", "Misiones", "Neuquén", "Río Negro", "Salta", "San Juan", "San Luis", "Santa Cruz", "Santa Fe", "Santiago del Estero", "Tierra del Fuego", "Tucumán", "CABA"]
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -48,7 +53,6 @@ function Auth({ initialMode = false, onBack }) {
       if (isRegister) {
         if (!name || !phone || !state || !country) return setError('Todos los campos son obligatorios');
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const { setDoc, doc } = await import('firebase/firestore');
         await setDoc(doc(db, 'users', userCredential.user.uid), {
           name, phone, country, state, email, balance: 0
         });
@@ -122,10 +126,49 @@ function Auth({ initialMode = false, onBack }) {
 }
 
 function MainApp({ user }) {
-  const { balance, chickens, buyChicken, collectEggs, rechargeBalance, requestWithdrawal, incomePerDay, pendingRecharges } = useGameEngine(user);
+  const [weatherData, setWeatherData] = useState({ type: 'sunny', history: [] });
+  const weather = weatherData.type || 'sunny';
+  const { balance, userData, chickens, buyChicken, buyMysteryEgg, buyCorn, feedChicken, openMysteryEgg, sellChicken, collectEggs, rechargeBalance, requestWithdrawal, incomePerDay, pendingRecharges } = useGameEngine(user, weatherData);
   const { rate, loading: rateLoading } = useExchangeRate();
   const [showStore, setShowStore] = useState(false);
   const [showWallet, setShowWallet] = useState(false);
+  const [farmingUsers, setFarmingUsers] = useState(89);
+
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'global', 'weather'), (docSnap) => {
+      if (docSnap.exists()) {
+        setWeatherData(docSnap.data());
+      } else {
+        const initial = { type: 'sunny', history: [{ type: 'sunny', start: Date.now(), end: null }] };
+        setDoc(doc(db, 'global', 'weather'), initial);
+      }
+    });
+    return unsub;
+  }, []);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const snapshot = await getCountFromServer(collection(db, 'users'));
+        setFarmingUsers(89 + snapshot.data().count);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  const currentXp = userData?.xp || 0;
+  const currentLevel = Math.floor(currentXp / 100) + 1;
+  const xpProgress = currentXp % 100;
+
+  const weatherLabels = {
+    rain: { icon: '🌧️', text: 'Relentiza x2', color: '#93c5fd' },
+    thunder: { icon: '⚡', text: 'Relentiza x2', color: '#a78bfa' },
+    snow: { icon: '❄️', text: 'Relentiza x2', color: '#bfdbfe' },
+    rainbow: { icon: '🌈', text: 'Acelera x0.5', color: '#fbcfe8' },
+    stars: { icon: '✨', text: 'Acelera x0.5', color: '#fef08a' }
+  };
 
   return (
     <div className="game-container">
@@ -133,23 +176,57 @@ function MainApp({ user }) {
       {/* Game Header (Mobile First) */}
       <header className="game-header">
         <div className="game-stats-pill">
+          {userData && (
+            <div style={{ paddingRight: '0.5rem', borderRight: '1px solid rgba(255,255,255,0.2)', marginRight: '0.5rem', display: 'flex', alignItems: 'center' }}>
+              <img 
+                src={COUNTRIES[userData.country || 'Venezuela']?.iconUrl || 'https://flagcdn.com/w80/ve.png'} 
+                alt="Country Flag" 
+                style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 4px rgba(0,0,0,0.5)' }} 
+              />
+            </div>
+          )}
+          
+          <div style={{ display: 'flex', flexDirection: 'column', paddingRight: '0.5rem', marginRight: '0.5rem', borderRight: '1px solid rgba(255,255,255,0.2)', width: '60px' }}>
+            <span style={{ fontSize: '0.7rem', color: '#ccc', fontWeight: 'bold' }}>Lv.{currentLevel}</span>
+            <div style={{ width: '100%', height: '4px', background: 'rgba(0,0,0,0.3)', borderRadius: '2px', overflow: 'hidden', marginTop: '2px' }}>
+              <div style={{ width: `${xpProgress}%`, height: '100%', background: '#4ade80' }}></div>
+            </div>
+          </div>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'var(--primary-color)', fontWeight: 'bold' }}>
             <Coins size={18} /> 
-            <span style={{ fontSize: '1.2rem' }}>${balance.toFixed(2)}</span>
+            <span style={{ fontSize: '1.2rem' }}>${(balance || 0).toFixed(2)}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#fff', fontSize: '0.9rem', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '0.5rem' }}>
             <TrendingUp size={14} color="var(--accent-color)" /> +${incomePerDay.toFixed(2)}/d
           </div>
         </div>
         
-        <button onClick={() => signOut(auth)} style={{ background: 'rgba(255,0,0,0.2)', border: 'none', color: '#ff4c4c', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' }}>
-          <LogOut size={20} />
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          
+          {weather !== 'sunny' && weatherLabels[weather] && (
+            <div className="game-stats-pill animate-float" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: weatherLabels[weather].color, fontSize: '0.85rem', border: `1px solid ${weatherLabels[weather].color}80`, background: 'rgba(0,0,0,0.6)', boxShadow: `0 0 10px ${weatherLabels[weather].color}40` }}>
+              <span>{weatherLabels[weather].icon}</span>
+              <span style={{ fontWeight: 'bold' }}>{weatherLabels[weather].text}</span>
+            </div>
+          )}
+
+          <div className="game-stats-pill hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#fff', fontSize: '0.85rem' }}>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 5px #4ade80', animation: 'pulse 2s infinite' }}></div>
+            <Users size={14} style={{ color: '#ccc' }} />
+            <span style={{ fontWeight: 'bold' }}>{farmingUsers}</span> 
+            <span style={{ color: '#ccc' }}>farmeando</span>
+          </div>
+          
+          <button onClick={() => auth.signOut()} title="Cerrar Sesión" style={{ background: 'rgba(255,0,0,0.2)', border: 'none', color: '#ff4c4c', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' }}>
+            <LogOut size={20} color="#ff4c4c" />
+          </button>
+        </div>
       </header>
 
       {/* Main Farm Area (Fills remaining space) */}
       <main style={{ flex: 1, position: 'relative', width: '100%', height: '100%', overflowY: 'auto', overflowX: 'hidden' }}>
-        <Farm chickens={chickens} onCollect={collectEggs} />
+        <Farm chickens={chickens} userData={userData} weatherData={weatherData} onCollect={collectEggs} onOpenEgg={openMysteryEgg} onSell={sellChicken} onFeed={feedChicken} />
       </main>
 
       {/* Bottom Action Bar */}
@@ -162,15 +239,19 @@ function MainApp({ user }) {
         </button>
       </footer>
 
-      {/* Modals for Store and Wallet */}
+      {/* Modals */}
       {showStore && (
-        <div className="game-modal-overlay">
-          <div className="game-modal-content">
-            <button className="close-modal-btn" onClick={() => setShowStore(false)}><X size={20} /></button>
-            <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--glass-border)' }}>
-              <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><ShoppingCart size={24} /> Tienda de Gallinas</h2>
+        <div className="modal-overlay" onClick={() => setShowStore(false)} style={{ zIndex: 1000, padding: '1rem' }}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ padding: 0, maxWidth: '1400px', width: '100%', height: '100%', maxHeight: '95vh', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--glass-border)', flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}><ShoppingCart size={24} /> Tienda de Gallinas</h2>
+              <button className="btn-icon" style={{ background: 'rgba(255,0,0,0.2)', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', border: 'none', cursor: 'pointer' }} onClick={() => setShowStore(false)}>
+                <X size={20} color="#ff4c4c" />
+              </button>
             </div>
-            <Store balance={balance} onBuy={buyChicken} rate={rate} />
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              <Store balance={balance} onBuy={buyChicken} onBuyMysteryEgg={buyMysteryEgg} onBuyCorn={buyCorn} rate={rate} />
+            </div>
           </div>
         </div>
       )}
@@ -185,6 +266,7 @@ function MainApp({ user }) {
             {/* The Dashboard acts as our Wallet view now */}
             <Dashboard 
               balance={balance} 
+              userData={userData}
               incomePerDay={incomePerDay} 
               onRecharge={rechargeBalance} 
               onWithdraw={requestWithdrawal}

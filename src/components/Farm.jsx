@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { CHICKEN_TYPES } from '../hooks/useGameEngine';
+import { CHICKEN_TYPES, calculateEffectiveTime } from '../hooks/useGameEngine';
 
-export function Farm({ chickens, onCollect }) {
+export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed, weatherData }) {
   const [now, setNow] = useState(Date.now());
+  
+  // Lógica de Día y Noche
+  const currentHour = new Date(now).getHours();
+  const isNight = currentHour >= 18 || currentHour < 6;
+  const currentBg = isNight ? '/img/farm_bg_night.png' : '/img/farm_bg.jpg';
   
   // Actualizar la interfaz cada 10 segundos para ver cómo avanza la barra
   useEffect(() => {
@@ -14,25 +19,97 @@ export function Farm({ chickens, onCollect }) {
     return (
       <div className="glass-panel" style={{ 
         padding: '4rem 2rem', textAlign: 'center',
-        backgroundImage: 'url(/img/farm_bg.jpg)',
+        backgroundImage: `url(${currentBg})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         boxShadow: 'inset 0 0 0 1000px rgba(0,0,0,0.75)'
       }}>
         <h2 style={{ color: 'white', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>Tu granja está vacía. ¡Compra gallinas para empezar!</h2>
+        
+        {/* Top Inventory Bar */}
+        {(userData?.mysteryEggs > 0 || userData?.cornCount > 0) && (
+          <div style={{ marginTop: '2rem', background: 'rgba(255,255,255,0.1)', padding: '1rem', borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)', width: 'fit-content', margin: '2rem auto' }}>
+            
+            {userData?.mysteryEggs > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ position: 'relative' }}>
+                  <img src="/img/mystery_egg.png" alt="Huevos" style={{ width: '50px', height: '50px' }} />
+                  <span style={{ position: 'absolute', top: '-5px', right: '-10px', background: '#fcd535', color: '#000', fontWeight: 'bold', borderRadius: '50%', padding: '2px 8px' }}>{userData.mysteryEggs}</span>
+                </div>
+                <div style={{ textAlign: 'left' }}>
+                  <h3 style={{ margin: 0, color: '#fcd535', fontSize: '1.1rem' }}>Cesta de Huevos</h3>
+                </div>
+                <button className="btn-primary" onClick={onOpenEgg} style={{ marginLeft: '0.5rem', padding: '0.5rem 1rem', fontSize: '0.9rem' }}>Abrir</button>
+              </div>
+            )}
+
+            {userData?.cornCount > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', borderLeft: userData?.mysteryEggs > 0 ? '1px solid rgba(255,255,255,0.2)' : 'none', paddingLeft: userData?.mysteryEggs > 0 ? '2rem' : '0' }}>
+                <div style={{ position: 'relative' }}>
+                  <img src="/img/super_corn.png" alt="Súper Maíz" style={{ width: '50px', height: '50px' }} />
+                  <span style={{ position: 'absolute', top: '-5px', right: '-10px', background: '#4ade80', color: '#000', fontWeight: 'bold', borderRadius: '50%', padding: '2px 8px' }}>{userData.cornCount}</span>
+                </div>
+                <div style={{ textAlign: 'left' }}>
+                  <h3 style={{ margin: 0, color: '#4ade80', fontSize: '1.1rem' }}>Súper Maíz</h3>
+                </div>
+              </div>
+            )}
+
+          </div>
+        )}
       </div>
     );
   }
 
+  const weather = weatherData?.type || 'sunny';
+
   return (
     <div className="farm-game-area" style={{ 
       minHeight: '100%', position: 'relative', overflow: 'hidden',
-      backgroundImage: 'url(/img/farm_bg.jpg)',
+      backgroundImage: `url(${currentBg})`,
       backgroundSize: 'cover',
       backgroundPosition: 'bottom center',
       boxShadow: 'inset 0 0 0 1000px rgba(0,0,0,0.4)',
-      padding: '5rem 1rem 6rem 1rem' // Espacio para el header y el bottom bar
+      padding: '2rem 1rem'
     }}>
+      {/* Weather Overlays */}
+      {weather === 'rain' && <div className="weather-overlay weather-rain"></div>}
+      {weather === 'thunder' && <div className="weather-overlay weather-thunder"></div>}
+      {weather === 'snow' && <div className="weather-overlay weather-snow"></div>}
+      {weather === 'rainbow' && <div className="weather-overlay weather-rainbow"></div>}
+      {weather === 'stars' && <div className="weather-overlay weather-stars"></div>}
+
+      {(userData?.mysteryEggs > 0 || userData?.cornCount > 0) && (
+        <div style={{ background: 'rgba(255,255,255,0.1)', padding: '1rem', borderRadius: '15px', marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)', maxWidth: '600px', margin: '0 auto 2rem auto' }}>
+          
+          {userData?.mysteryEggs > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div style={{ position: 'relative' }}>
+                <img src="/img/mystery_egg.png" alt="Huevos" style={{ width: '50px', height: '50px' }} />
+                <span style={{ position: 'absolute', top: '-5px', right: '-10px', background: '#fcd535', color: '#000', fontWeight: 'bold', borderRadius: '50%', padding: '2px 8px' }}>{userData.mysteryEggs}</span>
+              </div>
+              <div style={{ textAlign: 'left' }}>
+                <h3 style={{ margin: 0, color: '#fcd535', fontSize: '1.1rem' }}>Cesta de Huevos</h3>
+              </div>
+              <button className="btn-primary" onClick={onOpenEgg} style={{ marginLeft: '0.5rem', padding: '0.5rem 1rem', fontSize: '0.9rem' }}>Abrir</button>
+            </div>
+          )}
+
+          {userData?.cornCount > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', borderLeft: userData?.mysteryEggs > 0 ? '1px solid rgba(255,255,255,0.2)' : 'none', paddingLeft: userData?.mysteryEggs > 0 ? '2rem' : '0' }}>
+              <div style={{ position: 'relative' }}>
+                <img src="/img/super_corn.png" alt="Súper Maíz" style={{ width: '50px', height: '50px' }} />
+                <span style={{ position: 'absolute', top: '-5px', right: '-10px', background: '#4ade80', color: '#000', fontWeight: 'bold', borderRadius: '50%', padding: '2px 8px' }}>{userData.cornCount}</span>
+              </div>
+              <div style={{ textAlign: 'left' }}>
+                <h3 style={{ margin: 0, color: '#4ade80', fontSize: '1.1rem' }}>Súper Maíz</h3>
+              </div>
+            </div>
+          )}
+
+        </div>
+      )}
+
       <h2 className="hide-on-mobile" style={{ marginBottom: '2rem', color: 'white', textShadow: '0 2px 4px rgba(0,0,0,0.8)', textAlign: 'center' }}>Tu Granja ({chickens.length} Gallinas)</h2>
       
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3rem', justifyContent: 'center', zIndex: 1, position: 'relative', paddingBottom: '2rem' }}>
@@ -42,20 +119,32 @@ export function Farm({ chickens, onCollect }) {
           const currentImg = isDepleted ? type.depletedImg : type.img;
 
           // Lógica de progreso
-          const timePassed = now - chicken.lastEggTime;
-          const EGG_TIME_5 = type.eggTime * 5; // 23 horas
-          const CYCLE_DURATION = 24 * 60 * 60 * 1000; // 24 horas
+          const isBoosted = chicken.boostEndTime && now < chicken.boostEndTime;
+          
+          let effectiveTimePassed = calculateEffectiveTime(chicken.lastEggTime, now, chicken.boostStartTime, chicken.boostEndTime, weatherData?.history);
+          
+          let currentMultiplier = 1;
+          if (weather === 'rain' || weather === 'thunder' || weather === 'snow') currentMultiplier = 0.5;
+          if (weather === 'rainbow' || weather === 'stars') currentMultiplier = 2;
+          
+          const CYCLE_DURATION = 24 * 60 * 60 * 1000;
+          const EGG_TIME_5 = type.eggTime * 5;
           
           let progress = 0;
           let timeLeftMins = 0;
 
           if (isDepleted) {
             // Última hora (ventana de gracia)
-            progress = Math.min(100, Math.max(0, ((timePassed - EGG_TIME_5) / (CYCLE_DURATION - EGG_TIME_5)) * 100));
-            timeLeftMins = Math.floor((CYCLE_DURATION - timePassed) / 60000);
+            progress = Math.min(100, Math.max(0, ((effectiveTimePassed - EGG_TIME_5) / (CYCLE_DURATION - EGG_TIME_5)) * 100));
+            
+            const remainingEffective = CYCLE_DURATION - effectiveTimePassed;
+            let realTimeMultiplier = currentMultiplier;
+            if (isBoosted) realTimeMultiplier *= 2;
+            
+            timeLeftMins = Math.floor((remainingEffective / realTimeMultiplier) / 60000);
           } else {
             // Progreso hacia el siguiente huevo
-            progress = Math.min(100, Math.max(0, ((timePassed % type.eggTime) / type.eggTime) * 100));
+            progress = Math.min(100, Math.max(0, ((effectiveTimePassed % type.eggTime) / type.eggTime) * 100));
           }
 
           return (
@@ -68,7 +157,8 @@ export function Farm({ chickens, onCollect }) {
                 onClick={() => onCollect(chicken.id)}
                 title={chicken.currentEggs > 0 ? "¡Clic para recolectar!" : ""}
               >
-                <img src={currentImg} alt="Gallina" style={{ height: '120px', objectFit: 'contain', filter: 'drop-shadow(0 10px 10px rgba(0,0,0,0.6))' }} />
+                {isBoosted && <div style={{ position: 'absolute', top: '-15px', left: '50%', transform: 'translateX(-50%)', color: '#4ade80', fontWeight: 'bold', fontSize: '0.8rem', whiteSpace: 'nowrap', textShadow: '0 2px 4px rgba(0,0,0,0.8)', zIndex: 2 }}>✨ 2x BOOST ✨</div>}
+                <img src={currentImg} alt="Gallina" style={{ height: '120px', objectFit: 'contain', filter: isBoosted ? 'drop-shadow(0 0 15px rgba(74,222,128,0.8))' : 'drop-shadow(0 10px 10px rgba(0,0,0,0.6))', transition: 'all 0.3s' }} />
                 
                 {/* Contenedor de huevos */}
                 <div style={{ position: 'absolute', bottom: '-15px', right: '-20px', display: 'flex', gap: '-5px', flexWrap: 'wrap', width: '80px', pointerEvents: 'none' }}>
@@ -104,15 +194,34 @@ export function Farm({ chickens, onCollect }) {
                 </div>
               </div>
               
-              {chicken.currentEggs > 0 && (
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                {chicken.currentEggs > 0 && (
+                  <span style={{ 
+                    background: 'var(--accent-color)', color: 'white', 
+                    padding: '4px 12px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 'bold', 
+                    boxShadow: '0 2px 5px rgba(0,0,0,0.5)', cursor: 'pointer' 
+                  }} onClick={() => onCollect(chicken.id)}>
+                    Recoger
+                  </span>
+                )}
                 <span style={{ 
-                  marginTop: '0.75rem', background: 'var(--accent-color)', color: 'white', 
+                  background: 'rgba(255, 76, 76, 0.1)', color: '#ff4c4c', border: '1px solid rgba(255, 76, 76, 0.3)',
                   padding: '4px 12px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 'bold', 
-                  boxShadow: '0 2px 5px rgba(0,0,0,0.5)', cursor: 'pointer' 
-                }} onClick={() => onCollect(chicken.id)}>
-                  Recoger
+                  cursor: 'pointer' 
+                }} onClick={() => onSell(chicken.id)}>
+                  Vender (${(type.price / 2).toFixed(2)})
                 </span>
-              )}
+                
+                {userData?.cornCount > 0 && !isBoosted && (
+                  <span style={{ 
+                    background: 'rgba(74, 222, 128, 0.1)', color: '#4ade80', border: '1px solid rgba(74, 222, 128, 0.3)',
+                    padding: '4px 12px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 'bold', 
+                    cursor: 'pointer', width: '100%', textAlign: 'center', marginTop: '0.25rem'
+                  }} onClick={() => onFeed(chicken.id)}>
+                    🌽 Alimentar
+                  </span>
+                )}
+              </div>
             </div>
           );
         })}

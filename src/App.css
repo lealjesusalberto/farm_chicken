@@ -1,1 +1,94 @@
-/* Archivo vacío para limpiar estilos por defecto de Vite */
+.store-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+/* Weather Overlays */
+.weather-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 5;
+  overflow: hidden;
+}
+
+.weather-rain {
+  background-color: rgba(0, 0, 40, 0.3);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cpath d='M20 0 L10 40 M120 40 L110 80 M70 100 L60 140 M180 140 L170 180 M40 160 L30 200 M150 0 L140 40 M90 60 L80 100 M190 80 L180 120' stroke='rgba(255,255,255,0.4)' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  animation: rainDropAnim 0.3s linear infinite;
+}
+
+.weather-thunder {
+  background-color: rgba(0, 0, 40, 0.5);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cpath d='M20 0 L10 40 M120 40 L110 80 M70 100 L60 140 M180 140 L170 180 M40 160 L30 200 M150 0 L140 40 M90 60 L80 100 M190 80 L180 120' stroke='rgba(255,255,255,0.5)' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  animation: rainDropAnim 0.25s linear infinite, thunderAnim 5s infinite;
+}
+
+.weather-snow {
+  background-color: rgba(255, 255, 255, 0.1);
+  background-image: 
+    radial-gradient(circle at 10% 20%, white 3px, transparent 4px),
+    radial-gradient(circle at 40% 60%, white 2px, transparent 3px),
+    radial-gradient(circle at 80% 30%, white 4px, transparent 5px),
+    radial-gradient(circle at 30% 90%, white 2px, transparent 3px);
+  background-size: 200px 200px, 150px 150px, 250px 250px, 100px 100px;
+  animation: snowAnim 8s linear infinite;
+}
+
+.weather-rainbow {
+  background: linear-gradient(180deg, rgba(255,0,0,0.15), rgba(255,165,0,0.15), rgba(255,255,0,0.15), rgba(0,128,0,0.15), rgba(0,0,255,0.15), rgba(75,0,130,0.15), rgba(238,130,238,0.15));
+  opacity: 0.8;
+}
+
+.weather-stars {
+  background-color: rgba(0, 0, 30, 0.6);
+}
+
+.weather-stars::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(255,255,255,0.8) 1px, transparent 2px),
+    radial-gradient(circle at 40% 60%, rgba(255,255,255,0.9) 2px, transparent 3px),
+    radial-gradient(circle at 80% 30%, rgba(255,255,255,0.7) 1px, transparent 2px),
+    radial-gradient(circle at 30% 90%, rgba(255,255,255,0.8) 2px, transparent 3px);
+  background-size: 150px 150px, 200px 200px, 100px 100px, 250px 250px;
+  animation: twinkleAnim 4s ease-in-out infinite alternate;
+}
+
+.weather-stars::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: 
+    radial-gradient(circle at 25% 15%, rgba(255,255,255,0.9) 1.5px, transparent 2px),
+    radial-gradient(circle at 75% 85%, rgba(255,255,255,0.7) 1px, transparent 2px),
+    radial-gradient(circle at 90% 10%, rgba(255,255,255,0.8) 2px, transparent 3px),
+    radial-gradient(circle at 15% 75%, rgba(255,255,255,0.9) 1px, transparent 2px);
+  background-size: 180px 180px, 220px 220px, 130px 130px, 280px 280px;
+  animation: twinkleAnim 3s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes rainDropAnim {
+  0% { background-position: 0px 0px; }
+  100% { background-position: -50px 200px; }
+}
+
+@keyframes snowAnim {
+  0% { background-position: 0px 0px, 0px 0px, 0px 0px, 0px 0px; }
+  100% { background-position: 50px 200px, -30px 150px, 80px 250px, -50px 100px; }
+}
+
+@keyframes twinkleAnim {
+  0% { opacity: 0.1; }
+  100% { opacity: 1; }
+}
+
+@keyframes thunderAnim {
+  0%, 94%, 98%, 100% { background-color: rgba(0, 0, 40, 0.5); }
+  95%, 99% { background-color: rgba(255, 255, 255, 0.9); }
+}

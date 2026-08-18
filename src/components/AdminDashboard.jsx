@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, query, where, getDocs, doc, updateDoc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, getDoc, onSnapshot, setDoc } from 'firebase/firestore';
 import { useExchangeRate } from '../hooks/useExchangeRate';
 import Swal from 'sweetalert2';
 
@@ -8,33 +8,71 @@ export function AdminDashboard({ onLogout }) {
   const [users, setUsers] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentWeather, setCurrentWeather] = useState('sunny');
   const { rate, loading: rateLoading } = useExchangeRate();
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      console.log("Cargando usuarios...");
-      const usersSnap = await getDocs(collection(db, 'users'));
-      const uList = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      setUsers(uList);
+  useEffect(() => {
+    // Escuchar transacciones en tiempo real
+    const txQ = query(collection(db, 'transactions'), where('status', '==', 'pending'));
+    const unsubTx = onSnapshot(txQ, (snap) => {
+      setTransactions(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }, (error) => {
+      console.error("Error cargando transacciones:", error);
+    });
 
-      console.log("Cargando transacciones...");
-      const txQ = query(collection(db, 'transactions'), where('status', '==', 'pending'));
-      const txSnap = await getDocs(txQ);
-      const txList = txSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      setTransactions(txList);
-      console.log("Carga completa");
-    } catch (e) {
-      console.error("Error en fetchData:", e);
-      Swal.fire('Error de Conexión', e.message || 'No se pudieron cargar los datos de Firebase. Revisa las reglas de seguridad o tu conexión.', 'error');
-    } finally {
+    // Escuchar usuarios en tiempo real
+    const unsubUsers = onSnapshot(collection(db, 'users'), (snap) => {
+      setUsers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
       setLoading(false);
+    }, (error) => {
+      console.error("Error cargando usuarios:", error);
+      setLoading(false);
+    });
+
+    // Escuchar clima en tiempo real
+    const unsubWeather = onSnapshot(doc(db, 'global', 'weather'), (snap) => {
+      if (snap.exists()) setCurrentWeather(snap.data().type || 'sunny');
+    });
+
+    return () => {
+      unsubTx();
+      unsubUsers();
+      unsubWeather();
+    };
+  }, []);
+
+  const changeWeather = async (type) => {
+    try {
+      const weatherRef = doc(db, 'global', 'weather');
+      const snap = await getDoc(weatherRef);
+      let history = [];
+      const now = Date.now();
+      
+      if (snap.exists() && snap.data().history) {
+        history = snap.data().history;
+        if (history.length > 0 && history[history.length - 1].end === null) {
+          history[history.length - 1].end = now;
+        }
+      }
+      
+      const twoDaysAgo = now - (48 * 60 * 60 * 1000);
+      history = history.filter(h => h.end === null || h.end > twoDaysAgo);
+      
+      history.push({ type, start: now, end: null });
+      
+      await setDoc(weatherRef, { type, history });
+      Swal.fire({
+        title: 'Clima Actualizado',
+        text: `El clima ha cambiado a ${type} para todos los jugadores.`,
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    } catch (e) {
+      console.error(e);
+      Swal.fire('Error', 'Error cambiando el clima', 'error');
     }
   };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   const handleApprove = async (tx) => {
     try {
@@ -52,7 +90,7 @@ export function AdminDashboard({ onLogout }) {
       await updateDoc(txRef, { status: 'approved' });
       
       Swal.fire('Aprobado', `Transacción de $${tx.amount.toFixed(2)} aprobada para ${tx.email}`, 'success');
-      fetchData();
+      // No necesitamos fetchData() porque onSnapshot actualiza la lista automáticamente
     } catch (e) {
       console.error(e);
       Swal.fire('Error', 'Error aprobando transacción', 'error');
@@ -87,7 +125,7 @@ export function AdminDashboard({ onLogout }) {
 
       await updateDoc(txRef, { status: 'rejected' });
       Swal.fire('Rechazado', `La solicitud ha sido rechazada ${isWithdrawal ? '(saldo devuelto al jugador)' : ''}`, 'info');
-      fetchData();
+      // No necesitamos fetchData() por onSnapshot
     } catch (e) {
       console.error(e);
       Swal.fire('Error', 'No se pudo rechazar', 'error');
@@ -139,10 +177,38 @@ export function AdminDashboard({ onLogout }) {
           )}
         </div>
 
+        {/* Control de Clima (Eventos) */}
+        <div className="glass-panel" style={{ padding: '2rem' }}>
+          <h3>🌦️ Eventos Globales (Clima)</h3>
+          <p style={{ fontSize: '0.85rem', color: '#aaa', marginBottom: '1.5rem', lineHeight: '1.4' }}>
+            Activa eventos meteorológicos que afectan la producción de TODOS los jugadores en tiempo real.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <button onClick={() => changeWeather('sunny')} style={{ border: 'none', padding: '1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', background: currentWeather === 'sunny' ? '#fcd535' : 'rgba(255,255,255,0.1)', color: currentWeather === 'sunny' ? '#000' : '#fff' }}>
+              ☀️ Soleado (Normal)
+            </button>
+            <button onClick={() => changeWeather('rain')} style={{ border: 'none', padding: '1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', background: currentWeather === 'rain' ? '#3b82f6' : 'rgba(255,255,255,0.1)', color: currentWeather === 'rain' ? '#fff' : '#fff' }}>
+              🌧️ Lluvia (Relentiza x2)
+            </button>
+            <button onClick={() => changeWeather('thunder')} style={{ border: 'none', padding: '1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', background: currentWeather === 'thunder' ? '#4f46e5' : 'rgba(255,255,255,0.1)', color: currentWeather === 'thunder' ? '#fff' : '#fff' }}>
+              ⚡ Tormenta (Relentiza x2)
+            </button>
+            <button onClick={() => changeWeather('snow')} style={{ border: 'none', padding: '1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', background: currentWeather === 'snow' ? '#93c5fd' : 'rgba(255,255,255,0.1)', color: currentWeather === 'snow' ? '#000' : '#fff' }}>
+              ❄️ Nieve (Relentiza x2)
+            </button>
+            <button onClick={() => changeWeather('rainbow')} style={{ border: 'none', padding: '1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', background: currentWeather === 'rainbow' ? '#ec4899' : 'rgba(255,255,255,0.1)', color: currentWeather === 'rainbow' ? '#fff' : '#fff' }}>
+              🌈 Arcoíris (Acelera x0.5)
+            </button>
+            <button onClick={() => changeWeather('stars')} style={{ border: 'none', padding: '1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', background: currentWeather === 'stars' ? '#8b5cf6' : 'rgba(255,255,255,0.1)', color: currentWeather === 'stars' ? '#fff' : '#fff' }}>
+              ✨ Estrellas (Acelera x0.5)
+            </button>
+          </div>
+        </div>
+
         {/* Lista de Usuarios */}
         <div className="glass-panel" style={{ padding: '2rem' }}>
           <h3>👥 Usuarios Registrados</h3>
-          <button onClick={fetchData} style={{ marginTop: '1rem', marginBottom: '1rem', cursor: 'pointer', border: 'none', borderRadius: '8px', background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '0.5rem 1rem' }}>Refrescar</button>
+          <p style={{ marginTop: '0.5rem', marginBottom: '1rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Actualización en tiempo real ⚡</p>
           
           {loading ? <p>Cargando...</p> : (
             <div style={{ maxHeight: '500px', overflowY: 'auto', overflowX: 'auto' }}>
