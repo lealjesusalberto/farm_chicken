@@ -172,8 +172,8 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed,
                 onClick={() => onCollect(chicken.id)}
                 title={chicken.currentEggs > 0 ? "¡Clic para recolectar!" : ""}
               >
-                {isBoosted && <div style={{ position: 'absolute', top: '-15px', left: '50%', transform: 'translateX(-50%)', color: '#4ade80', fontWeight: 'bold', fontSize: '0.8rem', whiteSpace: 'nowrap', textShadow: '0 2px 4px rgba(0,0,0,0.8)', zIndex: 2 }}>✨ 2x BOOST ✨</div>}
-                <img src={currentImg} alt="Gallina" style={{ height: '120px', objectFit: 'contain', filter: isBoosted ? 'drop-shadow(0 0 15px rgba(74,222,128,0.8))' : 'drop-shadow(0 10px 10px rgba(0,0,0,0.6))', transition: 'all 0.3s' }} />
+                {isBoosted && <div style={{ position: 'absolute', top: '-15px', left: '50%', transform: 'translateX(-50%)', color: type.auraColor || '#4ade80', fontWeight: 'bold', fontSize: '0.8rem', whiteSpace: 'nowrap', textShadow: '0 2px 4px rgba(0,0,0,0.8)', zIndex: 2 }}>✨ 2x BOOST ✨</div>}
+                <img src={currentImg} alt="Gallina" style={{ height: '120px', objectFit: 'contain', filter: type.auraColor ? `drop-shadow(0 0 20px ${type.auraColor}99)` : (isBoosted ? 'drop-shadow(0 0 15px rgba(74,222,128,0.8))' : 'drop-shadow(0 10px 10px rgba(0,0,0,0.6))'), transition: 'all 0.3s' }} />
                 
                 {/* Contenedor de huevos */}
                 <div style={{ position: 'absolute', bottom: '-15px', right: '-20px', display: 'flex', gap: '-5px', flexWrap: 'wrap', width: '80px', pointerEvents: 'none' }}>
