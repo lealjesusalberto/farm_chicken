@@ -47,6 +47,34 @@
   background-color: rgba(0, 0, 30, 0.6);
 }
 
+.header-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .game-header {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  .header-right-actions {
+    justify-content: center;
+    width: 100%;
+    gap: 0.5rem;
+  }
+  .hide-on-mobile {
+    display: none !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .weather-text {
+    display: none;
+  }
+}
+
 .weather-stars::before {
   content: "";
   position: absolute;

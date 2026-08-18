@@ -202,12 +202,12 @@ function MainApp({ user }) {
           </div>
         </div>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+        <div className="header-right-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           
           {weather !== 'sunny' && weatherLabels[weather] && (
-            <div className="game-stats-pill animate-float" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: weatherLabels[weather].color, fontSize: '0.85rem', border: `1px solid ${weatherLabels[weather].color}80`, background: 'rgba(0,0,0,0.6)', boxShadow: `0 0 10px ${weatherLabels[weather].color}40` }}>
+            <div className="game-stats-pill animate-float weather-pill" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: weatherLabels[weather].color, fontSize: '0.85rem', border: `1px solid ${weatherLabels[weather].color}80`, background: 'rgba(0,0,0,0.6)', boxShadow: `0 0 10px ${weatherLabels[weather].color}40` }}>
               <span>{weatherLabels[weather].icon}</span>
-              <span style={{ fontWeight: 'bold' }}>{weatherLabels[weather].text}</span>
+              <span className="weather-text" style={{ fontWeight: 'bold' }}>{weatherLabels[weather].text}</span>
             </div>
           )}
 
