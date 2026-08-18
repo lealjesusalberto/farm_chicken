@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CHICKEN_TYPES, calculateEffectiveTime } from '../hooks/useGameEngine';
+import { Info } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed, weatherData }) {
   const [now, setNow] = useState(Date.now());
@@ -173,7 +175,29 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed,
                 title={chicken.currentEggs > 0 ? "¡Clic para recolectar!" : ""}
               >
                 {isBoosted && <div style={{ position: 'absolute', top: '-15px', left: '50%', transform: 'translateX(-50%)', color: type.auraColor || '#4ade80', fontWeight: 'bold', fontSize: '0.8rem', whiteSpace: 'nowrap', textShadow: '0 2px 4px rgba(0,0,0,0.8)', zIndex: 2 }}>✨ 2x BOOST ✨</div>}
-                <img src={currentImg} alt="Gallina" style={{ height: '120px', objectFit: 'contain', filter: type.auraColor ? `drop-shadow(0 0 20px ${type.auraColor}99)` : (isBoosted ? 'drop-shadow(0 0 15px rgba(74,222,128,0.8))' : 'drop-shadow(0 10px 10px rgba(0,0,0,0.6))'), transition: 'all 0.3s' }} />
+                
+                {chicken.isHalfSpecial && <div style={{ position: 'absolute', top: '5px', left: '0', background: 'rgba(255,0,0,0.7)', color: '#fff', fontSize: '0.65rem', padding: '2px 5px', borderRadius: '4px', zIndex: 3, fontWeight: 'bold', border: '1px solid #ff4c4c' }}>CLON {chicken.clonePower || 50}%</div>}
+                
+                {type.isSpecial && (
+                  <button 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      Swal.fire({
+                        title: type.name, 
+                        html: `<b>Habilidad:</b> ${type.description}<br/><br/>${chicken.isHalfSpecial ? `<i>⚠️ Este es un CLON, su poder está al ${chicken.clonePower || 50}%.</i>` : '<i>✨ Leyenda Original, poder al 100%.</i>'}`, 
+                        icon: 'info',
+                        background: '#1e1e1e',
+                        color: '#fff'
+                      }); 
+                    }}
+                    style={{ position: 'absolute', top: '5px', right: '0', background: 'rgba(0,0,0,0.6)', border: '1px solid ' + (type.auraColor || '#ccc'), color: type.auraColor || '#fff', padding: '4px', borderRadius: '50%', cursor: 'pointer', zIndex: 3 }}
+                    title="Ver Habilidad"
+                  >
+                    <Info size={14} />
+                  </button>
+                )}
+                
+                <img src={currentImg} alt="Gallina" style={{ height: '120px', objectFit: 'contain', filter: type.auraColor ? (chicken.isHalfSpecial ? `drop-shadow(0 0 10px ${type.auraColor}66)` : `drop-shadow(0 0 20px ${type.auraColor}99)`) : (isBoosted ? 'drop-shadow(0 0 15px rgba(74,222,128,0.8))' : 'drop-shadow(0 10px 10px rgba(0,0,0,0.6))'), opacity: chicken.isHalfSpecial ? 0.85 : 1, transition: 'all 0.3s' }} />
                 
                 {/* Contenedor de huevos */}
                 <div style={{ position: 'absolute', bottom: '-15px', right: '-20px', display: 'flex', gap: '-5px', flexWrap: 'wrap', width: '80px', pointerEvents: 'none' }}>

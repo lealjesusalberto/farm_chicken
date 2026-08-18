@@ -165,6 +165,12 @@ export function Dashboard({ balance, incomePerDay, onRecharge, onWithdraw, rate,
               style={{ padding: '0.8rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000' }} 
             />
             
+            {Number(withdrawAmount) > 0 && (
+              <p style={{ color: '#4ade80', fontSize: '0.85rem', margin: '-0.5rem 0 0 0' }}>
+                Recibirás: <strong>${(Number(withdrawAmount) * 0.9).toFixed(2)} USDT</strong> <span style={{ color: '#ff4c4c' }}>(10% de comisión)</span>
+              </p>
+            )}
+            
             <input 
               type="text" 
               placeholder="Tu Binance Pay ID o Correo" 
@@ -177,10 +183,24 @@ export function Dashboard({ balance, incomePerDay, onRecharge, onWithdraw, rate,
               const numUsdt = Number(withdrawAmount);
               if (numUsdt < 20) return Swal.fire('Atención', 'El monto mínimo de retiro es de $20 USDT', 'warning');
               if (!binanceId) return Swal.fire('Atención', 'Ingresa tu Binance ID', 'warning');
-              onWithdraw(numUsdt, binanceId);
-              setShowWithdraw(false);
-              setWithdrawAmount('');
-              setBinanceId('');
+              
+              Swal.fire({
+                title: 'Confirmar Retiro',
+                html: `¿Estás seguro que deseas retirar <b>$${numUsdt} USDT</b>?<br/><br/>Recibirás: <b>$${(numUsdt * 0.9).toFixed(2)} USDT</b><br/>(10% de comisión por retiro).`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ff4c4c',
+                cancelButtonColor: '#3b82f6',
+                confirmButtonText: 'Sí, retirar',
+                cancelButtonText: 'Cancelar'
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  onWithdraw(numUsdt, binanceId);
+                  setShowWithdraw(false);
+                  setWithdrawAmount('');
+                  setBinanceId('');
+                }
+              });
             }} style={{ background: '#ff4c4c', color: '#fff', fontWeight: 'bold' }}>
               Solicitar Retiro
             </button>

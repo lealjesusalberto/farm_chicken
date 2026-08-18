@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Dashboard } from './components/Dashboard';
 import { Store } from './components/Store';
 import { Farm } from './components/Farm';
+import { Basket } from './components/Basket';
 import { AdminDashboard } from './components/AdminDashboard';
 import { useGameEngine } from './hooks/useGameEngine';
 import { useExchangeRate } from './hooks/useExchangeRate';
 import { auth, db } from './firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
-import { LogOut, Coins, ShieldCheck, Wallet, ShoppingCart, TrendingUp, Link, Users, Eye, EyeOff, X } from 'lucide-react';
+import { LogOut, Coins, ShieldCheck, Wallet, ShoppingCart, ShoppingBag, TrendingUp, Link, Users, Eye, EyeOff, X } from 'lucide-react';
 import { LandingPage } from './components/LandingPage';
 import './App.css';
 import { collection, setDoc, doc, getCountFromServer, onSnapshot } from 'firebase/firestore';
@@ -128,10 +129,11 @@ function Auth({ initialMode = false, onBack }) {
 function MainApp({ user }) {
   const [weatherData, setWeatherData] = useState({ type: 'sunny', history: [] });
   const weather = weatherData.type || 'sunny';
-  const { balance, userData, chickens, buyChicken, buyMysteryEgg, buyCorn, feedChicken, openMysteryEgg, sellChicken, collectEggs, rechargeBalance, requestWithdrawal, incomePerDay, pendingRecharges } = useGameEngine(user, weatherData);
+  const { balance, userData, chickens, buyChicken, buyMysteryEgg, buyCorn, feedChicken, openMysteryEgg, sellChicken, collectEggs, sellEggs, incubateEggs, addTestEggs, rechargeBalance, requestWithdrawal, incomePerDay, pendingRecharges } = useGameEngine(user, weatherData);
   const { rate, loading: rateLoading } = useExchangeRate();
   const [showStore, setShowStore] = useState(false);
   const [showWallet, setShowWallet] = useState(false);
+  const [showBasket, setShowBasket] = useState(false);
   const [farmingUsers, setFarmingUsers] = useState(89);
 
   useEffect(() => {
@@ -230,9 +232,12 @@ function MainApp({ user }) {
       </main>
 
       {/* Bottom Action Bar */}
-      <footer className="game-bottom-bar">
+      <footer className="game-bottom-bar" style={{ display: 'flex', justifyContent: 'center', gap: '2rem' }}>
         <button className="game-fab" onClick={() => setShowWallet(true)}>
           <Wallet size={24} />
+        </button>
+        <button className="game-fab" onClick={() => setShowBasket(true)} style={{ background: '#f97316', borderColor: '#f97316' }}>
+          <ShoppingBag size={24} />
         </button>
         <button className="game-fab" onClick={() => setShowStore(true)} style={{ background: 'var(--primary-color)', borderColor: 'var(--primary-color)' }}>
           <ShoppingCart size={24} />
@@ -273,6 +278,22 @@ function MainApp({ user }) {
               rate={rate}
               pendingRecharges={pendingRecharges}
             />
+          </div>
+        </div>
+      )}
+
+      {showBasket && (
+        <div className="modal-overlay" onClick={() => setShowBasket(false)} style={{ zIndex: 1000, padding: '1rem' }}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ padding: 0, maxWidth: '900px', width: '100%', height: '100%', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--glass-border)', flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}><ShoppingBag size={24} /> Cesta & Incubadora</h2>
+              <button className="btn-icon" style={{ background: 'rgba(255,0,0,0.2)', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', border: 'none', cursor: 'pointer' }} onClick={() => setShowBasket(false)}>
+                <X size={20} color="#ff4c4c" />
+              </button>
+            </div>
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              <Basket userData={userData} onSellEggs={sellEggs} onIncubateEggs={incubateEggs} onAddTestEggs={addTestEggs} />
+            </div>
           </div>
         </div>
       )}

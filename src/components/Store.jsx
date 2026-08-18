@@ -1,6 +1,7 @@
 import React from 'react';
 import { CHICKEN_TYPES } from '../hooks/useGameEngine';
 import { ShoppingCart, Info } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 export function Store({ balance, onBuy, onBuyMysteryEgg, onBuyCorn, rate }) {
   return (
@@ -97,8 +98,20 @@ export function Store({ balance, onBuy, onBuyMysteryEgg, onBuyCorn, rate }) {
         {CHICKEN_TYPES.filter(c => c.isSpecial).map(chicken => (
           <div key={chicken.id} className="glass-panel store-item" style={{ padding: '1rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', position: 'relative', height: '100%', border: '1px solid rgba(252,213,53,0.3)', background: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(252,213,53,0.05))' }}>
             
-            {/* Info Button Hover */}
-            <div className="info-tooltip" title={`Habilidad Única. Producción base: $${chicken.incomePerEgg} USDT por huevo.`} style={{ position: 'absolute', top: '10px', right: '10px', cursor: 'help', opacity: 0.7 }}>
+            {/* Info Button Clickable */}
+            <div 
+              title="Ver Habilidad" 
+              onClick={() => {
+                Swal.fire({
+                  title: chicken.name, 
+                  html: `<b>Habilidad:</b> ${chicken.description}<br/><br/><i>Al comprar o encubar, puedes obtener la Leyenda Original o un Clon.</i>`, 
+                  icon: 'info',
+                  background: '#1e1e1e',
+                  color: '#fff'
+                });
+              }}
+              style={{ position: 'absolute', top: '10px', right: '10px', cursor: 'pointer', opacity: 0.9, background: 'rgba(0,0,0,0.5)', padding: '5px', borderRadius: '50%', border: '1px solid #fcd535' }}
+            >
               <Info size={16} color="#fcd535" />
             </div>
 
