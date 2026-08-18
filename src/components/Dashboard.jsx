@@ -102,7 +102,7 @@ export function Dashboard({ balance, incomePerDay, onRecharge, onWithdraw, rate,
           <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1.5rem', borderRadius: '8px' }}>
             <h3 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Landmark size={20} /> Datos de Binance Pay</h3>
             <p style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Método: <strong style={{ color: '#fcd535' }}>Binance Pay</strong></p>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Pay ID: <strong style={{ color: 'white' }}>123456789</strong> <span style={{fontSize: '0.8rem'}}>(Ejemplo)</span></p>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Pay ID: <strong style={{ color: 'white' }}>29252891</strong></p>
             <p style={{ color: 'var(--text-muted)' }}>Correo: <strong style={{ color: 'white' }}>admin@farmchicken.com</strong></p>
           </div>
 
