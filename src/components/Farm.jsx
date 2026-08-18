@@ -121,11 +121,26 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed,
           // Lógica de progreso
           const isBoosted = chicken.boostEndTime && now < chicken.boostEndTime;
           
-          let effectiveTimePassed = calculateEffectiveTime(chicken.lastEggTime, now, chicken.boostStartTime, chicken.boostEndTime, weatherData?.history);
+          let effectiveTimePassed = calculateEffectiveTime(chicken.typeId, chicken.lastEggTime, now, chicken.boostStartTime, chicken.boostEndTime, weatherData?.history);
           
           let currentMultiplier = 1;
-          if (weather === 'rain' || weather === 'thunder' || weather === 'snow') currentMultiplier = 0.5;
-          if (weather === 'rainbow' || weather === 'stars') currentMultiplier = 2;
+          
+          // Lógica de UI para el multiplicador actual
+          if (weather === 'rain') {
+            if (chicken.typeId === 's_superman' || chicken.typeId === 's_granjero') currentMultiplier = 1;
+            else currentMultiplier = 0.5;
+          } else if (weather === 'snow') {
+            if (chicken.typeId === 's_medico' || chicken.typeId === 's_granjero') currentMultiplier = 1;
+            else currentMultiplier = 0.5;
+          } else if (weather === 'thunder') {
+            if (chicken.typeId === 's_mago') currentMultiplier = 2;
+            else if (chicken.typeId === 's_granjero') currentMultiplier = 1;
+            else currentMultiplier = 0.5;
+          } else if (weather === 'rainbow' || weather === 'stars') {
+            currentMultiplier = 2;
+          }
+          
+          if (chicken.typeId === 's_chef') currentMultiplier *= 1.5;
           
           const CYCLE_DURATION = 24 * 60 * 60 * 1000;
           const EGG_TIME_5 = type.eggTime * 5;

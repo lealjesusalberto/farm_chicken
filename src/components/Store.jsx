@@ -20,8 +20,8 @@ export function Store({ balance, onBuy, onBuyMysteryEgg, onBuyCorn, rate }) {
             <img src="/img/mystery_egg.png" alt="Huevo Misterioso" style={{ width: '70px', height: '70px', objectFit: 'contain', filter: 'drop-shadow(0 4px 10px rgba(252,213,53,0.4))' }} />
           </div>
           
-          <button className="btn-primary store-btn" style={{ opacity: balance >= 3 ? 1 : 0.4, cursor: balance >= 3 ? 'pointer' : 'not-allowed', background: balance >= 3 ? '#fcd535' : 'rgba(255,255,255,0.1)', color: balance >= 3 ? '#000' : '#fff' }} onClick={onBuyMysteryEgg} disabled={balance < 3}>
-            {balance >= 3 ? 'Comprar por $3' : 'Sin Saldo ($3)'}
+          <button className="btn-primary store-btn" style={{ opacity: balance >= 2 ? 1 : 0.4, cursor: balance >= 2 ? 'pointer' : 'not-allowed', background: balance >= 2 ? '#fcd535' : 'rgba(255,255,255,0.1)', color: balance >= 2 ? '#000' : '#fff' }} onClick={onBuyMysteryEgg} disabled={balance < 2}>
+            {balance >= 2 ? 'Comprar por $2' : 'Sin Saldo ($2)'}
           </button>
         </div>
 
@@ -37,15 +37,15 @@ export function Store({ balance, onBuy, onBuyMysteryEgg, onBuyCorn, rate }) {
             <img src="/img/super_corn.png" alt="Súper Maíz" style={{ width: '70px', height: '70px', objectFit: 'contain', filter: 'drop-shadow(0 4px 10px rgba(74,222,128,0.4))' }} />
           </div>
           
-          <button className="btn-primary store-btn" style={{ opacity: balance >= 5 ? 1 : 0.4, cursor: balance >= 5 ? 'pointer' : 'not-allowed', background: balance >= 5 ? '#4ade80' : 'rgba(255,255,255,0.1)', color: balance >= 5 ? '#000' : '#fff', padding: '0.5rem', fontSize: '0.85rem' }} onClick={onBuyCorn} disabled={balance < 5}>
-            {balance >= 5 ? 'Comprar por $5' : 'Sin Saldo ($5)'}
+          <button className="btn-primary store-btn" style={{ opacity: balance >= 2.5 ? 1 : 0.4, cursor: balance >= 2.5 ? 'pointer' : 'not-allowed', background: balance >= 2.5 ? '#4ade80' : 'rgba(255,255,255,0.1)', color: balance >= 2.5 ? '#000' : '#fff', padding: '0.5rem', fontSize: '0.85rem' }} onClick={onBuyCorn} disabled={balance < 2.5}>
+            {balance >= 2.5 ? 'Comprar por $2.50' : 'Sin Saldo ($2.50)'}
           </button>
         </div>
       </div>
 
-      <h3 style={{ margin: '1rem 0 0.5rem', color: '#fff', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>Gallinas</h3>
+      <h3 style={{ margin: '1rem 0 0.5rem', color: '#fff', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>Gallinas Normales</h3>
       <div className="store-grid">
-        {CHICKEN_TYPES.map(chicken => (
+        {CHICKEN_TYPES.filter(c => !c.isSpecial).map(chicken => (
           <div key={chicken.id} className="glass-panel store-item" style={{ padding: '1rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', position: 'relative', height: '100%' }}>
             
             {/* Info Button Hover */}
@@ -85,7 +85,55 @@ export function Store({ balance, onBuy, onBuyMysteryEgg, onBuyCorn, rate }) {
                 onClick={() => onBuy(chicken.id)}
                 disabled={balance < chicken.price}
               >
-                {balance >= chicken.price ? `Comprar $${chicken.price}` : 'Sin Saldo'}
+                {balance >= chicken.price ? `Comprar $${chicken.price}` : `Sin Saldo ($${chicken.price})`}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <h3 style={{ margin: '2rem 0 0.5rem', color: '#fcd535', borderBottom: '1px solid rgba(252,213,53,0.3)', paddingBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>✨ Gallinas Especiales</h3>
+      <div className="store-grid">
+        {CHICKEN_TYPES.filter(c => c.isSpecial).map(chicken => (
+          <div key={chicken.id} className="glass-panel store-item" style={{ padding: '1rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', position: 'relative', height: '100%', border: '1px solid rgba(252,213,53,0.3)', background: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(252,213,53,0.05))' }}>
+            
+            {/* Info Button Hover */}
+            <div className="info-tooltip" title={`Habilidad Única. Producción base: $${chicken.incomePerEgg} USDT por huevo.`} style={{ position: 'absolute', top: '10px', right: '10px', cursor: 'help', opacity: 0.7 }}>
+              <Info size={16} color="#fcd535" />
+            </div>
+
+            <div>
+              <h3 style={{ fontSize: '1.2rem', marginBottom: '0.2rem', color: '#fcd535' }}>{chicken.name}</h3>
+              <p style={{ color: '#fff', fontSize: '0.75rem', lineHeight: '1.2', margin: 0, minHeight: '30px' }}>
+                {chicken.description}
+              </p>
+            </div>
+            
+            <img src={chicken.img} alt={chicken.name} style={{ height: '90px', objectFit: 'contain', margin: '0.75rem 0', filter: 'drop-shadow(0 4px 8px rgba(252,213,53,0.3))' }} />
+            
+            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
+                <span style={{ color: '#aaa' }}>Base:</span>
+                <span style={{ color: '#4ade80', fontWeight: 'bold' }}>+${((24 / (chicken.eggTime/(60*60*1000))) * chicken.incomePerEgg).toFixed(2)}/día</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem', marginBottom: '0.5rem' }}>
+                <span style={{ color: '#aaa' }}>Retorno:</span>
+                <span style={{ color: '#fcd535' }}>Variable</span>
+              </div>
+              
+              <button 
+                className="btn-primary store-btn" 
+                style={{ 
+                  width: '100%', padding: '0.6rem', fontSize: '0.9rem',
+                  opacity: balance >= chicken.price ? 1 : 0.4, 
+                  cursor: balance >= chicken.price ? 'pointer' : 'not-allowed',
+                  background: balance >= chicken.price ? '#fcd535' : 'rgba(255,255,255,0.1)',
+                  color: balance >= chicken.price ? '#000' : '#fff'
+                }}
+                onClick={() => onBuy(chicken.id)}
+                disabled={balance < chicken.price}
+              >
+                {balance >= chicken.price ? `Comprar $${chicken.price}` : `Sin Saldo ($${chicken.price})`}
               </button>
             </div>
           </div>
