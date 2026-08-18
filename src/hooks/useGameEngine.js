@@ -7,19 +7,19 @@ const EGG_TIME = (23 * 60 * 60 * 1000) / 5; // 4.6 horas por huevo
 const CYCLE_DURATION = 24 * 60 * 60 * 1000; // 24 horas en total
 
 export const CHICKEN_TYPES = [
-  { id: '1', name: 'Blanca', price: 3.50, incomePerEgg: 0.023, img: '/img/chicken_1.png', depletedImg: '/img/chicken_1_1.png', eggImg: '/img/egg_1.png', eggTime: EGG_TIME, description: 'Gallina básica.' },
-  { id: '2', name: 'Turquesa', price: 7.00, incomePerEgg: 0.040, img: '/img/chicken_2.png', depletedImg: '/img/chicken_2_2.png', eggImg: '/img/egg_2.png', eggTime: EGG_TIME, description: 'Un poco mejor.' },
-  { id: '3', name: 'Amarilla', price: 24.50, incomePerEgg: 0.120, img: '/img/chicken_3.png', depletedImg: '/img/chicken_3_3.png', eggImg: '/img/egg_3.png', eggTime: EGG_TIME, description: 'Buena producción.' },
-  { id: '4', name: 'Lila', price: 56.00, incomePerEgg: 0.250, img: '/img/chicken_4.png', depletedImg: '/img/chicken_4_4.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, description: 'Excelente productora.' },
+  { id: '1', name: 'Blanca', price: 1.00, incomePerEgg: 0.005, img: '/img/chicken_1.png', depletedImg: '/img/chicken_1_1.png', eggImg: '/img/egg_1.png', eggTime: EGG_TIME, description: 'Gallina básica.', foodType: 'common', foodBagsRequired: 1 },
+  { id: '2', name: 'Turquesa', price: 3.00, incomePerEgg: 0.017, img: '/img/chicken_2.png', depletedImg: '/img/chicken_2_2.png', eggImg: '/img/egg_2.png', eggTime: EGG_TIME, description: 'Un poco mejor.', foodType: 'common', foodBagsRequired: 1 },
+  { id: '3', name: 'Amarilla', price: 7.00, incomePerEgg: 0.050, img: '/img/chicken_3.png', depletedImg: '/img/chicken_3_3.png', eggImg: '/img/egg_3.png', eggTime: EGG_TIME, description: 'Buena producción.', foodType: 'common', foodBagsRequired: 2 },
+  { id: '4', name: 'Lila', price: 15.00, incomePerEgg: 0.125, img: '/img/chicken_4.png', depletedImg: '/img/chicken_4_4.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, description: 'Excelente productora.', foodType: 'common', foodBagsRequired: 3 },
   // Especiales
-  { id: 's_chef', name: 'Chef', price: 60.00, incomePerEgg: 0.12, img: '/img/specials/pollo_chef.png', depletedImg: '/img/specials/pollo_chef.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Cocina rápido. x1.5 de velocidad pasiva.', auraColor: '#ffffff' },
-  { id: 's_superman', name: 'Superman', price: 48.00, incomePerEgg: 0.15, img: '/img/specials/pollo_superman.png', depletedImg: '/img/specials/pollo_superman.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Inmune a los retrasos por lluvia.', auraColor: '#3b82f6' },
-  { id: 's_medico', name: 'Médico', price: 48.00, incomePerEgg: 0.15, img: '/img/specials/pollo_medico.png', depletedImg: '/img/specials/pollo_medico.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Inmune a los retrasos por nieve.', auraColor: '#ef4444' },
-  { id: 's_mago', name: 'Mago', price: 70.00, incomePerEgg: 0.20, img: '/img/specials/pollo_mago.png', depletedImg: '/img/specials/pollo_mago.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'La tormenta eléctrica duplica su velocidad.', auraColor: '#a855f7' },
-  { id: 's_robin', name: 'Robin Hood', price: 80.00, incomePerEgg: 0.12, img: '/img/specials/pollo_robinhoood.png', depletedImg: '/img/specials/pollo_robinhoood.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Velocidad x2 siempre (Maíz infinito).', auraColor: '#22c55e' },
-  { id: 's_pirata', name: 'Pirata', price: 100.00, incomePerEgg: 0.30, img: '/img/specials/pollo_pirata.png', depletedImg: '/img/specials/pollo_pirata.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Pone tesoros. Sus huevos valen el doble.', auraColor: '#fcd535' },
-  { id: 's_explorador', name: 'Explorador', price: 48.00, incomePerEgg: 0.10, img: '/img/specials/pollo_explorador.png', depletedImg: '/img/specials/pollo_explorador.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Otorga x3 de Experiencia (XP).', auraColor: '#f97316' },
-  { id: 's_granjero', name: 'Granjero', price: 85.00, incomePerEgg: 0.25, img: '/img/specials/pollo_granjero.png', depletedImg: '/img/specials/pollo_granjero.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'El superviviente. Inmune a TODOS los climas.', auraColor: '#8b5cf6' }
+  { id: 's_chef', name: 'Chef', price: 20.00, incomePerEgg: 0.20, img: '/img/specials/pollo_chef.png', depletedImg: '/img/specials/pollo_chef.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Cocina rápido. x1.5 de velocidad pasiva.', auraColor: '#ffffff', foodType: 'special', foodBagsRequired: 2 },
+  { id: 's_superman', name: 'Superman', price: 20.00, incomePerEgg: 0.20, img: '/img/specials/pollo_superman.png', depletedImg: '/img/specials/pollo_superman.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Inmune a los retrasos por lluvia.', auraColor: '#3b82f6', foodType: 'special', foodBagsRequired: 2 },
+  { id: 's_medico', name: 'Médico', price: 20.00, incomePerEgg: 0.20, img: '/img/specials/pollo_medico.png', depletedImg: '/img/specials/pollo_medico.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Inmune a los retrasos por nieve.', auraColor: '#ef4444', foodType: 'special', foodBagsRequired: 2 },
+  { id: 's_mago', name: 'Mago', price: 22.00, incomePerEgg: 0.22, img: '/img/specials/pollo_mago.png', depletedImg: '/img/specials/pollo_mago.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'La tormenta eléctrica duplica su velocidad.', auraColor: '#a855f7', foodType: 'special', foodBagsRequired: 2 },
+  { id: 's_robin', name: 'Robin Hood', price: 20.00, incomePerEgg: 0.15, img: '/img/specials/pollo_robinhoood.png', depletedImg: '/img/specials/pollo_robinhoood.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Velocidad x2 siempre (Maíz infinito).', auraColor: '#22c55e', foodType: 'special', foodBagsRequired: 2 },
+  { id: 's_pirata', name: 'Pirata', price: 25.00, incomePerEgg: 0.25, img: '/img/specials/pollo_pirata.png', depletedImg: '/img/specials/pollo_pirata.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Pone tesoros. Sus huevos valen el doble.', auraColor: '#fcd535', foodType: 'special', foodBagsRequired: 2 },
+  { id: 's_explorador', name: 'Explorador', price: 20.00, incomePerEgg: 0.15, img: '/img/specials/pollo_explorador.png', depletedImg: '/img/specials/pollo_explorador.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Otorga x3 de Experiencia (XP).', auraColor: '#f97316', foodType: 'special', foodBagsRequired: 2 },
+  { id: 's_granjero', name: 'Granjero', price: 25.00, incomePerEgg: 0.25, img: '/img/specials/pollo_granjero.png', depletedImg: '/img/specials/pollo_granjero.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'El superviviente. Inmune a TODOS los climas.', auraColor: '#8b5cf6', foodType: 'special', foodBagsRequired: 2 }
 ];
 
 
@@ -164,7 +164,8 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
       if (docSnap.exists()) {
         const data = docSnap.data();
         setUserData(data);
-        setBalance(typeof data.balance === 'number' && !isNaN(data.balance) ? data.balance : 0);
+        const parsedBalance = parseFloat(data.balance);
+        setBalance(!isNaN(parsedBalance) ? parsedBalance : 0);
         if (!data.email) {
           await updateDoc(userRef, { email: user.email });
         }
@@ -255,37 +256,62 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     Swal.fire('¡Comprado!', 'El huevo se guardó en tu granja (Cestita). Ve allá para abrirlo.', 'success');
   };
 
-  const buyCorn = async () => {
-    if (balance < 2.5) return Swal.fire('Oops...', 'Saldo insuficiente para comprar Súper Maíz ($2.50 USDT)', 'error');
+  const buyFood = async (foodType) => {
+    if (!userData) return;
     
-    const newBalance = balance - 2.5;
-    const newCornCount = (userData?.cornCount || 0) + 1;
+    const price = foodType === 'special' ? 0.25 : 0.10;
+    const name = foodType === 'special' ? 'Saco Especial' : 'Saco de Maíz';
+    const field = foodType === 'special' ? 'specialCornCount' : 'cornCount';
+    
+    if (balance < price) return Swal.fire('Oops...', `Saldo insuficiente para comprar ${name} ($${price.toFixed(2)} USDT)`, 'error');
+    
+    const newBalance = balance - price;
+    const newCount = (userData[field] || 0) + 1;
+    
     setBalance(newBalance);
-    
-    const userRef = doc(db, 'users', user.uid);
-    await updateDoc(userRef, { balance: newBalance, cornCount: newCornCount });
-    
-    Swal.fire('¡Comprado!', 'Súper Maíz añadido a tu inventario en la Granja.', 'success');
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, { balance: newBalance, [field]: newCount });
+      Swal.fire({
+        icon: 'success',
+        title: `¡${name} Comprado!`,
+        text: 'Úsalo para acelerar la producción.',
+        timer: 1500,
+        showConfirmButton: false,
+        background: '#1e293b',
+        color: '#fff'
+      });
+    } catch (error) {
+      console.error("Error buying food:", error);
+    }
   };
 
   const feedChicken = async (chickenId) => {
-    const currentCorn = userData?.cornCount || 0;
-    if (currentCorn <= 0) return;
-
     const chicken = chickens.find(c => c.id === chickenId);
     if (!chicken) return;
     
-    const newCornCount = currentCorn - 1;
-    const userRef = doc(db, 'users', user.uid);
-    await updateDoc(userRef, { cornCount: newCornCount });
+    const typeInfo = CHICKEN_TYPES.find(t => t.id === chicken.typeId);
+    const requiredBags = typeInfo?.foodBagsRequired || 1;
+    const foodType = typeInfo?.foodType || 'common';
+    const field = foodType === 'special' ? 'specialCornCount' : 'cornCount';
+    
+    const currentCorn = userData?.[field] || 0;
 
-    // Boost dura 24 horas
+    if (currentCorn < requiredBags) {
+        return Swal.fire('Error', `Necesitas ${requiredBags} Saco(s) ${foodType === 'special' ? 'Especiales' : 'Comunes'} para alimentar a esta gallina.`, 'error');
+    }
+    
+    const newCornCount = currentCorn - requiredBags;
+    const userRef = doc(db, 'users', user.uid);
+    await updateDoc(userRef, { [field]: newCornCount });
+
+    // Boost dura 12 horas
     const boostStartTime = Date.now();
-    const boostEndTime = boostStartTime + (24 * 60 * 60 * 1000);
+    const boostEndTime = boostStartTime + (12 * 60 * 60 * 1000);
     const chickenRef = doc(db, 'chickens', chickenId);
     await updateDoc(chickenRef, { boostStartTime, boostEndTime });
     
-    Swal.fire('¡Gallina Alimentada!', 'Esta gallina producirá huevos al doble de velocidad por 24 horas.', 'success');
+    Swal.fire('¡Gallina Alimentada!', `Has gastado ${requiredBags} Saco(s). Su producción está acelerada por 12 horas.`, 'success');
   };
 
   const openMysteryEgg = async () => {
@@ -561,5 +587,5 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     }, 0);
   };
 
-  return { balance, userData, chickens, buyChicken, buyMysteryEgg, buyCorn, feedChicken, openMysteryEgg, sellChicken, collectEggs, sellEggs, incubateEggs, addTestEggs, rechargeBalance, requestWithdrawal, incomePerDay: calculateMaxDailyIncome(), pendingRecharges };
+  return { balance, userData, chickens, buyChicken, buyMysteryEgg, buyFood, feedChicken, openMysteryEgg, sellChicken, collectEggs, sellEggs, incubateEggs, addTestEggs, rechargeBalance, requestWithdrawal, incomePerDay: calculateMaxDailyIncome(), pendingRecharges };
 }

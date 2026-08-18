@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CHICKEN_TYPES, calculateEffectiveTime } from '../hooks/useGameEngine';
-import { Info } from 'lucide-react';
+import { Info, Volume2, VolumeX } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed, weatherData }) {
   const [now, setNow] = useState(Date.now());
+  const [isMuted, setIsMuted] = useState(true);
+  const audioRef = useRef(null);
   
   // Lógica de Día y Noche
   const currentHour = new Date(now).getHours();
@@ -17,6 +19,16 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed,
     return () => clearInterval(interval);
   }, []);
 
+  const toggleSound = () => {
+    if (isMuted) {
+      audioRef.current.play().catch(e => console.error("Autoplay prevent"));
+      setIsMuted(false);
+    } else {
+      audioRef.current.pause();
+      setIsMuted(true);
+    }
+  };
+
   if (chickens.length === 0) {
     return (
       <div className="glass-panel" style={{ 
@@ -26,6 +38,14 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed,
         backgroundPosition: 'center',
         boxShadow: 'inset 0 0 0 1000px rgba(0,0,0,0.75)'
       }}>
+        <audio ref={audioRef} src="/img/sound/farm-sound.mp3" loop />
+        
+        <div style={{ position: 'absolute', top: '80px', right: '20px', zIndex: 10 }}>
+          <button onClick={toggleSound} style={{ background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', padding: '10px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
+          </button>
+        </div>
+
         <h2 style={{ color: 'white', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>Tu granja está vacía. ¡Compra gallinas para empezar!</h2>
         
         {/* Top Inventory Bar */}
@@ -74,6 +94,14 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed,
       boxShadow: 'inset 0 0 0 1000px rgba(0,0,0,0.4)',
       padding: '2rem 1rem'
     }}>
+      <audio ref={audioRef} src="/img/sound/farm-sound.mp3" loop />
+      
+      <div style={{ position: 'absolute', top: '80px', right: '20px', zIndex: 10 }}>
+        <button onClick={toggleSound} style={{ background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', padding: '10px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
+        </button>
+      </div>
+
       {/* Weather Overlays */}
       {weather === 'rain' && <div className="weather-overlay weather-rain"></div>}
       {weather === 'thunder' && <div className="weather-overlay weather-thunder"></div>}
@@ -251,14 +279,29 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed,
                   Vender (${(type.price / 2).toFixed(2)})
                 </span>
                 
-                {userData?.cornCount > 0 && !isBoosted && (
-                  <span style={{ 
-                    background: 'rgba(74, 222, 128, 0.1)', color: '#4ade80', border: '1px solid rgba(74, 222, 128, 0.3)',
-                    padding: '4px 12px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 'bold', 
-                    cursor: 'pointer', width: '100%', textAlign: 'center', marginTop: '0.25rem'
-                  }} onClick={() => onFeed(chicken.id)}>
-                    🌽 Alimentar
-                  </span>
+                {!isBoosted && (
+                  (() => {
+                    const foodType = type.foodType || 'common';
+                    const requiredBags = type.foodBagsRequired || 1;
+                    const field = foodType === 'special' ? 'specialCornCount' : 'cornCount';
+                    const userCorn = userData?.[field] || 0;
+                    const canAfford = userCorn >= requiredBags;
+                    const btnColor = foodType === 'special' ? '#a855f7' : '#4ade80';
+                    const bgOp = canAfford ? '0.1' : '0.05';
+                    const icon = foodType === 'special' ? '✨' : '🌽';
+                    
+                    return (
+                      <span style={{ 
+                        background: canAfford ? `${btnColor}1A` : 'rgba(255,255,255,0.05)', 
+                        color: canAfford ? btnColor : '#888', 
+                        border: canAfford ? `1px solid ${btnColor}4D` : '1px solid rgba(255,255,255,0.1)',
+                        padding: '4px 12px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 'bold', 
+                        cursor: 'pointer', width: '100%', textAlign: 'center', marginTop: '0.25rem'
+                      }} onClick={() => onFeed(chicken.id)}>
+                        {icon} Alimentar ({requiredBags} Sacos)
+                      </span>
+                    );
+                  })()
                 )}
               </div>
             </div>

@@ -3,7 +3,7 @@ import { CHICKEN_TYPES } from '../hooks/useGameEngine';
 import { ShoppingCart, Info } from 'lucide-react';
 import Swal from 'sweetalert2';
 
-export function Store({ balance, onBuy, onBuyMysteryEgg, onBuyCorn, rate }) {
+export function Store({ balance, onBuy, onBuyMysteryEgg, onBuyFood, rate }) {
   return (
     <div style={{ padding: '1rem' }}>
       
@@ -26,20 +26,65 @@ export function Store({ balance, onBuy, onBuyMysteryEgg, onBuyCorn, rate }) {
           </button>
         </div>
 
-        {/* Super Corn Section */}
+        {/* Saco de Maíz Común Section */}
         <div className="glass-panel store-item" style={{ padding: '1rem', textAlign: 'center', background: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(74,222,128,0.15))', border: '1px solid rgba(74,222,128,0.4)', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: '-10px', left: '-10px', width: '60px', height: '60px', background: '#4ade80', filter: 'blur(30px)', opacity: 0.4 }}></div>
-          <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', color: '#4ade80', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>🌽 Súper Maíz</h3>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '0.5rem', fontSize: '0.8rem', maxWidth: '300px', margin: '0 auto 0.5rem auto', lineHeight: '1.2' }}>
-            Multiplica velocidad 2x por 24 horas.
+          <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', color: '#4ade80', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>🌽 Saco Común</h3>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '0.5rem', fontSize: '0.8rem', maxWidth: '300px', margin: '0 auto 1rem auto', lineHeight: '1.2', minHeight: '40px' }}>
+            Acelera la producción (+50%) por 12h. Exclusivo para gallinas normales.
           </p>
           
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
-            <img src="/img/super_corn.png" alt="Súper Maíz" style={{ width: '70px', height: '70px', objectFit: 'contain', filter: 'drop-shadow(0 4px 10px rgba(74,222,128,0.4))' }} />
+            <img src="/img/super_corn.png" alt="Saco Común" style={{ width: '70px', height: '70px', objectFit: 'contain', filter: 'drop-shadow(0 4px 10px rgba(74,222,128,0.4))' }} />
           </div>
           
-          <button className="btn-primary store-btn" style={{ opacity: balance >= 2.5 ? 1 : 0.4, cursor: balance >= 2.5 ? 'pointer' : 'not-allowed', background: balance >= 2.5 ? '#4ade80' : 'rgba(255,255,255,0.1)', color: balance >= 2.5 ? '#000' : '#fff', padding: '0.5rem', fontSize: '0.85rem' }} onClick={onBuyCorn} disabled={balance < 2.5}>
-            {balance >= 2.5 ? 'Comprar por $2.50' : 'Sin Saldo ($2.50)'}
+          <div style={{ fontSize: '1.4rem', fontWeight: 'bold', marginBottom: '1rem', color: '#fcd535' }}>
+            $0.10
+          </div>
+          
+          <button 
+            className="btn-primary store-btn" 
+            style={{ 
+              opacity: balance >= 0.1 ? 1 : 0.4, 
+              cursor: balance >= 0.1 ? 'pointer' : 'not-allowed', 
+              background: balance >= 0.1 ? '#4ade80' : 'rgba(255,255,255,0.1)', 
+              color: balance >= 0.1 ? '#000' : '#fff' 
+            }} 
+            onClick={() => onBuyFood('common')} 
+            disabled={balance < 0.1}
+          >
+            {balance >= 0.1 ? 'Comprar 1 Saco' : 'Sin Saldo ($0.10)'}
+          </button>
+        </div>
+
+        {/* Saco de Maíz Especial Section */}
+        <div className="glass-panel store-item" style={{ padding: '1rem', textAlign: 'center', background: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(168,85,247,0.15))', border: '1px solid rgba(168,85,247,0.4)', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: '-10px', left: '-10px', width: '60px', height: '60px', background: '#a855f7', filter: 'blur(30px)', opacity: 0.4 }}></div>
+          <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', color: '#a855f7', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>✨ Saco Especial</h3>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '0.5rem', fontSize: '0.8rem', maxWidth: '300px', margin: '0 auto 1rem auto', lineHeight: '1.2', minHeight: '40px' }}>
+            Acelera la producción (+50%) por 12h. Exclusivo para gallinas Especiales.
+          </p>
+          
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
+            <img src="/img/premium_corn.png" alt="Saco Especial" style={{ width: '70px', height: '70px', objectFit: 'contain', filter: 'drop-shadow(0 4px 10px rgba(168,85,247,0.4))' }} />
+          </div>
+          
+          <div style={{ fontSize: '1.4rem', fontWeight: 'bold', marginBottom: '1rem', color: '#fcd535' }}>
+            $0.25
+          </div>
+          
+          <button 
+            className="btn-primary store-btn" 
+            style={{ 
+              opacity: balance >= 0.25 ? 1 : 0.4, 
+              cursor: balance >= 0.25 ? 'pointer' : 'not-allowed', 
+              background: balance >= 0.25 ? '#a855f7' : 'rgba(255,255,255,0.1)', 
+              color: balance >= 0.25 ? '#fff' : '#fff' 
+            }} 
+            onClick={() => onBuyFood('special')} 
+            disabled={balance < 0.25}
+          >
+            {balance >= 0.25 ? 'Comprar 1 Saco' : 'Sin Saldo ($0.25)'}
           </button>
         </div>
       </div>

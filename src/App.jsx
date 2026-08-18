@@ -129,7 +129,7 @@ function Auth({ initialMode = false, onBack }) {
 function MainApp({ user }) {
   const [weatherData, setWeatherData] = useState({ type: 'sunny', history: [] });
   const weather = weatherData.type || 'sunny';
-  const { balance, userData, chickens, buyChicken, buyMysteryEgg, buyCorn, feedChicken, openMysteryEgg, sellChicken, collectEggs, sellEggs, incubateEggs, addTestEggs, rechargeBalance, requestWithdrawal, incomePerDay, pendingRecharges } = useGameEngine(user, weatherData);
+  const { balance, userData, chickens, buyChicken, buyMysteryEgg, buyFood, feedChicken, openMysteryEgg, sellChicken, collectEggs, sellEggs, incubateEggs, addTestEggs, rechargeBalance, requestWithdrawal, incomePerDay, pendingRecharges } = useGameEngine(user, weatherData);
   const { rate, loading: rateLoading } = useExchangeRate();
   const [showStore, setShowStore] = useState(false);
   const [showWallet, setShowWallet] = useState(false);
@@ -255,7 +255,7 @@ function MainApp({ user }) {
               </button>
             </div>
             <div style={{ flex: 1, overflowY: 'auto' }}>
-              <Store balance={balance} onBuy={buyChicken} onBuyMysteryEgg={buyMysteryEgg} onBuyCorn={buyCorn} rate={rate} />
+              <Store balance={balance} onBuy={buyChicken} onBuyMysteryEgg={buyMysteryEgg} onBuyFood={buyFood} rate={rate} />
             </div>
           </div>
         </div>
