@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { CHICKEN_TYPES, calculateEffectiveTime } from '../hooks/useGameEngine';
-import { Info, Volume2, VolumeX, Backpack } from 'lucide-react';
+import { Info, Volume2, VolumeX, Backpack, Flame, Sparkles } from 'lucide-react';
 import Swal from 'sweetalert2';
 
-export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed, onScareFox, weatherData }) {
+export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEgg, onSell, onFeed, onScareFox, weatherData }) {
   const [now, setNow] = useState(Date.now());
   const [isMuted, setIsMuted] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
+  const [isIncubating, setIsIncubating] = useState(false);
   const [particles, setParticles] = useState([]);
   const audioRef = useRef(null);
   
@@ -57,6 +58,32 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed,
     }
   };
 
+  const handleStarterEggClick = async () => {
+    try {
+      setIsIncubating(true);
+      const result = await onOpenStarterEgg();
+      if (!result.success) throw new Error(result.error);
+      
+      setTimeout(() => {
+        setIsIncubating(false);
+        Swal.fire({
+          title: '¡Huevo Abierto!',
+          text: `¡Felicidades! Has obtenido una Gallina ${result.wonType.name} Inicial (Poder al ${result.clonePower}%).`,
+          imageUrl: result.wonType.img,
+          imageWidth: 150,
+          imageHeight: 150,
+          imageAlt: 'Gallina ganada',
+          confirmButtonText: '¡A Producir!',
+          background: '#1e1e1e',
+          color: '#fff'
+        });
+      }, 3500);
+    } catch (e) {
+      setIsIncubating(false);
+      Swal.fire('Oops...', e.message, 'error');
+    }
+  };
+
   if (chickens.length === 0) {
     return (
       <div className="glass-panel" style={{ 
@@ -64,8 +91,55 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed,
         backgroundImage: `url(${currentBg})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        boxShadow: 'inset 0 0 0 1000px rgba(0,0,0,0.75)'
+        boxShadow: 'inset 0 0 0 1000px rgba(0,0,0,0.75)',
+        position: 'relative',
+        minHeight: '100vh'
       }}>
+        {/* OVERLAY DE ANIMACIÓN DE INCUBADORA */}
+        {isIncubating && (
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.95)', zIndex: 9999, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
+            
+            <div className="incubator-egg-container" style={{ position: 'relative' }}>
+              <img src="/img/egg_4.png" alt="Huevo Incubando" className="egg-shake-glow" style={{ width: '150px', height: '150px', objectFit: 'contain' }} />
+              
+              <div className="light-beam beam-1"></div>
+              <div className="light-beam beam-2"></div>
+              <div className="light-beam beam-3"></div>
+            </div>
+            
+            <h2 style={{ color: '#f97316', marginTop: '2rem', animation: 'pulse 1s infinite', textShadow: '0 0 10px #f97316' }}>
+              Transmutando ADN...
+            </h2>
+            
+            <style>{`
+              .egg-shake-glow { animation: shake-glow 3.5s cubic-bezier(.36,.07,.19,.97) both; }
+              @keyframes shake-glow {
+                0% { transform: scale(1) translate3d(0, 0, 0); filter: drop-shadow(0 0 5px #f97316); }
+                10%, 90% { transform: scale(1.1) translate3d(-2px, 0, 0); filter: drop-shadow(0 0 10px #f97316); }
+                20%, 80% { transform: scale(1.15) translate3d(2px, 0, 0); filter: drop-shadow(0 0 20px #f97316); }
+                30%, 50%, 70% { transform: scale(1.2) translate3d(-4px, 0, 0); filter: drop-shadow(0 0 40px #ff0000); }
+                40%, 60% { transform: scale(1.25) translate3d(4px, 0, 0); filter: drop-shadow(0 0 60px #ff0000) brightness(1.5); }
+                95% { transform: scale(1.5); filter: drop-shadow(0 0 100px #fff) brightness(3); opacity: 1; }
+                100% { transform: scale(2); filter: drop-shadow(0 0 200px #fff) brightness(10); opacity: 0; }
+              }
+              .light-beam {
+                position: absolute; top: 50%; left: 50%; width: 4px; height: 200px;
+                background: linear-gradient(to top, transparent, #fff, transparent);
+                transform-origin: center; opacity: 0;
+                animation: beam-spin 2s ease-in-out infinite alternate;
+              }
+              .beam-1 { transform: translate(-50%, -50%) rotate(0deg); animation-delay: 1s; }
+              .beam-2 { transform: translate(-50%, -50%) rotate(60deg); animation-delay: 1.5s; }
+              .beam-3 { transform: translate(-50%, -50%) rotate(-60deg); animation-delay: 2s; }
+              
+              @keyframes beam-spin {
+                0% { height: 0px; opacity: 0; filter: blur(2px); }
+                50% { height: 300px; opacity: 0.8; filter: blur(5px); }
+                100% { height: 500px; opacity: 1; filter: blur(8px); }
+              }
+            `}</style>
+          </div>
+        )}
         <audio ref={audioRef} src="/img/sound/farm-sound.mp3" loop />
         
         <div style={{ position: 'absolute', top: '80px', right: '20px', zIndex: 10 }}>
@@ -76,6 +150,28 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed,
 
         <h2 style={{ color: 'white', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>Tu granja está vacía. ¡Compra gallinas para empezar!</h2>
         
+        {userData?.freeStarterEgg > 0 && (
+          <div style={{ background: 'linear-gradient(135deg, rgba(168,85,247,0.2), rgba(168,85,247,0.05))', border: '1px solid rgba(168,85,247,0.5)', padding: '1.5rem', borderRadius: '12px', margin: '2rem auto', maxWidth: '600px', display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap', backdropFilter: 'blur(10px)' }}>
+            <img src="/img/egg_4.png" alt="Huevo de Bienvenida" style={{ width: '80px', height: '80px', objectFit: 'contain', filter: 'drop-shadow(0 0 15px rgba(168,85,247,0.8))' }} />
+            <div style={{ flex: 1, textAlign: 'left' }}>
+              <h3 style={{ color: '#d8b4fe', margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Sparkles size={20} /> Huevo de Bienvenida ¡GRATIS!
+              </h3>
+              <p style={{ color: '#fff', fontSize: '0.9rem', lineHeight: '1.5', margin: 0 }}>
+                Tienes <strong>{userData.freeStarterEgg}</strong> Huevo(s) de Bienvenida disponibles. Ábrelo ahora para obtener tu primera gallina y comenzar a farmear.
+              </p>
+            </div>
+            <button 
+              className="btn-primary" 
+              style={{ background: 'linear-gradient(90deg, #a855f7, #c084fc)', padding: '0.8rem 1.5rem', fontSize: '1.1rem', fontWeight: 'bold', margin: '0 auto' }}
+              onClick={handleStarterEggClick}
+            >
+              <Flame size={18} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
+              Abrir Huevo
+            </button>
+          </div>
+        )}
+
         {/* Top Inventory Bar */}
         {(userData?.mysteryEggs > 0 || userData?.cornCount > 0 || userData?.specialCornCount > 0) && (
           <div className="inventory-widget">
@@ -157,6 +253,7 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed,
       {weather === 'snow' && <div className="weather-overlay weather-snow"></div>}
       {weather === 'rainbow' && <div className="weather-overlay weather-rainbow"></div>}
       {weather === 'stars' && <div className="weather-overlay weather-stars"></div>}
+      {weather === 'bugs' && <div className="weather-overlay weather-bugs"></div>}
 
       {(userData?.mysteryEggs > 0 || userData?.cornCount > 0 || userData?.specialCornCount > 0) && (
         <div className="inventory-widget">
@@ -240,7 +337,20 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed,
             else currentMultiplier = 0.5;
           } else if (weather === 'rainbow' || weather === 'stars') {
             currentMultiplier = 2;
+          } else if (weather === 'bugs') {
+            currentMultiplier = 1.2;
           }
+          
+          const weatherColors = {
+            rain: '#93c5fd',
+            snow: '#bfdbfe',
+            thunder: '#a78bfa',
+            rainbow: '#fbcfe8',
+            stars: '#fef08a',
+            bugs: '#a3e635'
+          };
+          
+          const weatherMultiplierOnly = currentMultiplier;
           
           if (chicken.typeId === 's_chef') currentMultiplier *= 1.5;
           
@@ -277,7 +387,21 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed,
               >
                 {isBoosted && <div style={{ position: 'absolute', top: '-15px', left: '50%', transform: 'translateX(-50%)', color: type.auraColor || '#4ade80', fontWeight: 'bold', fontSize: '0.8rem', whiteSpace: 'nowrap', textShadow: '0 2px 4px rgba(0,0,0,0.8)', zIndex: 2 }}>{type.foodType === 'special' ? '✨ 2x BOOST ✨' : '⚡ +50% Vel'}</div>}
                 
-                {chicken.isHalfSpecial && <div style={{ position: 'absolute', top: '5px', left: '0', background: 'rgba(255,0,0,0.7)', color: '#fff', fontSize: '0.65rem', padding: '2px 5px', borderRadius: '4px', zIndex: 3, fontWeight: 'bold', border: '1px solid #ff4c4c' }}>CLON {chicken.clonePower || 50}%</div>}
+                {chicken.isHalfSpecial && !chicken.isStarter && <div style={{ position: 'absolute', top: '5px', left: '0', background: 'rgba(255,0,0,0.7)', color: '#fff', fontSize: '0.65rem', padding: '2px 5px', borderRadius: '4px', zIndex: 3, fontWeight: 'bold', border: '1px solid #ff4c4c' }}>CLON {chicken.clonePower || 50}%</div>}
+                
+                {chicken.isStarter && <div style={{ position: 'absolute', top: '5px', left: '0', background: 'rgba(168, 85, 247, 0.8)', color: '#fff', fontSize: '0.65rem', padding: '2px 5px', borderRadius: '4px', zIndex: 3, fontWeight: 'bold', border: '1px solid #d8b4fe' }}>GRATIS {chicken.clonePower || 60}%</div>}
+                
+                {weather !== 'sunny' && weatherMultiplierOnly > 1 && (
+                  <div className="floating-multiplier positive" style={{ color: weatherColors[weather] || '#4ade80' }}>
+                    +{Math.round((weatherMultiplierOnly - 1) * 100)}% Vel
+                  </div>
+                )}
+                
+                {weather !== 'sunny' && weatherMultiplierOnly < 1 && (
+                  <div className="floating-multiplier negative" style={{ color: weatherColors[weather] || '#ff4c4c' }}>
+                    -{Math.round((1 - weatherMultiplierOnly) * 100)}% Vel
+                  </div>
+                )}
                 
                 {type.isSpecial && (
                   <button 
@@ -310,7 +434,7 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed,
                   </button>
                 )}
                 
-                <img src={currentImg} alt="Gallina" style={{ height: '120px', objectFit: 'contain', filter: type.auraColor ? (chicken.isHalfSpecial ? `drop-shadow(0 0 10px ${type.auraColor}66)` : `drop-shadow(0 0 20px ${type.auraColor}99)`) : (isBoosted ? 'drop-shadow(0 0 15px rgba(74,222,128,0.8))' : 'drop-shadow(0 10px 10px rgba(0,0,0,0.6))'), opacity: chicken.isHalfSpecial ? 0.85 : 1, transition: 'all 0.3s' }} />
+                <img src={currentImg} alt="Gallina" style={{ height: '120px', objectFit: 'contain', filter: type.auraColor ? (chicken.isHalfSpecial ? `drop-shadow(0 0 10px ${type.auraColor}66)` : `drop-shadow(0 0 20px ${type.auraColor}99)`) : (isBoosted ? 'drop-shadow(0 0 15px rgba(74,222,128,0.8))' : 'drop-shadow(0 10px 10px rgba(0,0,0,0.6))'), opacity: (chicken.isHalfSpecial || chicken.isStarter) ? 0.85 : 1, transition: 'all 0.3s' }} />
                 
                 {chicken.hasFox && (
                   <div style={{ position: 'absolute', top: '10px', left: '-20px', zIndex: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

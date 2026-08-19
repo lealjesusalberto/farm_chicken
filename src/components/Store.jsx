@@ -5,12 +5,14 @@ import Swal from 'sweetalert2';
 
 export function Store({ balance, eggBalance, onBuy, onBuyMysteryEgg, onBuyFood, exchangeUsdtToEggs, exchangeEggsToUsdt, rate, oracleRate = 100 }) {
   const [exchangeAmount, setExchangeAmount] = useState('');
+  const [operationMode, setOperationMode] = useState(null);
   
   const handleExchangeUsdt = () => {
     const amt = parseFloat(exchangeAmount);
     if (isNaN(amt) || amt <= 0) return Swal.fire('Error', 'Monto inválido', 'error');
     exchangeUsdtToEggs(amt);
     setExchangeAmount('');
+    setOperationMode(null);
   };
 
   const handleExchangeEggs = () => {
@@ -18,6 +20,7 @@ export function Store({ balance, eggBalance, onBuy, onBuyMysteryEgg, onBuyFood, 
     if (isNaN(amt) || amt <= 0) return Swal.fire('Error', 'Monto inválido', 'error');
     exchangeEggsToUsdt(amt);
     setExchangeAmount('');
+    setOperationMode(null);
   };
 
   return (
@@ -29,23 +32,78 @@ export function Store({ balance, eggBalance, onBuy, onBuyMysteryEgg, onBuyFood, 
           <ArrowRightLeft /> El Oráculo (Casa de Cambio)
         </h3>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>
-          Tasa de Cambio Actual: <strong style={{ color: '#fff' }}>1 USDT = {oracleRate} Huevos</strong>
+          Tasa de Cambio Actual: <strong style={{ color: '#fff' }}>1 CKF = {oracleRate} Huevos</strong> <span style={{fontSize: '0.8rem', color: '#aaa'}}>(1 CKF = 1 USDT)</span>
         </p>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          <input 
-            type="number" 
-            placeholder="Monto..." 
-            value={exchangeAmount} 
-            onChange={(e) => setExchangeAmount(e.target.value)}
-            style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: '#fff', flex: 1, minWidth: '150px' }}
-          />
-          <button className="btn-primary" onClick={handleExchangeUsdt} style={{ padding: '0.8rem', flex: 1, minWidth: '150px' }}>
-            Comprar Huevos (Pagar USDT)
-          </button>
-          <button className="btn-primary" onClick={handleExchangeEggs} style={{ padding: '0.8rem', flex: 1, minWidth: '150px', background: '#fbbf24', color: '#000' }}>
-            Retirar USDT (Vender Huevos)
-          </button>
-        </div>
+        
+        {!operationMode ? (
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+            <button className="btn-primary" onClick={() => setOperationMode('buyEggs')} style={{ flex: 1, minWidth: '150px', padding: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', transition: 'transform 0.2s' }}>
+               <span style={{ fontSize: '1.1rem' }}>🛒 Comprar Huevos</span>
+               <span style={{ fontSize: '0.8rem', opacity: 0.8 }}>(Pagar con CKF)</span>
+            </button>
+            <button className="btn-primary" onClick={() => setOperationMode('sellEggs')} style={{ flex: 1, minWidth: '150px', padding: '1rem', background: '#fbbf24', color: '#000', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', transition: 'transform 0.2s' }}>
+               <span style={{ fontSize: '1.1rem' }}>💰 Retirar CKF</span>
+               <span style={{ fontSize: '0.8rem', opacity: 0.8 }}>(Vender Huevos)</span>
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', animation: 'fadeIn 0.3s ease' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
+              <h4 style={{ margin: 0, color: operationMode === 'buyEggs' ? '#fcd535' : '#4ade80', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                {operationMode === 'buyEggs' ? '🛒 Comprando Huevos' : '💰 Vendiendo Huevos'}
+              </h4>
+              <button onClick={() => { setOperationMode(null); setExchangeAmount(''); }} style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', textDecoration: 'underline', fontSize: '0.85rem' }}>
+                Volver a opciones
+              </button>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label style={{ fontSize: '0.9rem', color: '#ccc' }}>
+                {operationMode === 'buyEggs' ? 'Monto a pagar en CKF:' : 'Monto a vender en Huevos:'}
+              </label>
+              <input 
+                type="number" 
+                placeholder="Ingresa el monto..." 
+                value={exchangeAmount} 
+                onChange={(e) => setExchangeAmount(e.target.value)}
+                style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.3)', color: '#fff', width: '100%', fontSize: '1.1rem' }}
+                autoFocus
+              />
+              
+              {exchangeAmount > 0 && (
+                <div style={{ padding: '1rem', background: 'rgba(0,0,0,0.4)', borderRadius: '8px', borderLeft: `4px solid ${operationMode === 'buyEggs' ? '#fcd535' : '#4ade80'}`, marginTop: '0.5rem', animation: 'slideDown 0.3s ease' }}>
+                  <span style={{ fontSize: '0.9rem', color: '#fff', display: 'block', marginBottom: '0.2rem' }}>
+                    Recibirás en tu cuenta:
+                  </span>
+                  <strong style={{ fontSize: '1.4rem', color: operationMode === 'buyEggs' ? '#fcd535' : '#4ade80' }}>
+                    {operationMode === 'buyEggs' 
+                      ? `${(parseFloat(exchangeAmount) * oracleRate).toLocaleString('en-US')} 🥚 Huevos` 
+                      : `${(parseFloat(exchangeAmount) / oracleRate).toFixed(2)} CKF`}
+                  </strong>
+                </div>
+              )}
+            </div>
+            
+            <button 
+              className="btn-primary" 
+              onClick={operationMode === 'buyEggs' ? handleExchangeUsdt : handleExchangeEggs} 
+              style={{ 
+                padding: '0.8rem', 
+                background: operationMode === 'buyEggs' ? 'var(--primary-color)' : '#fbbf24', 
+                color: operationMode === 'buyEggs' ? '#fff' : '#000', 
+                width: '100%', 
+                marginTop: '0.5rem', 
+                opacity: exchangeAmount > 0 ? 1 : 0.5,
+                cursor: exchangeAmount > 0 ? 'pointer' : 'not-allowed',
+                fontWeight: 'bold',
+                fontSize: '1.1rem'
+              }}
+              disabled={!exchangeAmount || exchangeAmount <= 0}
+            >
+              Confirmar Operación
+            </button>
+          </div>
+        )}
       </div>
 
       <h3 style={{ margin: '1rem 0 0.5rem', color: '#fff', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>Consumibles Especiales</h3>

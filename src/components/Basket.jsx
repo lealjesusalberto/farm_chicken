@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
 import { CHICKEN_TYPES } from '../hooks/useGameEngine';
-import { ShoppingBag, Flame, Info, Sparkles } from 'lucide-react';
+import { Flame, Info, Sparkles } from 'lucide-react';
 import Swal from 'sweetalert2';
 
-export function Basket({ userData, onSellEggs, onIncubateEggs, onAddTestEggs }) {
-  const [activeTab, setActiveTab] = useState('cesta');
+export function Basket({ userData, onIncubateEggs }) {
   const [isIncubating, setIsIncubating] = useState(false);
   const [incubatingType, setIncubatingType] = useState(null);
-  
-  const eggInventory = userData?.eggInventory || {};
   
   // Costos de incubación (Opción B: Difícil/Realista)
   const costMap = {
@@ -107,91 +104,15 @@ export function Basket({ userData, onSellEggs, onIncubateEggs, onAddTestEggs }) 
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: '1rem', padding: '1.5rem 1.5rem 0', borderBottom: '1px solid var(--glass-border)', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-          <button 
-            onClick={() => setActiveTab('cesta')}
-          style={{ 
-            background: 'none', border: 'none', padding: '1rem', cursor: 'pointer', fontSize: '1rem', fontWeight: 'bold',
-            color: activeTab === 'cesta' ? 'var(--primary-color)' : '#fff',
-            borderBottom: activeTab === 'cesta' ? '3px solid var(--primary-color)' : '3px solid transparent'
-          }}
-        >
-          <ShoppingBag size={18} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-          Mi Cesta
-        </button>
-        <button 
-          onClick={() => setActiveTab('incubadora')}
-          style={{ 
-            background: 'none', border: 'none', padding: '1rem', cursor: 'pointer', fontSize: '1rem', fontWeight: 'bold',
-            color: activeTab === 'incubadora' ? '#f97316' : '#fff',
-            borderBottom: activeTab === 'incubadora' ? '3px solid #f97316' : '3px solid transparent'
-          }}
-        >
-          <Flame size={18} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-          Incubadora
-        </button>
-        </div>
-        <button 
-          onClick={onAddTestEggs}
-          style={{ background: 'rgba(74, 222, 128, 0.2)', color: '#4ade80', border: '1px solid #4ade80', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 'bold', width: 'fit-content' }}
-        >
-          <Sparkles size={16} /> Llenar Gallinas (Cheat)
-        </button>
+      <div style={{ display: 'flex', gap: '1rem', padding: '1.5rem 1.5rem 0', borderBottom: '1px solid var(--glass-border)', justifyContent: 'center', alignItems: 'center' }}>
+        <h2 style={{ margin: 0, paddingBottom: '1rem', color: '#f97316', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Flame size={24} /> Incubadora Mística
+        </h2>
       </div>
 
       <div style={{ padding: '1.5rem', flex: 1, overflowY: 'auto' }}>
-        {activeTab === 'cesta' ? (
-          <div>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
-              Aquí están todos los huevos que has recolectado de tu granja. Véndelos para obtener USDT y comprar mejores gallinas.
-            </p>
-            
-            {Object.keys(eggInventory).filter(k => eggInventory[k] > 0).length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '3rem 1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '12px' }}>
-                <ShoppingBag size={48} color="#666" style={{ marginBottom: '1rem' }} />
-                <h3>Tu cesta está vacía</h3>
-                <p style={{ color: 'var(--text-muted)' }}>Ve a la granja y recolecta huevos para verlos aquí.</p>
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1rem' }}>
-                {Object.entries(eggInventory).map(([typeId, count]) => {
-                  if (count <= 0) return null;
-                  const type = CHICKEN_TYPES.find(t => t.id === typeId);
-                  if (!type) return null;
-                  
-                  return (
-                    <div key={typeId} className="glass-panel" style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                      <div style={{ position: 'relative' }}>
-                        <img src={type.eggImg || '/img/egg_1.png'} alt="Huevo" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
-                        <div style={{ position: 'absolute', bottom: '-5px', right: '-5px', background: 'var(--primary-color)', color: '#000', fontWeight: 'bold', padding: '2px 6px', borderRadius: '10px', fontSize: '0.8rem' }}>
-                          x{count}
-                        </div>
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <h4 style={{ margin: 0 }}>Huevo de {type.name}</h4>
-                        <div style={{ color: '#4ade80', fontSize: '0.85rem', marginTop: '0.2rem' }}>
-                          Valor unitario: ${type.incomePerEgg.toFixed(3)}
-                        </div>
-                        <div style={{ color: '#fff', fontSize: '0.9rem', fontWeight: 'bold', marginTop: '0.5rem' }}>
-                          Total: ${(count * type.incomePerEgg).toFixed(2)} USDT
-                        </div>
-                      </div>
-                      <button 
-                        className="btn-primary" 
-                        style={{ padding: '0.5rem 1rem', background: '#3b82f6', border: 'none', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}
-                        onClick={() => onSellEggs(typeId, count)}
-                      >
-                        Vender
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        ) : (
-          <div>
+        <div>
+
             <div style={{ background: 'linear-gradient(135deg, rgba(249,115,22,0.1), rgba(255,0,0,0.1))', border: '1px solid rgba(249,115,22,0.3)', padding: '1.5rem', borderRadius: '12px', marginBottom: '2rem' }}>
               <h3 style={{ color: '#f97316', margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Info size={20} /> Guía de Incubación Mística
@@ -202,47 +123,43 @@ export function Basket({ userData, onSellEggs, onIncubateEggs, onAddTestEggs }) 
               </p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1rem' }}>
-              {CHICKEN_TYPES.filter(c => !c.isSpecial).map(type => {
-                const cost = costMap[type.id] || 20;
-                const haveCount = eggInventory[type.id] || 0;
-                const canAfford = haveCount >= cost;
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center', border: (userData?.eggBalance || 0) >= 1000 ? '1px solid rgba(249,115,22,0.5)' : '1px solid rgba(255,255,255,0.1)', maxWidth: '400px', width: '100%' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+                  <img src="/img/mystery_egg.png" alt="Incubadora Mística" style={{ width: '120px', height: '120px', objectFit: 'contain', filter: 'drop-shadow(0 4px 15px rgba(249,115,22,0.5))' }} />
+                </div>
+                <h3 style={{ margin: '0 0 1rem 0', color: '#fff', fontSize: '1.5rem' }}>Incubación Élite</h3>
                 
-                return (
-                  <div key={type.id} className="glass-panel" style={{ padding: '1.5rem', textAlign: 'center', border: canAfford ? '1px solid rgba(249,115,22,0.5)' : '1px solid rgba(255,255,255,0.1)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-                      <img src={type.eggImg || '/img/egg_1.png'} alt="Huevo" style={{ width: '80px', height: '80px', objectFit: 'contain', filter: 'drop-shadow(0 4px 10px rgba(249,115,22,0.3))' }} />
-                    </div>
-                    <h4 style={{ margin: '0 0 0.5rem 0', color: '#fff' }}>Huevos de {type.name}</h4>
-                    
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
-                      <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: canAfford ? '#4ade80' : '#ff4c4c' }}>{haveCount}</span>
-                      <span style={{ color: '#888' }}>/</span>
-                      <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#fff' }}>{cost} req.</span>
-                    </div>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '12px' }}>
+                  <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: (userData?.eggBalance || 0) >= 1000 ? '#fcd535' : '#ff4c4c' }}>
+                    {Math.floor(userData?.eggBalance || 0)}
+                  </span>
+                  <span style={{ color: '#888', fontSize: '1.5rem' }}>/</span>
+                  <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#fff' }}>1000 Monedas</span>
+                </div>
 
-                    <button 
-                      className="btn-primary" 
-                      style={{ 
-                        width: '100%', 
-                        background: canAfford ? 'linear-gradient(90deg, #f97316, #ef4444)' : 'rgba(255,255,255,0.1)', 
-                        opacity: canAfford ? 1 : 0.5,
-                        cursor: canAfford ? 'pointer' : 'not-allowed',
-                        padding: '0.8rem',
-                        fontSize: '1rem'
-                      }}
-                      disabled={!canAfford}
-                      onClick={() => handleIncubateClick(type.id)}
-                    >
-                      <Flame size={18} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-                      Incubar
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
+                <button 
+                  className="btn-primary" 
+                  style={{ 
+                    width: '100%', 
+                    background: (userData?.eggBalance || 0) >= 1000 ? 'linear-gradient(90deg, #f97316, #ef4444)' : 'rgba(255,255,255,0.1)', 
+                    opacity: (userData?.eggBalance || 0) >= 1000 ? 1 : 0.5,
+                    cursor: (userData?.eggBalance || 0) >= 1000 ? 'pointer' : 'not-allowed',
+                    padding: '1rem',
+                    fontSize: '1.2rem',
+                    fontWeight: 'bold',
+                    borderRadius: '12px',
+                    boxShadow: (userData?.eggBalance || 0) >= 1000 ? '0 4px 15px rgba(249,115,22,0.4)' : 'none'
+                  }}
+                  disabled={(userData?.eggBalance || 0) < 1000}
+                  onClick={handleIncubateClick}
+                >
+                  <Flame size={20} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
+                  Incubar Ahora
+                </button>
+              </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

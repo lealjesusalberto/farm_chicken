@@ -9,10 +9,10 @@ import { useGameEngine } from './hooks/useGameEngine';
 import { useExchangeRate } from './hooks/useExchangeRate';
 import { auth, db } from './firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
-import { LogOut, Coins, ShieldCheck, Wallet, ShoppingCart, ShoppingBag, TrendingUp, Link, Users, Eye, EyeOff, X } from 'lucide-react';
+import { LogOut, Coins, ShieldCheck, Wallet, ShoppingCart, ShoppingBag, TrendingUp, Link, Users, Eye, EyeOff, X, Clock } from 'lucide-react';
 import { LandingPage } from './components/LandingPage';
 import './App.css';
-import { collection, setDoc, doc, getCountFromServer, onSnapshot } from 'firebase/firestore';
+import { collection, setDoc, doc, getCountFromServer, onSnapshot, query, where, getDocs, updateDoc } from 'firebase/firestore';
 
 export const COUNTRIES = {
   Venezuela: {
@@ -42,6 +42,7 @@ function Auth({ initialMode = false, onBack }) {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [cedula, setCedula] = useState('');
   const [state, setState] = useState('');
   const [country, setCountry] = useState('Venezuela');
   const [showPassword, setShowPassword] = useState(false);
@@ -53,10 +54,24 @@ function Auth({ initialMode = false, onBack }) {
     setError('');
     try {
       if (isRegister) {
-        if (!name || !phone || !state || !country) return setError('Todos los campos son obligatorios');
+        if (!name || !phone || !state || !country || !cedula) return setError('Todos los campos son obligatorios');
+        
+        const usersRef = collection(db, 'users');
+        const phoneQuery = query(usersRef, where('phone', '==', phone));
+        const phoneSnap = await getDocs(phoneQuery);
+        if (!phoneSnap.empty) {
+          return setError('Este número de teléfono ya está registrado.');
+        }
+
+        const cedulaQuery = query(usersRef, where('cedula', '==', cedula));
+        const cedulaSnap = await getDocs(cedulaQuery);
+        if (!cedulaSnap.empty) {
+          return setError('Esta cédula ya está registrada.');
+        }
+
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await setDoc(doc(db, 'users', userCredential.user.uid), {
-          name, phone, country, state, email, balance: 0
+          name, phone, country, state, email, cedula, balance: 0, freeStarterEgg: 1, cornCount: 5, specialCornCount: 1, status: 'pending', suspensionEnd: null
         });
       } else {
         await signInWithEmailAndPassword(auth, email, password);
@@ -100,10 +115,13 @@ function Auth({ initialMode = false, onBack }) {
               <input type="tel" placeholder="Teléfono" value={phone} onChange={e => setPhone(e.target.value)} style={{ padding: '1rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000', width: '100%', boxSizing: 'border-box' }} required={isRegister} />
             </div>
 
-            <select value={state} onChange={e => setState(e.target.value)} style={{ padding: '1rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000', cursor: 'pointer', width: '100%', boxSizing: 'border-box' }} required={isRegister}>
-              <option value="" disabled>Seleccione un Estado/Región...</option>
-              {COUNTRIES[country]?.states.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem' }}>
+              <input type="text" placeholder="Cédula de Identidad" value={cedula} onChange={e => setCedula(e.target.value)} style={{ padding: '1rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000', width: '100%', boxSizing: 'border-box' }} required={isRegister} />
+              <select value={state} onChange={e => setState(e.target.value)} style={{ padding: '1rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000', cursor: 'pointer', width: '100%', boxSizing: 'border-box' }} required={isRegister}>
+                <option value="" disabled>Seleccione un Estado/Región...</option>
+                {COUNTRIES[country]?.states.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
           </>
         )}
 
@@ -130,7 +148,7 @@ function Auth({ initialMode = false, onBack }) {
 function MainApp({ user }) {
   const [weatherData, setWeatherData] = useState({ type: 'sunny', history: [] });
   const weather = weatherData.type || 'sunny';
-  const { balance, eggBalance, userData, chickens, oracleRate, buyChicken, buyMysteryEgg, buyFood, feedChicken, scareFox, openMysteryEgg, sellChicken, collectEggs, sellEggs, incubateEggs, exchangeUsdtToEggs, exchangeEggsToUsdt, addTestEggs, rechargeBalance, requestWithdrawal, incomePerDay, pendingRecharges } = useGameEngine(user, weatherData);
+  const { balance, eggBalance, userData, chickens, oracleRate, buyChicken, buyMysteryEgg, buyFood, feedChicken, scareFox, openMysteryEgg, openStarterEgg, sellChicken, collectEggs, sellEggs, incubateEggs, exchangeUsdtToEggs, exchangeEggsToUsdt, rechargeBalance, requestWithdrawal, incomePerDay, pendingRecharges } = useGameEngine(user, weatherData);
   const { rate, loading: rateLoading } = useExchangeRate();
   const [showStore, setShowStore] = useState(false);
   const [showWallet, setShowWallet] = useState(false);
@@ -141,10 +159,11 @@ function MainApp({ user }) {
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'global', 'weather'), (docSnap) => {
       if (docSnap.exists()) {
-        setWeatherData(docSnap.data());
+        setWeatherData({ ...docSnap.data(), _loaded: true });
       } else {
         const initial = { type: 'sunny', history: [{ type: 'sunny', start: Date.now(), end: null }] };
         setDoc(doc(db, 'global', 'weather'), initial);
+        setWeatherData({ ...initial, _loaded: true });
       }
     });
     return unsub;
@@ -162,6 +181,51 @@ function MainApp({ user }) {
     fetchUsers();
   }, []);
 
+  useEffect(() => {
+    if (userData?.status === 'suspended' && userData.suspensionEnd && Date.now() > userData.suspensionEnd) {
+      updateDoc(doc(db, 'users', user.uid), { status: 'approved', suspensionEnd: null }).catch(console.error);
+    }
+  }, [userData?.status, userData?.suspensionEnd, user.uid]);
+
+  const status = userData?.status || 'approved';
+  
+  if (userData && status !== 'approved') {
+    if (status === 'pending') {
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', color: '#fff', textAlign: 'center', padding: '2rem' }}>
+          <Clock size={64} color="#fcd535" style={{ marginBottom: '1rem' }} />
+          <h2>Cuenta en Revisión</h2>
+          <p style={{ color: '#aaa', maxWidth: '400px' }}>Tu cuenta está siendo evaluada por un administrador. Este proceso toma aproximadamente 10 minutos. Por favor, espera a que sea aprobada para comenzar a jugar.</p>
+          <button className="btn-primary" onClick={() => auth.signOut()} style={{ marginTop: '2rem' }}>Cerrar Sesión</button>
+        </div>
+      );
+    }
+    if (status === 'blocked') {
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', color: '#fff', textAlign: 'center', padding: '2rem' }}>
+          <X size={64} color="#ff4c4c" style={{ marginBottom: '1rem' }} />
+          <h2 style={{ color: '#ff4c4c' }}>Cuenta Bloqueada</h2>
+          <p style={{ color: '#aaa', maxWidth: '400px' }}>Tu cuenta ha sido bloqueada permanentemente.</p>
+          <button className="btn-primary" onClick={() => auth.signOut()} style={{ marginTop: '2rem' }}>Cerrar Sesión</button>
+        </div>
+      );
+    }
+    if (status === 'suspended') {
+      const end = userData.suspensionEnd || 0;
+      if (Date.now() < end) {
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', color: '#fff', textAlign: 'center', padding: '2rem' }}>
+            <ShieldCheck size={64} color="#f97316" style={{ marginBottom: '1rem' }} />
+            <h2 style={{ color: '#f97316' }}>Cuenta Suspendida</h2>
+            <p style={{ color: '#aaa', maxWidth: '400px' }}>Tu cuenta se encuentra suspendida temporalmente.</p>
+            <p style={{ fontWeight: 'bold' }}>Expira en: {new Date(end).toLocaleString()}</p>
+            <button className="btn-primary" onClick={() => auth.signOut()} style={{ marginTop: '2rem' }}>Cerrar Sesión</button>
+          </div>
+        );
+      }
+    }
+  }
+
   const currentXp = userData?.xp || 0;
   const currentLevel = Math.floor(currentXp / 100) + 1;
   const xpProgress = currentXp % 100;
@@ -171,7 +235,8 @@ function MainApp({ user }) {
     thunder: { icon: '⚡', text: 'Relentiza x2', color: '#a78bfa' },
     snow: { icon: '❄️', text: 'Relentiza x2', color: '#bfdbfe' },
     rainbow: { icon: '🌈', text: 'Acelera x0.5', color: '#fbcfe8' },
-    stars: { icon: '✨', text: 'Acelera x0.5', color: '#fef08a' }
+    stars: { icon: '✨', text: 'Acelera x0.5', color: '#fef08a' },
+    bugs: { icon: '🦟', text: 'Aumenta x0.2', color: '#a3e635' }
   };
 
   return (
@@ -211,9 +276,9 @@ function MainApp({ user }) {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#10b981', fontWeight: 'bold' }}>
-              <Coins size={18} /> 
-              <span style={{ fontSize: '1.2rem' }}>${(balance || 0).toFixed(2)}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#10b981', fontWeight: 'bold' }}>
+              <span style={{ fontSize: '0.65rem', background: 'rgba(16, 185, 129, 0.2)', padding: '2px 5px', borderRadius: '4px', border: '1px solid #10b981', letterSpacing: '0.5px' }}>CKF/USDT</span>
+              <span style={{ fontSize: '1.2rem' }}>{(balance || 0).toFixed(2)}</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#fbbf24', fontWeight: 'bold' }}>
               <span style={{ fontSize: '1.2rem' }}>🥚 {Math.floor(eggBalance || 0)}</span>
@@ -221,7 +286,7 @@ function MainApp({ user }) {
           </div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#fff', fontSize: '0.9rem', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '0.5rem' }}>
-            <TrendingUp size={14} color="var(--accent-color)" /> +${incomePerDay.toFixed(2)}/d
+            <TrendingUp size={14} color="var(--accent-color)" /> +🥚{incomePerDay.toFixed(2)}/d
           </div>
         </div>
         
@@ -245,7 +310,7 @@ function MainApp({ user }) {
 
       {/* Main Farm Area (Fills remaining space) */}
       <main style={{ flex: 1, position: 'relative', width: '100%', height: '100%', overflowY: 'auto', overflowX: 'hidden' }}>
-        <Farm chickens={chickens} userData={userData} weatherData={weatherData} onCollect={collectEggs} onOpenEgg={openMysteryEgg} onSell={sellChicken} onFeed={feedChicken} onScareFox={scareFox} />
+        <Farm chickens={chickens} userData={userData} weatherData={weatherData} onCollect={collectEggs} onOpenEgg={openMysteryEgg} onOpenStarterEgg={openStarterEgg} onSell={sellChicken} onFeed={feedChicken} onScareFox={scareFox} />
       </main>
 
       {/* Bottom Action Bar */}
@@ -310,7 +375,7 @@ function MainApp({ user }) {
               </button>
             </div>
             <div style={{ flex: 1, overflow: 'hidden' }}>
-              <Basket userData={userData} onSellEggs={sellEggs} onIncubateEggs={incubateEggs} onAddTestEggs={addTestEggs} />
+              <Basket userData={userData} onSellEggs={sellEggs} onIncubateEggs={incubateEggs} />
             </div>
           </div>
         </div>

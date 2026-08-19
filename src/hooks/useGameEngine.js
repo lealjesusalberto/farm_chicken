@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { db } from '../firebase';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, addDoc, onSnapshot, deleteDoc } from 'firebase/firestore';
 import Swal from 'sweetalert2';
@@ -73,6 +73,8 @@ export function calculateEffectiveTime(chickenTypeId, lastEggTime, now, boostSta
         weatherMultiplier = (chickenTypeId === 's_mago') ? (0.5 + (1.5 * powerFactor)) : ((chickenTypeId === 's_granjero') ? (0.5 + (0.5 * powerFactor)) : 0.5);
       } else if (event.type === 'rainbow' || event.type === 'stars') {
         weatherMultiplier = 2; 
+      } else if (event.type === 'bugs') {
+        weatherMultiplier = 1.2;
       }
 
       let boostedDuration = 0;
@@ -100,6 +102,13 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
   const [balance, setBalance] = useState(0);
   const [eggBalance, setEggBalance] = useState(0);
   const [userData, setUserData] = useState(null);
+  
+  // Ref para evitar stale closures en el game loop
+  const weatherRef = useRef(weatherData);
+  useEffect(() => {
+    weatherRef.current = weatherData;
+  }, [weatherData]);
+
   const [chickens, setChickens] = useState([]);
   const [pendingRecharges, setPendingRecharges] = useState([]);
   const [oracleRate, setOracleRate] = useState(100);
@@ -185,7 +194,7 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
         // Hacemos el check solo si han pasado al menos 2.5s
         if (timeSinceLastCheck >= 2500) {
           const intervals = Math.floor(timeSinceLastCheck / 2500);
-          const probability = 1 - Math.pow(1 - 0.0005, intervals); // 0.05% cada 2.5s
+          const probability = 1 - Math.pow(1 - 0.0001, intervals); // 0.01% cada 2.5s (reducción para evitar spam)
           
           if (Math.random() < probability) {
             // ¡EL ZORRO ATACÓ!
@@ -207,7 +216,12 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
       }
     }
     
-    let effectiveTimePassed = calculateEffectiveTime(updatedData.typeId, updatedData.lastEggTime, now, updatedData.boostStartTime, updatedData.boostEndTime, weatherData.history, chickenObj || updatedData);
+    // Si el clima aún no carga, no podemos procesar el tiempo offline correctamente
+    if (!weatherRef.current._loaded) {
+      return { ...chickenData, _needsDbUpdate: false };
+    }
+    
+    let effectiveTimePassed = calculateEffectiveTime(updatedData.typeId, updatedData.lastEggTime, now, updatedData.boostStartTime, updatedData.boostEndTime, weatherRef.current.history, chickenObj || updatedData);
     
     if (effectiveTimePassed >= CYCLE_DURATION) {
        updatedData.currentEggs = 0;
@@ -245,7 +259,8 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
           await updateDoc(userRef, { email: user.email });
         }
       } else {
-        await setDoc(userRef, { balance: 0, eggBalance: 0, role: 'player', email: user.email, name: 'Usuario Recuperado', phone: 'No registrado' });
+        // Doc doesn't exist (possibly offline cache miss). 
+        // Do NOT overwrite it to avoid wiping user data.
         setBalance(0);
         setEggBalance(0);
       }
@@ -407,6 +422,37 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     Swal.fire('¡Gallina Alimentada!', `Has gastado ${requiredBags} Saco(s). ${actionText}`, 'success');
   };
 
+  const openStarterEgg = async () => {
+    const currentStarterEggs = userData?.freeStarterEgg || 0;
+    if (currentStarterEggs <= 0) return { success: false, error: 'No tienes huevos de bienvenida.' };
+
+    try {
+      const newEggsCount = currentStarterEggs - 1;
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, { freeStarterEgg: newEggsCount });
+
+      const starterIds = ['1', '2', '3', '4'];
+      const wonId = starterIds[Math.floor(Math.random() * starterIds.length)];
+      const wonType = CHICKEN_TYPES.find(t => t.id === wonId);
+
+      const now = Date.now();
+      const newChicken = {
+        userId: user.uid,
+        typeId: wonId,
+        lastEggTime: now,
+        lastFoxCheckTime: now,
+        currentEggs: 0,
+        isStarter: true,
+        clonePower: 60
+      };
+      await addDoc(collection(db, 'chickens'), newChicken);
+      
+      return { success: true, wonType, clonePower: 60 };
+    } catch (e) {
+      return { success: false, error: e.message };
+    }
+  };
+
   const openMysteryEgg = async () => {
     const currentEggs = userData?.mysteryEggs || 0;
     if (currentEggs <= 0) return;
@@ -466,14 +512,17 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     const userRef = doc(db, 'users', user.uid);
     await updateDoc(userRef, { eggBalance: newEggBalance });
     
+    // Calcular el estado más actualizado localmente antes de guardar para evitar perder el congelamiento
+    const updatedChicken = calculatePendingEggs(chicken, { ...chicken, boostType: chicken.boostType || 'common' });
+    
     // Al espantar, enviamos a la DB el lastEggTime LOCAL que fue empujado hacia adelante durante la congelación
     const chickenRef = doc(db, 'chickens', chickenId);
     await updateDoc(chickenRef, { 
       hasFox: false, 
       lastFoxCheckTime: Date.now(),
-      lastEggTime: chicken.lastEggTime,
-      boostStartTime: chicken.boostStartTime || null,
-      boostEndTime: chicken.boostEndTime || null
+      lastEggTime: updatedChicken.lastEggTime,
+      boostStartTime: updatedChicken.boostStartTime || null,
+      boostEndTime: updatedChicken.boostEndTime || null
     });
     
     Swal.fire('¡Zorro Ahuyentado!', 'Has usado un Perro Espantazorros. La gallina retoma su producción donde la había dejado.', 'success');
@@ -563,7 +612,7 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     const userRef = doc(db, 'users', user.uid);
     await updateDoc(userRef, { balance: newBalance, eggBalance: newEggBalance });
     
-    Swal.fire('¡Intercambio Exitoso!', `Has comprado ${eggsToReceive} Huevos por $${usdtAmount} USDT.`, 'success');
+    Swal.fire('¡Intercambio Exitoso!', `Has comprado ${eggsToReceive} Huevos por ${usdtAmount} CKF.`, 'success');
   };
 
   const exchangeEggsToUsdt = async (eggAmount) => {
@@ -580,7 +629,7 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     const userRef = doc(db, 'users', user.uid);
     await updateDoc(userRef, { balance: newBalance, eggBalance: newEggBalance });
     
-    Swal.fire('¡Intercambio Exitoso!', `Has vendido ${eggAmount} Huevos y recibido $${usdtToReceive.toFixed(2)} USDT.`, 'success');
+    Swal.fire('¡Intercambio Exitoso!', `Has vendido ${eggAmount} Huevos y recibido ${usdtToReceive.toFixed(2)} CKF.`, 'success');
   };
 
   const sellEggs = async () => {}; // Obsoleto
@@ -630,14 +679,7 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     };
   };
 
-  const addTestEggs = async () => {
-    // Para probar la recolección, llenamos todas las gallinas actuales con 5 huevos
-    for (const chicken of chickens) {
-      const chickenRef = doc(db, 'chickens', chicken.id);
-      await updateDoc(chickenRef, { currentEggs: 5 });
-    }
-    Swal.fire('¡Cheat activado!', 'Se han rellenado todas tus gallinas con huevos listos para recolectar.', 'success');
-  };
+
 
   const rechargeBalance = async (amountUsd, reference, amountBs) => {
     try {
@@ -660,7 +702,7 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
 
   const requestWithdrawal = async (amountUsd, binanceId) => {
     if (amountUsd < 20) {
-      return Swal.fire('Error', 'El monto mínimo de retiro es de $20 USDT', 'error');
+      return Swal.fire('Error', 'El monto mínimo de retiro es de 20 CKF', 'error');
     }
     if (amountUsd > balance) {
       return Swal.fire('Error', 'No tienes saldo suficiente para este retiro', 'error');
@@ -687,7 +729,7 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
         createdAt: Date.now()
       });
       
-      Swal.fire('Retiro Solicitado', `Has solicitado un retiro de $${amountUsd.toFixed(2)} USDT hacia la cuenta ${binanceId}.\nRecibirás $${(amountUsd * 0.9).toFixed(2)} USDT luego de la comisión del 10%.`, 'success');
+      Swal.fire('Retiro Solicitado', `Has solicitado un retiro de ${amountUsd.toFixed(2)} CKF hacia la cuenta ${binanceId}.\nRecibirás ${(amountUsd * 0.9).toFixed(2)} USDT en Binance luego de la comisión del 10%.`, 'success');
     } catch (e) {
       console.error(e);
       Swal.fire('Error', 'Hubo un problema procesando el retiro', 'error');
@@ -697,9 +739,24 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
   const calculateMaxDailyIncome = () => {
     return chickens.reduce((acc, chicken) => {
       const type = CHICKEN_TYPES.find(c => c.id === chicken.typeId);
-      return acc + (type ? type.incomePerEgg * 5 : 0);
+      if (!type) return acc;
+      
+      let passiveMultiplier = 1;
+      const powerFactor = chicken.clonePower !== undefined ? chicken.clonePower / 100 : (chicken.isHalfSpecial ? 0.5 : 1);
+      
+      if (chicken.typeId === 's_chef') {
+        passiveMultiplier = 1 + (0.5 * powerFactor);
+      } else if (chicken.typeId === 's_robin') {
+        passiveMultiplier = 1 + (1.0 * powerFactor);
+      }
+
+      const eggTimeHours = type.eggTime / (1000 * 60 * 60);
+      const cyclesPerDay = (24 / eggTimeHours) * passiveMultiplier;
+      
+      const clonePower = chicken.clonePower !== undefined ? chicken.clonePower : 100;
+      return acc + (cyclesPerDay * type.incomePerEgg * (clonePower / 100));
     }, 0);
   };
 
-  return { balance, eggBalance, userData, chickens, oracleRate, buyChicken, buyMysteryEgg, buyFood, feedChicken, scareFox, openMysteryEgg, sellChicken, collectEggs, sellEggs, incubateEggs, exchangeUsdtToEggs, exchangeEggsToUsdt, addTestEggs, rechargeBalance, requestWithdrawal, incomePerDay: calculateMaxDailyIncome(), pendingRecharges };
+  return { balance, eggBalance, userData, chickens, oracleRate, buyChicken, buyMysteryEgg, buyFood, feedChicken, scareFox, openMysteryEgg, openStarterEgg, sellChicken, collectEggs, sellEggs, incubateEggs, exchangeUsdtToEggs, exchangeEggsToUsdt, rechargeBalance, requestWithdrawal, incomePerDay: calculateMaxDailyIncome(), pendingRecharges };
 }

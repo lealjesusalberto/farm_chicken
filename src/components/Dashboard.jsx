@@ -35,10 +35,10 @@ export function Dashboard({ balance, eggBalance, incomePerDay, onRecharge, onWit
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <div className="dashboard-stats" style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
           <div>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Saldo Disponible (USDT)</p>
-            <p style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Coins size={28} />
-              ${balance.toFixed(2)} USDT
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Saldo Disponible (CKF)</p>
+            <p style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--primary-color)', display: 'flex', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.75rem', background: 'rgba(252, 213, 53, 0.2)', padding: '2px 6px', borderRadius: '4px', border: '1px solid #fcd535', letterSpacing: '0.5px', color: '#fcd535', marginRight: '0.5rem', marginTop: '0.2rem' }}>CKF/USDT</span>
+              {balance.toFixed(2)} CKF
             </p>
           </div>
           <div style={{ borderLeft: '1px solid var(--glass-border)', paddingLeft: '2rem' }}>
@@ -50,7 +50,7 @@ export function Dashboard({ balance, eggBalance, incomePerDay, onRecharge, onWit
           <div style={{ borderLeft: '1px solid var(--glass-border)', paddingLeft: '2rem' }}>
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Producción Diaria</p>
             <p style={{ fontSize: '1.2rem', color: 'var(--text-main)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <TrendingUp size={20} color="var(--accent-color)" /> +${incomePerDay.toFixed(2)} USDT
+              <TrendingUp size={20} color="var(--accent-color)" /> +{incomePerDay.toFixed(2)} CKF
             </p>
           </div>
         </div>
@@ -69,7 +69,7 @@ export function Dashboard({ balance, eggBalance, incomePerDay, onRecharge, onWit
             onClick={() => { setShowWithdraw(!showWithdraw); setShowRecharge(false); setShowHistory(false); }}
             style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#ff4c4c', color: 'white' }}
           >
-            <Coins size={20} /> Retirar
+            <Landmark size={20} /> Retirar
           </button>
           
           <button 
@@ -93,7 +93,7 @@ export function Dashboard({ balance, eggBalance, incomePerDay, onRecharge, onWit
               <li key={tx.id} style={{ display: 'flex', justifyContent: 'space-between', color: '#ddd', fontSize: '0.85rem' }}>
                 <span>{tx.type === 'withdrawal' ? '📤 Retiro' : '📥 Recarga'} - Ref: {tx.reference || tx.binanceId}</span>
                 <span style={{ fontWeight: 'bold', color: tx.type === 'withdrawal' ? '#ff4c4c' : '#4ade80' }}>
-                  {tx.type === 'withdrawal' ? '-' : '+'}${(tx.amount || 0).toFixed(2)} USDT
+                  {tx.type === 'withdrawal' ? '-' : '+'}{(tx.amount || 0).toFixed(2)} CKF
                 </span>
               </li>
             ))}
@@ -149,9 +149,9 @@ export function Dashboard({ balance, eggBalance, incomePerDay, onRecharge, onWit
       {showWithdraw && (
         <div className="recharge-modal" style={{ marginTop: '1rem', paddingTop: '1.5rem', borderTop: '1px solid var(--glass-border)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
           <div style={{ background: 'rgba(255, 76, 76, 0.1)', padding: '1.5rem', borderRadius: '8px', border: '1px solid rgba(255,76,76,0.3)' }}>
-            <h3 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ff4c4c' }}><Coins size={20} /> Retirar Fondos</h3>
+            <h3 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ff4c4c' }}><Landmark size={20} /> Retirar Fondos</h3>
             <p style={{ color: 'var(--text-muted)', marginBottom: '0.5rem', fontSize: '0.9rem' }}>El monto será descontado inmediatamente de tu saldo y enviado a revisión.</p>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Los retiros se pagan exclusivamente por <strong>Binance Pay (USDT)</strong>.</p>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Los retiros se pagan exclusivamente por <strong>Binance Pay (1 CKF = 1 USDT)</strong>.</p>
             <p style={{ color: '#ffcc00', marginTop: '1rem', fontSize: '0.85rem', borderLeft: '3px solid #ffcc00', paddingLeft: '10px' }}>⚠️ Se aplicará un fee del <strong>10%</strong> a todos los retiros para mantener la economía de la granja.</p>
           </div>
 
@@ -163,7 +163,7 @@ export function Dashboard({ balance, eggBalance, incomePerDay, onRecharge, onWit
             
             <input 
               type="number" 
-              placeholder="Monto a retirar en USDT" 
+              placeholder="Monto a retirar en CKF" 
               value={withdrawAmount} 
               onChange={(e) => setWithdrawAmount(e.target.value)} 
               style={{ padding: '0.8rem', borderRadius: '8px', border: 'none', outline: 'none', background: 'rgba(255,255,255,0.9)', color: '#000' }} 
@@ -171,7 +171,7 @@ export function Dashboard({ balance, eggBalance, incomePerDay, onRecharge, onWit
             
             {Number(withdrawAmount) > 0 && (
               <p style={{ color: '#4ade80', fontSize: '0.85rem', margin: '-0.5rem 0 0 0' }}>
-                Recibirás: <strong>${(Number(withdrawAmount) * 0.9).toFixed(2)} USDT</strong> <span style={{ color: '#ff4c4c' }}>(10% de comisión)</span>
+                Recibirás: <strong>{(Number(withdrawAmount) * 0.9).toFixed(2)} CKF</strong> <span style={{ color: '#ff4c4c' }}>(10% de comisión)</span>
               </p>
             )}
             
@@ -185,12 +185,12 @@ export function Dashboard({ balance, eggBalance, incomePerDay, onRecharge, onWit
             
             <button className="btn-primary" onClick={() => {
               const numUsdt = Number(withdrawAmount);
-              if (numUsdt < 20) return Swal.fire('Atención', 'El monto mínimo de retiro es de $20 USDT', 'warning');
+              if (numUsdt < 20) return Swal.fire('Atención', 'El monto mínimo de retiro es de 20 CKF', 'warning');
               if (!binanceId) return Swal.fire('Atención', 'Ingresa tu Binance ID', 'warning');
               
               Swal.fire({
                 title: 'Confirmar Retiro',
-                html: `¿Estás seguro que deseas retirar <b>$${numUsdt} USDT</b>?<br/><br/>Recibirás: <b>$${(numUsdt * 0.9).toFixed(2)} USDT</b><br/>(10% de comisión por retiro).`,
+                html: `¿Estás seguro que deseas retirar <b>${numUsdt} CKF</b>?<br/><br/>Recibirás: <b>${(numUsdt * 0.9).toFixed(2)} USDT en Binance</b><br/>(10% de comisión por retiro).`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ff4c4c',
@@ -237,7 +237,7 @@ export function Dashboard({ balance, eggBalance, incomePerDay, onRecharge, onWit
                 return (
                   <li key={dateStr} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '8px' }}>
                     <span style={{ fontWeight: 'bold', color: '#fff', fontSize: '1.1rem' }}>{label}</span>
-                    <span style={{ fontWeight: 'bold', color: '#4ade80', fontSize: '1.1rem' }}>+${amount.toFixed(2)} USDT</span>
+                    <span style={{ fontWeight: 'bold', color: '#4ade80', fontSize: '1.1rem' }}>+{(amount).toFixed(2)} CKF</span>
                   </li>
                 );
               })}

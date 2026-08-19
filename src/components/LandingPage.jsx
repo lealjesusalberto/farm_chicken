@@ -64,11 +64,11 @@ export function LandingPage({ onLogin, onRegister }) {
             {/* Step 1 */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <div style={{ background: '#4ade80', color: '#000', width: '30px', height: '30px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', marginBottom: '0.5rem' }}>1</div>
-              <h4 style={{ color: '#fff', marginBottom: '0.5rem', fontSize: '1rem' }}>RECARGA USDT</h4>
+              <h4 style={{ color: '#fff', marginBottom: '0.5rem', fontSize: '1rem' }}>RECARGA CKF</h4>
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', height: '70px', marginBottom: '0.5rem' }}>
                  <Wallet size={40} color="#4ade80" />
               </div>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: '1.4' }}>Deposita USDT para obtener Monedas Huevo, la divisa principal de la granja.</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: '1.4' }}>Deposita CKF para obtener Monedas Huevo, la divisa principal de la granja.</p>
             </div>
             
             {/* Step 2 */}
@@ -104,7 +104,7 @@ export function LandingPage({ onLogin, onRegister }) {
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', height: '70px', marginBottom: '0.5rem' }}>
                  <Coins size={50} color="#fcd535" />
               </div>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: '1.4' }}>Vende tu producción de huevos por USDT real y retíralo directo a tu cuenta de Binance.</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: '1.4' }}>Vende tu producción de huevos por CKF real y retíralo directo a tu cuenta de Binance.</p>
             </div>
           </div>
         </section>
