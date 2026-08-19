@@ -8,7 +8,7 @@ import { Sidebar } from './components/Sidebar';
 import { useGameEngine } from './hooks/useGameEngine';
 import { useExchangeRate } from './hooks/useExchangeRate';
 import { auth, db } from './firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail } from 'firebase/auth';
 import { LogOut, Coins, ShieldCheck, Wallet, ShoppingCart, ShoppingBag, TrendingUp, Link, Users, Eye, EyeOff, X, Clock } from 'lucide-react';
 import { LandingPage } from './components/LandingPage';
 import './App.css';
@@ -57,25 +57,40 @@ function Auth({ initialMode = false, onBack }) {
         if (!name || !phone || !state || !country || !cedula) return setError('Todos los campos son obligatorios');
         
         const usersRef = collection(db, 'users');
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
         const phoneQuery = query(usersRef, where('phone', '==', phone));
         const phoneSnap = await getDocs(phoneQuery);
         if (!phoneSnap.empty) {
+          await userCredential.user.delete();
           return setError('Este número de teléfono ya está registrado.');
         }
 
         const cedulaQuery = query(usersRef, where('cedula', '==', cedula));
         const cedulaSnap = await getDocs(cedulaQuery);
         if (!cedulaSnap.empty) {
+          await userCredential.user.delete();
           return setError('Esta cédula ya está registrada.');
         }
 
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await setDoc(doc(db, 'users', userCredential.user.uid), {
           name, phone, country, state, email, cedula, balance: 0, freeStarterEgg: 1, cornCount: 5, specialCornCount: 1, status: 'pending', suspensionEnd: null
         });
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!email) {
+      return setError('Por favor, escribe tu correo electrónico primero para recuperar tu contraseña.');
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      import('sweetalert2').then(Swal => Swal.default.fire('¡Enviado!', 'Revisa tu bandeja de entrada o carpeta de Spam para restablecer tu contraseña.', 'success'));
     } catch (err) {
       setError(err.message);
     }
@@ -133,6 +148,14 @@ function Auth({ initialMode = false, onBack }) {
             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </div>
         </div>
+
+        {!isRegister && (
+          <div style={{ textAlign: 'right', marginTop: '0.5rem' }}>
+            <span onClick={handleResetPassword} style={{ cursor: 'pointer', fontSize: '0.85rem', color: '#cbd5e1', textDecoration: 'underline' }}>
+              ¿Olvidaste tu contraseña?
+            </span>
+          </div>
+        )}
 
         <button type="submit" className="btn-primary" style={{ marginTop: '0.5rem' }}>
           {isRegister ? 'Registrarse' : 'Entrar'}

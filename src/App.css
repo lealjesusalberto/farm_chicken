@@ -211,3 +211,22 @@
   0%, 94%, 98%, 100% { background-color: rgba(0, 0, 40, 0.5); }
   95%, 99% { background-color: rgba(255, 255, 255, 0.9); }
 }
+
+/* Admin Dashboard Responsive */
+.admin-container {
+  flex-direction: row;
+}
+.admin-sidebar {
+  width: 260px;
+}
+@media (max-width: 768px) {
+  .admin-container {
+    flex-direction: column !important;
+  }
+  .admin-sidebar {
+    width: 100% !important;
+    border-right: none !important;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding: 1rem !important;
+  }
+}

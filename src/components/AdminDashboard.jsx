@@ -261,9 +261,9 @@ export function AdminDashboard({ onLogout }) {
   };
 
   return (
-    <div className="admin-container" style={{ color: '#fff', display: 'flex', minHeight: '100vh', flexDirection: 'row', width: '100%', margin: 0 }}>
+    <div className="admin-container" style={{ color: '#fff', display: 'flex', minHeight: '100vh', width: '100%', margin: 0 }}>
       {/* Sidebar */}
-      <div style={{ width: '260px', background: 'rgba(0,0,0,0.6)', borderRight: '1px solid rgba(255,255,255,0.1)', padding: '2rem 1rem', display: 'flex', flexDirection: 'column', gap: '1rem', zIndex: 10 }}>
+      <div className="admin-sidebar" style={{ background: 'rgba(0,0,0,0.6)', borderRight: '1px solid rgba(255,255,255,0.1)', padding: '2rem 1rem', display: 'flex', flexDirection: 'column', gap: '1rem', zIndex: 10 }}>
         <h2 style={{ fontSize: '1.4rem', marginBottom: '2rem', textAlign: 'center', color: '#fcd535', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>👑 Panel Admin</h2>
         
         <button onClick={() => setActiveTab('transactions')} style={{ background: activeTab === 'transactions' ? 'rgba(255,255,255,0.1)' : 'transparent', border: 'none', color: activeTab === 'transactions' ? '#fcd535' : '#fff', padding: '1rem', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.8rem', fontWeight: 'bold', transition: 'all 0.2s', textAlign: 'left' }}>
@@ -315,7 +315,7 @@ export function AdminDashboard({ onLogout }) {
           <div className="glass-panel" style={{ padding: '2rem', minHeight: '80vh' }}>
             <h3 style={{ marginBottom: '1.5rem', fontSize: '1.5rem' }}>💸 Gestión de Transacciones</h3>
             
-            <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>
+            <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem', flexWrap: 'wrap' }}>
               <button onClick={() => setTxTab('pending')} style={{ background: txTab === 'pending' ? 'var(--primary-color)' : 'rgba(255,255,255,0.1)', color: txTab === 'pending' ? '#000' : '#fff', border: 'none', padding: '0.5rem 1.5rem', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                 Pendientes {pendingTxs.length > 0 && <span style={{ background: txTab === 'pending' ? '#000' : '#ff4c4c', color: txTab === 'pending' ? '#fcd535' : '#fff', padding: '2px 6px', borderRadius: '10px', fontSize: '0.7rem' }}>{pendingTxs.length}</span>}
               </button>
@@ -429,7 +429,7 @@ export function AdminDashboard({ onLogout }) {
         )}
 
         {activeTab === 'config' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
             {/* Control del Oráculo */}
             <div className="glass-panel" style={{ padding: '2rem' }}>
               <h3>⚖️ Oráculo de Economía</h3>
@@ -462,7 +462,7 @@ export function AdminDashboard({ onLogout }) {
               <p style={{ fontSize: '0.85rem', color: '#aaa', marginBottom: '1.5rem', lineHeight: '1.4' }}>
                 Activa eventos meteorológicos que afectan la producción de TODOS los jugadores en tiempo real.
               </p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem' }}>
                 <button onClick={() => changeWeather('sunny')} style={{ border: 'none', padding: '1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', background: currentWeather === 'sunny' ? '#fcd535' : 'rgba(255,255,255,0.1)', color: currentWeather === 'sunny' ? '#000' : '#fff' }}>
                   ☀️ Soleado (Normal)
                 </button>
