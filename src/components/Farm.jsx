@@ -18,10 +18,12 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
     if (!farmAudioRef.current) {
       farmAudioRef.current = new Audio("/img/sound/farm-sound.mp3");
       farmAudioRef.current.loop = true;
+      farmAudioRef.current.preload = "auto";
     }
     if (!eventAudioRef.current) {
-      eventAudioRef.current = new Audio("/img/sound/event-sound.mp3");
+      eventAudioRef.current = new Audio("/img/sound/event-sound.ogg");
       eventAudioRef.current.loop = true;
+      eventAudioRef.current.preload = "auto";
     }
     
     // Cleanup al desmontar
@@ -42,7 +44,9 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
       } else {
         if (isFavorableEvent) {
           farmAudioRef.current.pause();
-          eventAudioRef.current.currentTime = 0; // Opcional: reiniciar audio
+          try {
+            eventAudioRef.current.currentTime = 0; // Opcional: reiniciar audio
+          } catch(err) { console.log("currentTime error", err); }
           eventAudioRef.current.play().catch(e => console.log("Autoplay prevent", e));
         } else {
           eventAudioRef.current.pause();
