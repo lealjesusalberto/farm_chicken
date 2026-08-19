@@ -10,25 +10,29 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
   const [isIncubating, setIsIncubating] = useState(false);
   const [particles, setParticles] = useState([]);
-  const audioRef = useRef(null);
+  const farmAudioRef = useRef(null);
+  const eventAudioRef = useRef(null);
 
   const weather = weatherData?.type || 'sunny';
   const isFavorableEvent = ['rainbow', 'stars', 'bugs', 'butterflies'].includes(weather);
-  const audioSrc = isFavorableEvent ? "/img/sound/event-sound.mp3" : "/img/sound/farm-sound.mp3";
 
   useEffect(() => {
-    if (audioRef.current) {
-      const wasPlaying = !audioRef.current.paused && !isMuted;
-      
-      if (!audioRef.current.src || !audioRef.current.src.includes(audioSrc)) {
-        audioRef.current.src = audioSrc;
-        audioRef.current.load();
-        if (wasPlaying) {
-          audioRef.current.play().catch(e => console.log("Autoplay prevent", e));
+    // Cuando el clima cambia, pausamos ambos y reproducimos el correcto si no está silenciado
+    if (farmAudioRef.current && eventAudioRef.current) {
+      if (isMuted) {
+        farmAudioRef.current.pause();
+        eventAudioRef.current.pause();
+      } else {
+        if (isFavorableEvent) {
+          farmAudioRef.current.pause();
+          eventAudioRef.current.play().catch(e => console.log("Autoplay prevent", e));
+        } else {
+          eventAudioRef.current.pause();
+          farmAudioRef.current.play().catch(e => console.log("Autoplay prevent", e));
         }
       }
     }
-  }, [audioSrc, isMuted]);
+  }, [isFavorableEvent, isMuted]);
   
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -68,14 +72,15 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
 
   const toggleSound = () => {
     if (isMuted) {
-      if (!audioRef.current.src || !audioRef.current.src.includes(audioSrc)) {
-        audioRef.current.src = audioSrc;
-        audioRef.current.load();
+      if (isFavorableEvent) {
+        eventAudioRef.current.play().catch(e => console.error("Autoplay prevent"));
+      } else {
+        farmAudioRef.current.play().catch(e => console.error("Autoplay prevent"));
       }
-      audioRef.current.play().catch(e => console.error("Autoplay prevent"));
       setIsMuted(false);
     } else {
-      audioRef.current.pause();
+      farmAudioRef.current.pause();
+      eventAudioRef.current.pause();
       setIsMuted(true);
     }
   };
@@ -162,7 +167,8 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
             `}</style>
           </div>
         )}
-        <audio ref={audioRef} loop />
+        <audio ref={farmAudioRef} src="/img/sound/farm-sound.mp3" loop />
+        <audio ref={eventAudioRef} src="/img/sound/event-sound.mp3" loop />
         
         <div style={{ position: 'absolute', top: '80px', right: '20px', zIndex: 10 }}>
           <button onClick={toggleSound} style={{ background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', padding: '10px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -261,7 +267,8 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
       boxShadow: 'inset 0 0 0 1000px rgba(0,0,0,0.4)',
       padding: '2rem 1rem'
     }}>
-      <audio ref={audioRef} loop />
+      <audio ref={farmAudioRef} src="/img/sound/farm-sound.mp3" loop />
+      <audio ref={eventAudioRef} src="/img/sound/event-sound.mp3" loop />
       
       <div style={{ position: 'absolute', top: '80px', right: '20px', zIndex: 10 }}>
         <button onClick={toggleSound} style={{ background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', padding: '10px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
