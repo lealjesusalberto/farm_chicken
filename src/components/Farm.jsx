@@ -17,10 +17,15 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
   const audioSrc = isFavorableEvent ? "/img/sound/event-sound.mp3" : "/img/sound/farm-sound.mp3";
 
   useEffect(() => {
-    if (audioRef.current && !isMuted) {
-      audioRef.current.play().catch(e => console.log("Autoplay prevent", e));
+    if (audioRef.current) {
+      const wasPlaying = !audioRef.current.paused && !isMuted;
+      audioRef.current.src = audioSrc;
+      audioRef.current.load();
+      if (wasPlaying) {
+        audioRef.current.play().catch(e => console.log("Autoplay prevent", e));
+      }
     }
-  }, [audioSrc, isMuted]);
+  }, [audioSrc]);
   
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -60,6 +65,10 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
 
   const toggleSound = () => {
     if (isMuted) {
+      if (!audioRef.current.src || !audioRef.current.src.includes(audioSrc)) {
+        audioRef.current.src = audioSrc;
+        audioRef.current.load();
+      }
       audioRef.current.play().catch(e => console.error("Autoplay prevent"));
       setIsMuted(false);
     } else {
@@ -150,7 +159,7 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
             `}</style>
           </div>
         )}
-        <audio ref={audioRef} src={audioSrc} loop />
+        <audio ref={audioRef} loop />
         
         <div style={{ position: 'absolute', top: '80px', right: '20px', zIndex: 10 }}>
           <button onClick={toggleSound} style={{ background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', padding: '10px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -249,7 +258,7 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
       boxShadow: 'inset 0 0 0 1000px rgba(0,0,0,0.4)',
       padding: '2rem 1rem'
     }}>
-      <audio ref={audioRef} src={audioSrc} loop />
+      <audio ref={audioRef} loop />
       
       <div style={{ position: 'absolute', top: '80px', right: '20px', zIndex: 10 }}>
         <button onClick={toggleSound} style={{ background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', padding: '10px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
