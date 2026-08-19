@@ -19,13 +19,16 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
   useEffect(() => {
     if (audioRef.current) {
       const wasPlaying = !audioRef.current.paused && !isMuted;
-      audioRef.current.src = audioSrc;
-      audioRef.current.load();
-      if (wasPlaying) {
-        audioRef.current.play().catch(e => console.log("Autoplay prevent", e));
+      
+      if (!audioRef.current.src || !audioRef.current.src.includes(audioSrc)) {
+        audioRef.current.src = audioSrc;
+        audioRef.current.load();
+        if (wasPlaying) {
+          audioRef.current.play().catch(e => console.log("Autoplay prevent", e));
+        }
       }
     }
-  }, [audioSrc]);
+  }, [audioSrc, isMuted]);
   
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
