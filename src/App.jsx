@@ -400,7 +400,20 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: 'white' }}>Conectando a Firebase...</div>;
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', width: '100vw', background: 'radial-gradient(circle at top, #1e293b, #0f172a)' }}>
+        <style>{`
+          @keyframes custom-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+        <img src="/img/app_icon.png" alt="Loading" className="animate-float" style={{ width: '120px', height: '120px', borderRadius: '28px', boxShadow: '0 15px 35px rgba(0,0,0,0.6)', filter: 'drop-shadow(0 0 20px rgba(252, 213, 53, 0.3))', marginBottom: '2rem' }} />
+        <div style={{ width: '40px', height: '40px', border: '4px solid rgba(255,255,255,0.1)', borderTop: '4px solid #fcd535', borderRadius: '50%', animation: 'custom-spin 1s linear infinite' }}></div>
+      </div>
+    );
+  }
 
   if (!user) {
     if (showAuth) {
