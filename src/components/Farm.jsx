@@ -17,11 +17,20 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
   const isFavorableEvent = ['rainbow', 'stars', 'bugs', 'butterflies'].includes(weather);
 
   useEffect(() => {
-    // En lugar de pausar/reproducir al cambiar el clima, ajustamos el volumen
-    // Esto evita bloqueos de autoplay en iOS/Android
-    if (farmAudioRef.current && eventAudioRef.current && !isMuted) {
-      farmAudioRef.current.volume = isFavorableEvent ? 0 : 1;
-      eventAudioRef.current.volume = isFavorableEvent ? 1 : 0;
+    if (farmAudioRef.current && eventAudioRef.current) {
+      if (isMuted) {
+        farmAudioRef.current.pause();
+        eventAudioRef.current.pause();
+      } else {
+        if (isFavorableEvent) {
+          farmAudioRef.current.pause();
+          eventAudioRef.current.currentTime = 0; // Opcional: reiniciar audio
+          eventAudioRef.current.play().catch(e => console.log("Autoplay prevent", e));
+        } else {
+          eventAudioRef.current.pause();
+          farmAudioRef.current.play().catch(e => console.log("Autoplay prevent", e));
+        }
+      }
     }
   }, [isFavorableEvent, isMuted]);
   
@@ -63,13 +72,18 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
 
   const toggleSound = () => {
     if (isMuted) {
-      // Reproducimos AMBOS sonidos al mismo tiempo para desbloquearlos en iOS
-      farmAudioRef.current.play().catch(e => console.error("Autoplay prevent"));
-      eventAudioRef.current.play().catch(e => console.error("Autoplay prevent"));
+      // Reproducimos AMBOS sonidos para desbloquearlos en iOS
+      farmAudioRef.current.play().catch(e => console.error(e));
+      eventAudioRef.current.play().catch(e => console.error(e));
       
-      // Mutear el que no corresponde
-      farmAudioRef.current.volume = isFavorableEvent ? 0 : 1;
-      eventAudioRef.current.volume = isFavorableEvent ? 1 : 0;
+      // Inmediatamente pausamos el que no queremos escuchar
+      setTimeout(() => {
+        if (isFavorableEvent) {
+          farmAudioRef.current.pause();
+        } else {
+          eventAudioRef.current.pause();
+        }
+      }, 50);
       
       setIsMuted(false);
     } else {
