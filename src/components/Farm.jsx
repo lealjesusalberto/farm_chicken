@@ -90,18 +90,20 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
 
   const toggleSound = () => {
     if (isMuted) {
-      // Reproducimos AMBOS sonidos para desbloquearlos en iOS
-      farmAudioRef.current.play().catch(e => console.error(e));
-      eventAudioRef.current.play().catch(e => console.error(e));
+      const playFarm = farmAudioRef.current.play();
+      const playEvent = eventAudioRef.current.play();
       
-      // Inmediatamente pausamos el que no queremos escuchar
-      setTimeout(() => {
-        if (isFavorableEvent) {
-          farmAudioRef.current.pause();
-        } else {
-          eventAudioRef.current.pause();
-        }
-      }, 50);
+      if (playFarm) {
+        playFarm.then(() => {
+          if (isFavorableEvent) farmAudioRef.current.pause();
+        }).catch(e => console.error("Farm audio error:", e));
+      }
+      
+      if (playEvent) {
+        playEvent.then(() => {
+          if (!isFavorableEvent) eventAudioRef.current.pause();
+        }).catch(e => console.error("Event audio error:", e));
+      }
       
       setIsMuted(false);
     } else {
