@@ -13,6 +13,24 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
   const farmAudioRef = useRef(null);
   const eventAudioRef = useRef(null);
 
+  // Inicializar audios una sola vez fuera del DOM
+  useEffect(() => {
+    if (!farmAudioRef.current) {
+      farmAudioRef.current = new Audio("/img/sound/farm-sound.mp3");
+      farmAudioRef.current.loop = true;
+    }
+    if (!eventAudioRef.current) {
+      eventAudioRef.current = new Audio("/img/sound/event-sound.mp3");
+      eventAudioRef.current.loop = true;
+    }
+    
+    // Cleanup al desmontar
+    return () => {
+      if (farmAudioRef.current) farmAudioRef.current.pause();
+      if (eventAudioRef.current) eventAudioRef.current.pause();
+    };
+  }, []);
+
   const weather = weatherData?.type || 'sunny';
   const isFavorableEvent = ['rainbow', 'stars', 'bugs', 'butterflies'].includes(weather);
 
@@ -175,8 +193,7 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
             `}</style>
           </div>
         )}
-        <audio ref={farmAudioRef} src="/img/sound/farm-sound.mp3" loop preload="auto" />
-        <audio ref={eventAudioRef} src="/img/sound/event-sound.mp3" loop preload="auto" />
+
         
         <div style={{ position: 'absolute', top: '80px', right: '20px', zIndex: 10 }}>
           <button onClick={toggleSound} style={{ background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', padding: '10px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -275,8 +292,7 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
       boxShadow: 'inset 0 0 0 1000px rgba(0,0,0,0.4)',
       padding: '2rem 1rem'
     }}>
-      <audio ref={farmAudioRef} src="/img/sound/farm-sound.mp3" loop preload="auto" />
-      <audio ref={eventAudioRef} src="/img/sound/event-sound.mp3" loop preload="auto" />
+
       
       <div style={{ position: 'absolute', top: '80px', right: '20px', zIndex: 10 }}>
         <button onClick={toggleSound} style={{ background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', padding: '10px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
