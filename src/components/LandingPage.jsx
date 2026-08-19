@@ -64,27 +64,27 @@ export function LandingPage({ onLogin, onRegister }) {
             {/* Step 1 */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <div style={{ background: '#4ade80', color: '#000', width: '30px', height: '30px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', marginBottom: '0.5rem' }}>1</div>
-              <h4 style={{ color: '#fff', marginBottom: '0.5rem', fontSize: '1rem' }}>COMPRA ANIMALES</h4>
-              <img src="/img/chicken_4.png" alt="Gallina" style={{ height: '70px', objectFit: 'contain', marginBottom: '0.5rem' }} />
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: '1.4' }}>Adquiere gallinas en la tienda para empezar a poblar tu granja.</p>
+              <h4 style={{ color: '#fff', marginBottom: '0.5rem', fontSize: '1rem' }}>RECARGA USDT</h4>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', height: '70px', marginBottom: '0.5rem' }}>
+                 <Wallet size={40} color="#4ade80" />
+              </div>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: '1.4' }}>Deposita USDT para obtener Monedas Huevo, la divisa principal de la granja.</p>
             </div>
             
             {/* Step 2 */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <div style={{ background: '#4ade80', color: '#000', width: '30px', height: '30px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', marginBottom: '0.5rem' }}>2</div>
-              <h4 style={{ color: '#fff', marginBottom: '0.5rem', fontSize: '1rem' }}>ALIMENTA</h4>
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', height: '70px', marginBottom: '0.5rem' }}>
-                 <Gamepad2 size={40} color="#fcd535" />
-              </div>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: '1.4' }}>Compra maíz para mantener a tus gallinas sanas y produciendo.</p>
+              <h4 style={{ color: '#fff', marginBottom: '0.5rem', fontSize: '1rem' }}>COMPRA GALLINAS</h4>
+              <img src="/img/chicken_4.png" alt="Gallina" style={{ height: '70px', objectFit: 'contain', marginBottom: '0.5rem' }} />
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: '1.4' }}>Usa tus Huevos para adquirir gallinas en la tienda y empezar a producir.</p>
             </div>
 
             {/* Step 3 */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <div style={{ background: '#4ade80', color: '#000', width: '30px', height: '30px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', marginBottom: '0.5rem' }}>3</div>
-              <h4 style={{ color: '#fff', marginBottom: '0.5rem', fontSize: '1rem' }}>RECOLECTA HUEVOS</h4>
+              <h4 style={{ color: '#fff', marginBottom: '0.5rem', fontSize: '1rem' }}>ALIMENTA Y RECOLECTA</h4>
               <img src="/img/egg_4.png" alt="Huevos" style={{ height: '70px', objectFit: 'contain', marginBottom: '0.5rem' }} />
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: '1.4' }}>Recoge los huevos que tus gallinas ponen durante el ciclo.</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: '1.4' }}>Compra sacos de maíz y recoge constantemente los huevos que ponen tus gallinas.</p>
             </div>
 
             {/* Step 4 */}
@@ -94,7 +94,7 @@ export function LandingPage({ onLogin, onRegister }) {
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', height: '70px', marginBottom: '0.5rem' }}>
                  <Users size={40} color="#f97316" />
               </div>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: '1.4' }}>Usa la incubadora mística para descubrir leyendas originales.</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: '1.4' }}>Usa la incubadora mística con tus huevos para descubrir Leyendas Originales o Clones.</p>
             </div>
 
             {/* Step 5 */}
@@ -102,9 +102,9 @@ export function LandingPage({ onLogin, onRegister }) {
               <div style={{ background: '#4ade80', color: '#000', width: '30px', height: '30px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', marginBottom: '0.5rem' }}>5</div>
               <h4 style={{ color: '#fff', marginBottom: '0.5rem', fontSize: '1rem' }}>CAMBIA POR DINERO</h4>
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', height: '70px', marginBottom: '0.5rem' }}>
-                 <Coins size={50} color="#4ade80" />
+                 <Coins size={50} color="#fcd535" />
               </div>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: '1.4' }}>Vende tu producción por USDT directo a tu cuenta de Binance.</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: '1.4' }}>Vende tu producción de huevos por USDT real y retíralo directo a tu cuenta de Binance.</p>
             </div>
           </div>
         </section>
