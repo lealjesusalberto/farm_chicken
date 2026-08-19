@@ -85,14 +85,24 @@ function Auth({ initialMode = false, onBack }) {
   };
 
   const handleResetPassword = async () => {
-    if (!email) {
-      return setError('Por favor, escribe tu correo electrónico primero para recuperar tu contraseña.');
-    }
-    try {
-      await sendPasswordResetEmail(auth, email);
-      import('sweetalert2').then(Swal => Swal.default.fire('¡Enviado!', 'Revisa tu bandeja de entrada o carpeta de Spam para restablecer tu contraseña.', 'success'));
-    } catch (err) {
-      setError(err.message);
+    const Swal = (await import('sweetalert2')).default;
+    const { value: resetEmail } = await Swal.fire({
+      title: 'Recuperar Contraseña',
+      input: 'email',
+      inputLabel: 'Ingresa tu correo electrónico',
+      inputPlaceholder: 'tu@correo.com',
+      showCancelButton: true,
+      confirmButtonText: 'Enviar Link',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (resetEmail) {
+      try {
+        await sendPasswordResetEmail(auth, resetEmail);
+        Swal.fire('¡Enviado!', 'Revisa tu bandeja de entrada o carpeta de Spam para restablecer tu contraseña.', 'success');
+      } catch (err) {
+        Swal.fire('Error', err.message, 'error');
+      }
     }
   };
 
