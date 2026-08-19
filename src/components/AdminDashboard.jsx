@@ -9,6 +9,8 @@ export function AdminDashboard({ onLogout }) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentWeather, setCurrentWeather] = useState('sunny');
+  const [oracleRate, setOracleRate] = useState(100);
+  const [newOracleRate, setNewOracleRate] = useState('');
   const { rate, loading: rateLoading } = useExchangeRate();
 
   useEffect(() => {
@@ -34,12 +36,34 @@ export function AdminDashboard({ onLogout }) {
       if (snap.exists()) setCurrentWeather(snap.data().type || 'sunny');
     });
 
+    // Escuchar Oráculo
+    const unsubOracle = onSnapshot(doc(db, 'config', 'oracle'), (snap) => {
+      if (snap.exists() && snap.data().rate) {
+        setOracleRate(snap.data().rate);
+        setNewOracleRate(snap.data().rate);
+      }
+    });
+
     return () => {
       unsubTx();
       unsubUsers();
       unsubWeather();
+      unsubOracle();
     };
   }, []);
+
+  const changeOracleRate = async () => {
+    const rateNum = Number(newOracleRate);
+    if (isNaN(rateNum) || rateNum <= 0) return Swal.fire('Error', 'Ingresa una tasa válida', 'error');
+    
+    try {
+      await setDoc(doc(db, 'config', 'oracle'), { rate: rateNum }, { merge: true });
+      Swal.fire('¡Actualizado!', `El Oráculo ahora está en 1 USDT = ${rateNum} Huevos`, 'success');
+    } catch (e) {
+      console.error(e);
+      Swal.fire('Error', 'No se pudo actualizar el Oráculo', 'error');
+    }
+  };
 
   const changeWeather = async (type) => {
     try {
@@ -205,8 +229,34 @@ export function AdminDashboard({ onLogout }) {
           </div>
         </div>
 
-        {/* Lista de Usuarios */}
+        {/* Control del Oráculo */}
         <div className="glass-panel" style={{ padding: '2rem' }}>
+          <h3>⚖️ Oráculo de Economía</h3>
+          <p style={{ fontSize: '0.85rem', color: '#aaa', marginBottom: '1.5rem', lineHeight: '1.4' }}>
+            Controla cuántos Huevos equivale 1 USDT. Afecta directamente los precios, retiros y recargas.
+          </p>
+          <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1.5rem', borderRadius: '8px', marginBottom: '1rem' }}>
+            <p style={{ margin: 0, fontSize: '1.2rem' }}>Tasa Actual: <strong style={{ color: '#fcd535' }}>1 USDT = {oracleRate} Huevos</strong></p>
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <input 
+              type="number" 
+              value={newOracleRate} 
+              onChange={(e) => setNewOracleRate(e.target.value)} 
+              placeholder="Nueva tasa"
+              style={{ flex: 1, padding: '0.8rem', borderRadius: '8px', border: 'none', outline: 'none' }}
+            />
+            <button 
+              onClick={changeOracleRate}
+              style={{ background: '#fcd535', color: '#000', border: 'none', padding: '0.8rem 1.5rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              Actualizar
+            </button>
+          </div>
+        </div>
+
+        {/* Lista de Usuarios */}
+        <div className="glass-panel" style={{ padding: '2rem', gridColumn: '1 / -1' }}>
           <h3>👥 Usuarios Registrados</h3>
           <p style={{ marginTop: '0.5rem', marginBottom: '1rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Actualización en tiempo real ⚡</p>
           

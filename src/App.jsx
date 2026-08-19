@@ -4,6 +4,7 @@ import { Store } from './components/Store';
 import { Farm } from './components/Farm';
 import { Basket } from './components/Basket';
 import { AdminDashboard } from './components/AdminDashboard';
+import { Sidebar } from './components/Sidebar';
 import { useGameEngine } from './hooks/useGameEngine';
 import { useExchangeRate } from './hooks/useExchangeRate';
 import { auth, db } from './firebase';
@@ -129,11 +130,12 @@ function Auth({ initialMode = false, onBack }) {
 function MainApp({ user }) {
   const [weatherData, setWeatherData] = useState({ type: 'sunny', history: [] });
   const weather = weatherData.type || 'sunny';
-  const { balance, userData, chickens, buyChicken, buyMysteryEgg, buyFood, feedChicken, openMysteryEgg, sellChicken, collectEggs, sellEggs, incubateEggs, addTestEggs, rechargeBalance, requestWithdrawal, incomePerDay, pendingRecharges } = useGameEngine(user, weatherData);
+  const { balance, eggBalance, userData, chickens, oracleRate, buyChicken, buyMysteryEgg, buyFood, feedChicken, scareFox, openMysteryEgg, sellChicken, collectEggs, sellEggs, incubateEggs, exchangeUsdtToEggs, exchangeEggsToUsdt, addTestEggs, rechargeBalance, requestWithdrawal, incomePerDay, pendingRecharges } = useGameEngine(user, weatherData);
   const { rate, loading: rateLoading } = useExchangeRate();
   const [showStore, setShowStore] = useState(false);
   const [showWallet, setShowWallet] = useState(false);
   const [showBasket, setShowBasket] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
   const [farmingUsers, setFarmingUsers] = useState(89);
 
   useEffect(() => {
@@ -174,12 +176,25 @@ function MainApp({ user }) {
 
   return (
     <div className="game-container">
+      <Sidebar 
+        isOpen={showSidebar} 
+        onClose={() => setShowSidebar(false)} 
+        userData={userData} 
+        balance={balance} 
+        eggBalance={eggBalance} 
+        chickens={chickens} 
+        onLogout={() => auth.signOut()} 
+      />
       
       {/* Game Header (Mobile First) */}
       <header className="game-header">
         <div className="game-stats-pill">
           {userData && (
-            <div style={{ paddingRight: '0.5rem', borderRight: '1px solid rgba(255,255,255,0.2)', marginRight: '0.5rem', display: 'flex', alignItems: 'center' }}>
+            <div 
+              style={{ paddingRight: '0.5rem', borderRight: '1px solid rgba(255,255,255,0.2)', marginRight: '0.5rem', display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+              onClick={() => setShowSidebar(true)}
+              title="Abrir Perfil"
+            >
               <img 
                 src={COUNTRIES[userData.country || 'Venezuela']?.iconUrl || 'https://flagcdn.com/w80/ve.png'} 
                 alt="Country Flag" 
@@ -195,10 +210,16 @@ function MainApp({ user }) {
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'var(--primary-color)', fontWeight: 'bold' }}>
-            <Coins size={18} /> 
-            <span style={{ fontSize: '1.2rem' }}>${(balance || 0).toFixed(2)}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#10b981', fontWeight: 'bold' }}>
+              <Coins size={18} /> 
+              <span style={{ fontSize: '1.2rem' }}>${(balance || 0).toFixed(2)}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#fbbf24', fontWeight: 'bold' }}>
+              <span style={{ fontSize: '1.2rem' }}>🥚 {Math.floor(eggBalance || 0)}</span>
+            </div>
           </div>
+          
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#fff', fontSize: '0.9rem', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '0.5rem' }}>
             <TrendingUp size={14} color="var(--accent-color)" /> +${incomePerDay.toFixed(2)}/d
           </div>
@@ -219,16 +240,12 @@ function MainApp({ user }) {
             <span style={{ fontWeight: 'bold' }}>{farmingUsers}</span> 
             <span style={{ color: '#ccc' }}>farmeando</span>
           </div>
-          
-          <button onClick={() => auth.signOut()} title="Cerrar Sesión" style={{ background: 'rgba(255,0,0,0.2)', border: 'none', color: '#ff4c4c', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' }}>
-            <LogOut size={20} color="#ff4c4c" />
-          </button>
         </div>
       </header>
 
       {/* Main Farm Area (Fills remaining space) */}
       <main style={{ flex: 1, position: 'relative', width: '100%', height: '100%', overflowY: 'auto', overflowX: 'hidden' }}>
-        <Farm chickens={chickens} userData={userData} weatherData={weatherData} onCollect={collectEggs} onOpenEgg={openMysteryEgg} onSell={sellChicken} onFeed={feedChicken} />
+        <Farm chickens={chickens} userData={userData} weatherData={weatherData} onCollect={collectEggs} onOpenEgg={openMysteryEgg} onSell={sellChicken} onFeed={feedChicken} onScareFox={scareFox} />
       </main>
 
       {/* Bottom Action Bar */}
@@ -255,7 +272,7 @@ function MainApp({ user }) {
               </button>
             </div>
             <div style={{ flex: 1, overflowY: 'auto' }}>
-              <Store balance={balance} onBuy={buyChicken} onBuyMysteryEgg={buyMysteryEgg} onBuyFood={buyFood} rate={rate} />
+              <Store balance={balance} eggBalance={eggBalance} onBuy={buyChicken} onBuyMysteryEgg={buyMysteryEgg} onBuyFood={buyFood} exchangeUsdtToEggs={exchangeUsdtToEggs} exchangeEggsToUsdt={exchangeEggsToUsdt} rate={rate} oracleRate={oracleRate} />
             </div>
           </div>
         </div>
@@ -271,6 +288,7 @@ function MainApp({ user }) {
             {/* The Dashboard acts as our Wallet view now */}
             <Dashboard 
               balance={balance} 
+              eggBalance={eggBalance} 
               userData={userData}
               incomePerDay={incomePerDay} 
               onRecharge={rechargeBalance} 

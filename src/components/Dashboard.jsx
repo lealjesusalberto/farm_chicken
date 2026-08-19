@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Coins, TrendingUp, PlusCircle, Landmark, X } from 'lucide-react';
 import Swal from 'sweetalert2';
 
-export function Dashboard({ balance, incomePerDay, onRecharge, onWithdraw, rate, pendingRecharges = [], userData }) {
+export function Dashboard({ balance, eggBalance, incomePerDay, onRecharge, onWithdraw, rate, pendingRecharges = [], userData }) {
   const [showRecharge, setShowRecharge] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -33,21 +33,25 @@ export function Dashboard({ balance, incomePerDay, onRecharge, onWithdraw, rate,
     <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', position: 'relative' }}>
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-        <div className="dashboard-stats" style={{ display: 'flex', gap: '2rem' }}>
+        <div className="dashboard-stats" style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
           <div>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Saldo Disponible</p>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Saldo Disponible (USDT)</p>
             <p style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Coins size={28} />
               ${balance.toFixed(2)} USDT
             </p>
-            {rate && <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '-0.5rem' }}>~ {(balance * rate).toFixed(2)} Bs</p>}
+          </div>
+          <div style={{ borderLeft: '1px solid var(--glass-border)', paddingLeft: '2rem' }}>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Monedas Huevo</p>
+            <p style={{ fontSize: '2rem', fontWeight: 'bold', color: '#fbbf24', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              🥚 {Math.floor(eggBalance || 0)}
+            </p>
           </div>
           <div style={{ borderLeft: '1px solid var(--glass-border)', paddingLeft: '2rem' }}>
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Producción Diaria</p>
             <p style={{ fontSize: '1.2rem', color: 'var(--text-main)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <TrendingUp size={20} color="var(--accent-color)" /> +${incomePerDay.toFixed(2)} USDT
             </p>
-            {rate && <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>~ {(incomePerDay * rate).toFixed(2)} Bs al día</p>}
           </div>
         </div>
         
@@ -148,7 +152,7 @@ export function Dashboard({ balance, incomePerDay, onRecharge, onWithdraw, rate,
             <h3 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ff4c4c' }}><Coins size={20} /> Retirar Fondos</h3>
             <p style={{ color: 'var(--text-muted)', marginBottom: '0.5rem', fontSize: '0.9rem' }}>El monto será descontado inmediatamente de tu saldo y enviado a revisión.</p>
             <p style={{ color: 'var(--text-muted)', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Los retiros se pagan exclusivamente por <strong>Binance Pay (USDT)</strong>.</p>
-            <p style={{ color: '#ffcc00', fontSize: '0.9rem', fontWeight: 'bold' }}>⚠️ Monto mínimo de retiro: $20 USDT</p>
+            <p style={{ color: '#ffcc00', marginTop: '1rem', fontSize: '0.85rem', borderLeft: '3px solid #ffcc00', paddingLeft: '10px' }}>⚠️ Se aplicará un fee del <strong>10%</strong> a todos los retiros para mantener la economía de la granja.</p>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

@@ -1,12 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { CHICKEN_TYPES, calculateEffectiveTime } from '../hooks/useGameEngine';
-import { Info, Volume2, VolumeX } from 'lucide-react';
+import { Info, Volume2, VolumeX, Backpack } from 'lucide-react';
 import Swal from 'sweetalert2';
 
-export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed, weatherData }) {
+export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed, onScareFox, weatherData }) {
   const [now, setNow] = useState(Date.now());
   const [isMuted, setIsMuted] = useState(true);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isInventoryOpen, setIsInventoryOpen] = useState(false);
+  const [particles, setParticles] = useState([]);
   const audioRef = useRef(null);
+  
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   // Lógica de Día y Noche
   const currentHour = new Date(now).getHours();
@@ -18,6 +27,25 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed,
     const interval = setInterval(() => setNow(Date.now()), 10000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleCollect = (e, chicken) => {
+    if (chicken.currentEggs > 0 && !chicken.hasFox) {
+      const numParticles = 6;
+      const newParticles = Array.from({length: numParticles}).map((_, i) => ({
+        id: Date.now() + i + Math.random(),
+        x: e.clientX,
+        y: e.clientY,
+        offsetX: (Math.random() - 0.5) * 120, // Explosión en X
+        offsetY: (Math.random() - 0.5) * 120, // Explosión en Y
+      }));
+      setParticles(prev => [...prev, ...newParticles]);
+      
+      setTimeout(() => {
+        setParticles(prev => prev.filter(p => !newParticles.find(np => np.id === p.id)));
+      }, 1000);
+    }
+    onCollect(chicken.id);
+  };
 
   const toggleSound = () => {
     if (isMuted) {
@@ -49,34 +77,55 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed,
         <h2 style={{ color: 'white', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>Tu granja está vacía. ¡Compra gallinas para empezar!</h2>
         
         {/* Top Inventory Bar */}
-        {(userData?.mysteryEggs > 0 || userData?.cornCount > 0) && (
-          <div style={{ marginTop: '2rem', background: 'rgba(255,255,255,0.1)', padding: '1rem', borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)', width: 'fit-content', margin: '2rem auto' }}>
+        {(userData?.mysteryEggs > 0 || userData?.cornCount > 0 || userData?.specialCornCount > 0) && (
+          <div className="inventory-widget">
+            {isMobile && (
+              <button onClick={() => setIsInventoryOpen(!isInventoryOpen)} style={{ background: 'var(--primary-color)', border: 'none', color: '#fff', width: '50px', height: '50px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.5)' }}>
+                <Backpack size={24} />
+                <span style={{ position: 'absolute', top: '0', right: '0', background: '#ff4c4c', fontSize: '0.6rem', padding: '2px 5px', borderRadius: '50%' }}>!</span>
+              </button>
+            )}
             
-            {userData?.mysteryEggs > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{ position: 'relative' }}>
-                  <img src="/img/mystery_egg.png" alt="Huevos" style={{ width: '50px', height: '50px' }} />
-                  <span style={{ position: 'absolute', top: '-5px', right: '-10px', background: '#fcd535', color: '#000', fontWeight: 'bold', borderRadius: '50%', padding: '2px 8px' }}>{userData.mysteryEggs}</span>
+            {(!isMobile || isInventoryOpen) && (
+            <div className={isMobile ? "inventory-widget-inner" : ""} style={{ display: 'flex', gap: isMobile ? '0.5rem' : '2rem', flexWrap: 'wrap', flexDirection: isMobile ? 'column' : 'row' }}>
+              {userData?.mysteryEggs > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{ position: 'relative' }}>
+                    <img src="/img/mystery_egg.png" alt="Huevos" style={{ width: '40px', height: '40px' }} />
+                    <span style={{ position: 'absolute', top: '-5px', right: '-10px', background: '#fcd535', color: '#000', fontWeight: 'bold', borderRadius: '50%', padding: '2px 8px' }}>{userData.mysteryEggs}</span>
+                  </div>
+                  <div style={{ textAlign: 'left' }}>
+                    <h3 style={{ margin: 0, color: '#fcd535', fontSize: '1rem' }}>Cesta de Huevos</h3>
+                  </div>
+                  <button className="btn-primary" onClick={onOpenEgg} style={{ marginLeft: '0.5rem', padding: '0.3rem 0.8rem', fontSize: '0.8rem', position: 'relative', zIndex: 100 }}>Abrir</button>
                 </div>
-                <div style={{ textAlign: 'left' }}>
-                  <h3 style={{ margin: 0, color: '#fcd535', fontSize: '1.1rem' }}>Cesta de Huevos</h3>
-                </div>
-                <button className="btn-primary" onClick={onOpenEgg} style={{ marginLeft: '0.5rem', padding: '0.5rem 1rem', fontSize: '0.9rem' }}>Abrir</button>
-              </div>
-            )}
+              )}
 
-            {userData?.cornCount > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', borderLeft: userData?.mysteryEggs > 0 ? '1px solid rgba(255,255,255,0.2)' : 'none', paddingLeft: userData?.mysteryEggs > 0 ? '2rem' : '0' }}>
-                <div style={{ position: 'relative' }}>
-                  <img src="/img/super_corn.png" alt="Súper Maíz" style={{ width: '50px', height: '50px' }} />
-                  <span style={{ position: 'absolute', top: '-5px', right: '-10px', background: '#4ade80', color: '#000', fontWeight: 'bold', borderRadius: '50%', padding: '2px 8px' }}>{userData.cornCount}</span>
+              {userData?.cornCount > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{ position: 'relative' }}>
+                    <img src="/img/super_corn.png" alt="Saco Común" style={{ width: '40px', height: '40px' }} />
+                    <span style={{ position: 'absolute', top: '-5px', right: '-10px', background: '#4ade80', color: '#000', fontWeight: 'bold', borderRadius: '50%', padding: '2px 8px' }}>{userData.cornCount}</span>
+                  </div>
+                  <div style={{ textAlign: 'left' }}>
+                    <h3 style={{ margin: 0, color: '#4ade80', fontSize: '1rem' }}>Saco Común</h3>
+                  </div>
                 </div>
-                <div style={{ textAlign: 'left' }}>
-                  <h3 style={{ margin: 0, color: '#4ade80', fontSize: '1.1rem' }}>Súper Maíz</h3>
-                </div>
-              </div>
-            )}
+              )}
 
+              {userData?.specialCornCount > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{ position: 'relative' }}>
+                    <img src="/img/premium_corn.png" alt="Saco Especial" style={{ width: '40px', height: '40px' }} />
+                    <span style={{ position: 'absolute', top: '-5px', right: '-10px', background: '#a855f7', color: '#000', fontWeight: 'bold', borderRadius: '50%', padding: '2px 8px' }}>{userData.specialCornCount}</span>
+                  </div>
+                  <div style={{ textAlign: 'left' }}>
+                    <h3 style={{ margin: 0, color: '#a855f7', fontSize: '1rem' }}>Saco Especial</h3>
+                  </div>
+                </div>
+              )}
+            </div>
+            )}
           </div>
         )}
       </div>
@@ -109,40 +158,63 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed,
       {weather === 'rainbow' && <div className="weather-overlay weather-rainbow"></div>}
       {weather === 'stars' && <div className="weather-overlay weather-stars"></div>}
 
-      {(userData?.mysteryEggs > 0 || userData?.cornCount > 0) && (
-        <div style={{ background: 'rgba(255,255,255,0.1)', padding: '1rem', borderRadius: '15px', marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)', maxWidth: '600px', margin: '0 auto 2rem auto' }}>
+      {(userData?.mysteryEggs > 0 || userData?.cornCount > 0 || userData?.specialCornCount > 0) && (
+        <div className="inventory-widget">
+          {isMobile && (
+            <button onClick={() => setIsInventoryOpen(!isInventoryOpen)} style={{ background: 'var(--primary-color)', border: 'none', color: '#fff', width: '50px', height: '50px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.5)' }}>
+              <Backpack size={24} />
+              <span style={{ position: 'absolute', top: '0', right: '0', background: '#ff4c4c', fontSize: '0.6rem', padding: '2px 5px', borderRadius: '50%' }}>!</span>
+            </button>
+          )}
           
-          {userData?.mysteryEggs > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div style={{ position: 'relative' }}>
-                <img src="/img/mystery_egg.png" alt="Huevos" style={{ width: '50px', height: '50px' }} />
-                <span style={{ position: 'absolute', top: '-5px', right: '-10px', background: '#fcd535', color: '#000', fontWeight: 'bold', borderRadius: '50%', padding: '2px 8px' }}>{userData.mysteryEggs}</span>
+          {(!isMobile || isInventoryOpen) && (
+          <div className={isMobile ? "inventory-widget-inner" : ""} style={{ display: 'flex', gap: isMobile ? '0.5rem' : '2rem', flexWrap: 'wrap', flexDirection: isMobile ? 'column' : 'row' }}>
+            
+            {userData?.mysteryEggs > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ position: 'relative' }}>
+                  <img src="/img/mystery_egg.png" alt="Huevos" style={{ width: '40px', height: '40px' }} />
+                  <span style={{ position: 'absolute', top: '-5px', right: '-10px', background: '#fcd535', color: '#000', fontWeight: 'bold', borderRadius: '50%', padding: '2px 8px' }}>{userData.mysteryEggs}</span>
+                </div>
+                <div style={{ textAlign: 'left' }}>
+                  <h3 style={{ margin: 0, color: '#fcd535', fontSize: '1rem' }}>Cesta de Huevos</h3>
+                </div>
+                <button className="btn-primary" onClick={onOpenEgg} style={{ marginLeft: '0.5rem', padding: '0.3rem 0.8rem', fontSize: '0.8rem', position: 'relative', zIndex: 100 }}>Abrir</button>
               </div>
-              <div style={{ textAlign: 'left' }}>
-                <h3 style={{ margin: 0, color: '#fcd535', fontSize: '1.1rem' }}>Cesta de Huevos</h3>
-              </div>
-              <button className="btn-primary" onClick={onOpenEgg} style={{ marginLeft: '0.5rem', padding: '0.5rem 1rem', fontSize: '0.9rem' }}>Abrir</button>
-            </div>
-          )}
+            )}
 
-          {userData?.cornCount > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', borderLeft: userData?.mysteryEggs > 0 ? '1px solid rgba(255,255,255,0.2)' : 'none', paddingLeft: userData?.mysteryEggs > 0 ? '2rem' : '0' }}>
-              <div style={{ position: 'relative' }}>
-                <img src="/img/super_corn.png" alt="Súper Maíz" style={{ width: '50px', height: '50px' }} />
-                <span style={{ position: 'absolute', top: '-5px', right: '-10px', background: '#4ade80', color: '#000', fontWeight: 'bold', borderRadius: '50%', padding: '2px 8px' }}>{userData.cornCount}</span>
+            {userData?.cornCount > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ position: 'relative' }}>
+                  <img src="/img/super_corn.png" alt="Saco Común" style={{ width: '40px', height: '40px' }} />
+                  <span style={{ position: 'absolute', top: '-5px', right: '-10px', background: '#4ade80', color: '#000', fontWeight: 'bold', borderRadius: '50%', padding: '2px 8px' }}>{userData.cornCount}</span>
+                </div>
+                <div style={{ textAlign: 'left' }}>
+                  <h3 style={{ margin: 0, color: '#4ade80', fontSize: '1rem' }}>Saco Común</h3>
+                </div>
               </div>
-              <div style={{ textAlign: 'left' }}>
-                <h3 style={{ margin: 0, color: '#4ade80', fontSize: '1.1rem' }}>Súper Maíz</h3>
-              </div>
-            </div>
-          )}
+            )}
 
+            {userData?.specialCornCount > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ position: 'relative' }}>
+                  <img src="/img/premium_corn.png" alt="Saco Especial" style={{ width: '40px', height: '40px' }} />
+                  <span style={{ position: 'absolute', top: '-5px', right: '-10px', background: '#a855f7', color: '#000', fontWeight: 'bold', borderRadius: '50%', padding: '2px 8px' }}>{userData.specialCornCount}</span>
+                </div>
+                <div style={{ textAlign: 'left' }}>
+                  <h3 style={{ margin: 0, color: '#a855f7', fontSize: '1rem' }}>Saco Especial</h3>
+                </div>
+              </div>
+            )}
+
+          </div>
+          )}
         </div>
       )}
 
       <h2 className="hide-on-mobile" style={{ marginBottom: '2rem', color: 'white', textShadow: '0 2px 4px rgba(0,0,0,0.8)', textAlign: 'center' }}>Tu Granja ({chickens.length} Gallinas)</h2>
       
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3rem', justifyContent: 'center', zIndex: 1, position: 'relative', paddingBottom: '2rem' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3rem', justifyContent: 'center', zIndex: 1, position: 'relative', paddingBottom: '2rem', paddingTop: isMobile ? '120px' : '0px' }}>
         {chickens.map((chicken) => {
           const type = CHICKEN_TYPES.find(c => c.id === chicken.typeId);
           const isDepleted = chicken.currentEggs >= 5;
@@ -151,7 +223,7 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed,
           // Lógica de progreso
           const isBoosted = chicken.boostEndTime && now < chicken.boostEndTime;
           
-          let effectiveTimePassed = calculateEffectiveTime(chicken.typeId, chicken.lastEggTime, now, chicken.boostStartTime, chicken.boostEndTime, weatherData?.history);
+          let effectiveTimePassed = calculateEffectiveTime(chicken.typeId, chicken.lastEggTime, now, chicken.boostStartTime, chicken.boostEndTime, weatherData?.history, chicken);
           
           let currentMultiplier = 1;
           
@@ -184,7 +256,10 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed,
             
             const remainingEffective = CYCLE_DURATION - effectiveTimePassed;
             let realTimeMultiplier = currentMultiplier;
-            if (isBoosted) realTimeMultiplier *= 2;
+            if (isBoosted) {
+              const boostMultiplier = type.foodType === 'special' ? 2 : 1.5;
+              realTimeMultiplier *= boostMultiplier;
+            }
             
             timeLeftMins = Math.floor((remainingEffective / realTimeMultiplier) / 60000);
           } else {
@@ -196,13 +271,11 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed,
             <div key={chicken.id} className="animate-float" style={{ animationDelay: `${Math.random()}s`, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <div 
                 style={{ 
-                  cursor: chicken.currentEggs > 0 ? 'pointer' : 'default',
+                  cursor: 'default',
                   position: 'relative'
                 }}
-                onClick={() => onCollect(chicken.id)}
-                title={chicken.currentEggs > 0 ? "¡Clic para recolectar!" : ""}
               >
-                {isBoosted && <div style={{ position: 'absolute', top: '-15px', left: '50%', transform: 'translateX(-50%)', color: type.auraColor || '#4ade80', fontWeight: 'bold', fontSize: '0.8rem', whiteSpace: 'nowrap', textShadow: '0 2px 4px rgba(0,0,0,0.8)', zIndex: 2 }}>✨ 2x BOOST ✨</div>}
+                {isBoosted && <div style={{ position: 'absolute', top: '-15px', left: '50%', transform: 'translateX(-50%)', color: type.auraColor || '#4ade80', fontWeight: 'bold', fontSize: '0.8rem', whiteSpace: 'nowrap', textShadow: '0 2px 4px rgba(0,0,0,0.8)', zIndex: 2 }}>{type.foodType === 'special' ? '✨ 2x BOOST ✨' : '⚡ +50% Vel'}</div>}
                 
                 {chicken.isHalfSpecial && <div style={{ position: 'absolute', top: '5px', left: '0', background: 'rgba(255,0,0,0.7)', color: '#fff', fontSize: '0.65rem', padding: '2px 5px', borderRadius: '4px', zIndex: 3, fontWeight: 'bold', border: '1px solid #ff4c4c' }}>CLON {chicken.clonePower || 50}%</div>}
                 
@@ -211,11 +284,23 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed,
                     onClick={(e) => { 
                       e.stopPropagation(); 
                       Swal.fire({
-                        title: type.name, 
-                        html: `<b>Habilidad:</b> ${type.description}<br/><br/>${chicken.isHalfSpecial ? `<i>⚠️ Este es un CLON, su poder está al ${chicken.clonePower || 50}%.</i>` : '<i>✨ Leyenda Original, poder al 100%.</i>'}`, 
+                        title: `<span style="color: var(--primary-color);">${type.name}</span>`, 
+                        html: `<div style="text-align: left; font-size: 0.95rem; line-height: 1.5; padding: 0.5rem 0;">
+                                <strong style="color: #fff;">Habilidad:</strong> <span style="color: #ddd;">${type.description}</span><br/><br/>
+                                ${chicken.isHalfSpecial 
+                                  ? `<div style="background: rgba(255,0,0,0.15); padding: 0.8rem; border-radius: 12px; border: 1px solid rgba(255,0,0,0.3); color: #ffcccc; font-size: 0.85rem;">⚠️ Este es un <b>CLON</b>. Su poder de producción está al <b>${chicken.clonePower || 50}%</b>.</div>` 
+                                  : `<div style="background: rgba(251, 191, 36, 0.15); padding: 0.8rem; border-radius: 12px; border: 1px solid rgba(251, 191, 36, 0.3); color: #fde68a; font-size: 0.85rem;">✨ <b>Leyenda Original</b>. Su poder de producción está al <b>100%</b>.</div>`}
+                              </div>`, 
                         icon: 'info',
-                        background: '#1e1e1e',
-                        color: '#fff'
+                        iconColor: 'var(--primary-color)',
+                        background: 'rgba(15, 23, 42, 0.9)',
+                        color: '#fff',
+                        confirmButtonText: 'Entendido',
+                        buttonsStyling: false,
+                        customClass: { 
+                          popup: 'glass-panel small-info-modal',
+                          confirmButton: 'btn-primary'
+                        }
                       }); 
                     }}
                     style={{ position: 'absolute', top: '5px', right: '0', background: 'rgba(0,0,0,0.6)', border: '1px solid ' + (type.auraColor || '#ccc'), color: type.auraColor || '#fff', padding: '4px', borderRadius: '50%', cursor: 'pointer', zIndex: 3 }}
@@ -227,6 +312,53 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed,
                 
                 <img src={currentImg} alt="Gallina" style={{ height: '120px', objectFit: 'contain', filter: type.auraColor ? (chicken.isHalfSpecial ? `drop-shadow(0 0 10px ${type.auraColor}66)` : `drop-shadow(0 0 20px ${type.auraColor}99)`) : (isBoosted ? 'drop-shadow(0 0 15px rgba(74,222,128,0.8))' : 'drop-shadow(0 10px 10px rgba(0,0,0,0.6))'), opacity: chicken.isHalfSpecial ? 0.85 : 1, transition: 'all 0.3s' }} />
                 
+                {chicken.hasFox && (
+                  <div style={{ position: 'absolute', top: '10px', left: '-20px', zIndex: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <img src="/img/zorro.png" alt="Zorro Atacando" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); onScareFox(chicken.id); }}
+                      style={{ background: '#ff4c4c', color: '#fff', border: '1px solid #fff', padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', cursor: 'pointer', marginTop: '2px', boxShadow: '0 2px 5px rgba(0,0,0,0.8)' }}
+                    >
+                      Espantar (10 H)
+                    </button>
+                  </div>
+                )}
+                
+                {/* Botón Alimentar Flotante */}
+                {!isBoosted && (
+                  (() => {
+                    const foodType = type.foodType || 'common';
+                    const requiredBags = type.foodBagsRequired || 1;
+                    const field = foodType === 'special' ? 'specialCornCount' : 'cornCount';
+                    const userCorn = userData?.[field] || 0;
+                    const canAfford = userCorn >= requiredBags;
+                    const btnColor = foodType === 'special' ? '#a855f7' : '#4ade80';
+                    const icon = foodType === 'special' ? '✨' : '🌽';
+                    
+                    return (
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onFeed(chicken.id);
+                        }}
+                        style={{ 
+                          position: 'absolute', bottom: '0', left: '-5px', 
+                          background: canAfford ? `rgba(0,0,0,0.8)` : 'rgba(0,0,0,0.6)', 
+                          color: canAfford ? btnColor : '#888', 
+                          border: `1px solid ${canAfford ? btnColor : 'rgba(255,255,255,0.2)'}`,
+                          padding: '4px 8px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: 'bold', 
+                          cursor: canAfford ? 'pointer' : 'not-allowed', zIndex: 3,
+                          boxShadow: canAfford ? `0 0 8px ${btnColor}4D` : 'none',
+                          display: 'flex', alignItems: 'center', gap: '3px'
+                        }}
+                        title={`Alimentar (${requiredBags} Saco${requiredBags > 1 ? 's' : ''})`}
+                      >
+                        {icon} x{requiredBags}
+                      </button>
+                    );
+                  })()
+                )}
+                
                 {/* Contenedor de huevos */}
                 <div style={{ position: 'absolute', bottom: '-15px', right: '-20px', display: 'flex', gap: '-5px', flexWrap: 'wrap', width: '80px', pointerEvents: 'none' }}>
                   {Array.from({ length: chicken.currentEggs }).map((_, i) => (
@@ -237,7 +369,9 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed,
                       style={{ 
                         height: '35px', 
                         marginLeft: '-15px',
-                        filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.5))'
+                        filter: type.isSpecial ? `drop-shadow(0 2px 2px rgba(0,0,0,0.5)) drop-shadow(0 0 6px ${type.auraColor}) sepia(0.5) saturate(2) hue-rotate(-10deg)` : 'drop-shadow(0 2px 2px rgba(0,0,0,0.5))',
+                        position: 'relative',
+                        zIndex: 10 + i
                       }} 
                     />
                   ))}
@@ -262,12 +396,12 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed,
               </div>
               
               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-                {chicken.currentEggs > 0 && (
+                {chicken.currentEggs > 0 && !chicken.hasFox && (
                   <span style={{ 
                     background: 'var(--accent-color)', color: 'white', 
                     padding: '4px 12px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 'bold', 
                     boxShadow: '0 2px 5px rgba(0,0,0,0.5)', cursor: 'pointer' 
-                  }} onClick={() => onCollect(chicken.id)}>
+                  }} onClick={(e) => handleCollect(e, chicken)}>
                     Recoger
                   </span>
                 )}
@@ -279,35 +413,29 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onSell, onFeed,
                   Vender (${(type.price / 2).toFixed(2)})
                 </span>
                 
-                {!isBoosted && (
-                  (() => {
-                    const foodType = type.foodType || 'common';
-                    const requiredBags = type.foodBagsRequired || 1;
-                    const field = foodType === 'special' ? 'specialCornCount' : 'cornCount';
-                    const userCorn = userData?.[field] || 0;
-                    const canAfford = userCorn >= requiredBags;
-                    const btnColor = foodType === 'special' ? '#a855f7' : '#4ade80';
-                    const bgOp = canAfford ? '0.1' : '0.05';
-                    const icon = foodType === 'special' ? '✨' : '🌽';
-                    
-                    return (
-                      <span style={{ 
-                        background: canAfford ? `${btnColor}1A` : 'rgba(255,255,255,0.05)', 
-                        color: canAfford ? btnColor : '#888', 
-                        border: canAfford ? `1px solid ${btnColor}4D` : '1px solid rgba(255,255,255,0.1)',
-                        padding: '4px 12px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 'bold', 
-                        cursor: 'pointer', width: '100%', textAlign: 'center', marginTop: '0.25rem'
-                      }} onClick={() => onFeed(chicken.id)}>
-                        {icon} Alimentar ({requiredBags} Sacos)
-                      </span>
-                    );
-                  })()
-                )}
               </div>
             </div>
           );
         })}
       </div>
+
+      {/* Partículas de Recolección */}
+      {particles.map(p => (
+        <div 
+          key={p.id} 
+          className="coin-particle"
+          style={{ 
+            left: `${p.x}px`, 
+            top: `${p.y}px`,
+            '--tx': `calc(25vw - ${p.x}px)`,
+            '--ty': `calc(10vh - ${p.y}px)`,
+            '--ox': `${p.offsetX}px`,
+            '--oy': `${p.offsetY}px`
+          }}
+        >
+          🪙
+        </div>
+      ))}
     </div>
   );
 }

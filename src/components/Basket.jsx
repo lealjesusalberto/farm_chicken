@@ -136,7 +136,7 @@ export function Basket({ userData, onSellEggs, onIncubateEggs, onAddTestEggs }) 
           onClick={onAddTestEggs}
           style={{ background: 'rgba(74, 222, 128, 0.2)', color: '#4ade80', border: '1px solid #4ade80', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 'bold', width: 'fit-content' }}
         >
-          <Sparkles size={16} /> 1000 Huevos de Prueba
+          <Sparkles size={16} /> Llenar Gallinas (Cheat)
         </button>
       </div>
 

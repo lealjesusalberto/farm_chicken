@@ -3,29 +3,31 @@ import { db } from '../firebase';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, addDoc, onSnapshot, deleteDoc } from 'firebase/firestore';
 import Swal from 'sweetalert2';
 
-const EGG_TIME = (23 * 60 * 60 * 1000) / 5; // 4.6 horas por huevo
+const EGG_TIME = 24 * 60 * 60 * 1000; // 24 horas por huevo
 const CYCLE_DURATION = 24 * 60 * 60 * 1000; // 24 horas en total
 
 export const CHICKEN_TYPES = [
-  { id: '1', name: 'Blanca', price: 1.00, incomePerEgg: 0.005, img: '/img/chicken_1.png', depletedImg: '/img/chicken_1_1.png', eggImg: '/img/egg_1.png', eggTime: EGG_TIME, description: 'Gallina básica.', foodType: 'common', foodBagsRequired: 1 },
-  { id: '2', name: 'Turquesa', price: 3.00, incomePerEgg: 0.017, img: '/img/chicken_2.png', depletedImg: '/img/chicken_2_2.png', eggImg: '/img/egg_2.png', eggTime: EGG_TIME, description: 'Un poco mejor.', foodType: 'common', foodBagsRequired: 1 },
-  { id: '3', name: 'Amarilla', price: 7.00, incomePerEgg: 0.050, img: '/img/chicken_3.png', depletedImg: '/img/chicken_3_3.png', eggImg: '/img/egg_3.png', eggTime: EGG_TIME, description: 'Buena producción.', foodType: 'common', foodBagsRequired: 2 },
-  { id: '4', name: 'Lila', price: 15.00, incomePerEgg: 0.125, img: '/img/chicken_4.png', depletedImg: '/img/chicken_4_4.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, description: 'Excelente productora.', foodType: 'common', foodBagsRequired: 3 },
+  { id: '1', name: 'Blanca', price: 100, incomePerEgg: 0.5, img: '/img/chicken_1.png', depletedImg: '/img/chicken_1_1.png', eggImg: '/img/egg_1.png', eggTime: EGG_TIME, description: 'Gallina básica.', foodType: 'common', foodBagsRequired: 1 },
+  { id: '2', name: 'Turquesa', price: 300, incomePerEgg: 1.7, img: '/img/chicken_2.png', depletedImg: '/img/chicken_2_2.png', eggImg: '/img/egg_2.png', eggTime: EGG_TIME, description: 'Un poco mejor.', foodType: 'common', foodBagsRequired: 1 },
+  { id: '3', name: 'Amarilla', price: 700, incomePerEgg: 5, img: '/img/chicken_3.png', depletedImg: '/img/chicken_3_3.png', eggImg: '/img/egg_3.png', eggTime: EGG_TIME, description: 'Buena producción.', foodType: 'common', foodBagsRequired: 2 },
+  { id: '4', name: 'Lila', price: 1500, incomePerEgg: 12.5, img: '/img/chicken_4.png', depletedImg: '/img/chicken_4_4.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, description: 'Excelente productora.', foodType: 'common', foodBagsRequired: 3 },
   // Especiales
-  { id: 's_chef', name: 'Chef', price: 20.00, incomePerEgg: 0.20, img: '/img/specials/pollo_chef.png', depletedImg: '/img/specials/pollo_chef.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Cocina rápido. x1.5 de velocidad pasiva.', auraColor: '#ffffff', foodType: 'special', foodBagsRequired: 2 },
-  { id: 's_superman', name: 'Superman', price: 20.00, incomePerEgg: 0.20, img: '/img/specials/pollo_superman.png', depletedImg: '/img/specials/pollo_superman.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Inmune a los retrasos por lluvia.', auraColor: '#3b82f6', foodType: 'special', foodBagsRequired: 2 },
-  { id: 's_medico', name: 'Médico', price: 20.00, incomePerEgg: 0.20, img: '/img/specials/pollo_medico.png', depletedImg: '/img/specials/pollo_medico.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Inmune a los retrasos por nieve.', auraColor: '#ef4444', foodType: 'special', foodBagsRequired: 2 },
-  { id: 's_mago', name: 'Mago', price: 22.00, incomePerEgg: 0.22, img: '/img/specials/pollo_mago.png', depletedImg: '/img/specials/pollo_mago.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'La tormenta eléctrica duplica su velocidad.', auraColor: '#a855f7', foodType: 'special', foodBagsRequired: 2 },
-  { id: 's_robin', name: 'Robin Hood', price: 20.00, incomePerEgg: 0.15, img: '/img/specials/pollo_robinhoood.png', depletedImg: '/img/specials/pollo_robinhoood.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Velocidad x2 siempre (Maíz infinito).', auraColor: '#22c55e', foodType: 'special', foodBagsRequired: 2 },
-  { id: 's_pirata', name: 'Pirata', price: 25.00, incomePerEgg: 0.25, img: '/img/specials/pollo_pirata.png', depletedImg: '/img/specials/pollo_pirata.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Pone tesoros. Sus huevos valen el doble.', auraColor: '#fcd535', foodType: 'special', foodBagsRequired: 2 },
-  { id: 's_explorador', name: 'Explorador', price: 20.00, incomePerEgg: 0.15, img: '/img/specials/pollo_explorador.png', depletedImg: '/img/specials/pollo_explorador.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Otorga x3 de Experiencia (XP).', auraColor: '#f97316', foodType: 'special', foodBagsRequired: 2 },
-  { id: 's_granjero', name: 'Granjero', price: 25.00, incomePerEgg: 0.25, img: '/img/specials/pollo_granjero.png', depletedImg: '/img/specials/pollo_granjero.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'El superviviente. Inmune a TODOS los climas.', auraColor: '#8b5cf6', foodType: 'special', foodBagsRequired: 2 }
+  { id: 's_chef', name: 'Chef', price: 2000, incomePerEgg: 20, img: '/img/specials/pollo_chef.png', depletedImg: '/img/specials/pollo_chef.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Cocina rápido. x1.5 de velocidad pasiva.', auraColor: '#ffffff', foodType: 'special', foodBagsRequired: 2 },
+  { id: 's_superman', name: 'Superman', price: 2000, incomePerEgg: 20, img: '/img/specials/pollo_superman.png', depletedImg: '/img/specials/pollo_superman.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Inmune a los retrasos por lluvia.', auraColor: '#3b82f6', foodType: 'special', foodBagsRequired: 2 },
+  { id: 's_medico', name: 'Médico', price: 2000, incomePerEgg: 20, img: '/img/specials/pollo_medico.png', depletedImg: '/img/specials/pollo_medico.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Inmune a los retrasos por nieve.', auraColor: '#ef4444', foodType: 'special', foodBagsRequired: 2 },
+  { id: 's_mago', name: 'Mago', price: 2200, incomePerEgg: 22, img: '/img/specials/pollo_mago.png', depletedImg: '/img/specials/pollo_mago.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'La tormenta eléctrica duplica su velocidad.', auraColor: '#a855f7', foodType: 'special', foodBagsRequired: 2 },
+  { id: 's_robin', name: 'Robin Hood', price: 2000, incomePerEgg: 15, img: '/img/specials/pollo_robinhoood.png', depletedImg: '/img/specials/pollo_robinhoood.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Velocidad x2 siempre (Maíz infinito).', auraColor: '#22c55e', foodType: 'special', foodBagsRequired: 2 },
+  { id: 's_pirata', name: 'Pirata', price: 2500, incomePerEgg: 25, img: '/img/specials/pollo_pirata.png', depletedImg: '/img/specials/pollo_pirata.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Pone tesoros. Sus huevos valen el doble.', auraColor: '#fcd535', foodType: 'special', foodBagsRequired: 2 },
+  { id: 's_explorador', name: 'Explorador', price: 2000, incomePerEgg: 15, img: '/img/specials/pollo_explorador.png', depletedImg: '/img/specials/pollo_explorador.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Otorga x3 de Experiencia (XP).', auraColor: '#f97316', foodType: 'special', foodBagsRequired: 2 },
+  { id: 's_granjero', name: 'Granjero', price: 2500, incomePerEgg: 25, img: '/img/specials/pollo_granjero.png', depletedImg: '/img/specials/pollo_granjero.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'El superviviente. Inmune a TODOS los climas.', auraColor: '#8b5cf6', foodType: 'special', foodBagsRequired: 2 }
 ];
 
 
 
-export function calculateEffectiveTime(chickenTypeId, lastEggTime, now, boostStart, boostEnd, weatherHistory, clonePower = 100) {
+export function calculateEffectiveTime(chickenTypeId, lastEggTime, now, boostStart, boostEnd, weatherHistory, chickenRef = null) {
   let totalEffectiveTime = 0;
+  const boostMultiplier = 10;
+  const clonePower = chickenRef?.clonePower !== undefined ? chickenRef.clonePower : 100;
   
   if (!weatherHistory || weatherHistory.length === 0) {
     weatherHistory = [{ type: 'sunny', start: 0, end: null }];
@@ -46,13 +48,12 @@ export function calculateEffectiveTime(chickenTypeId, lastEggTime, now, boostSta
     }
     
     const powerFactor = clonePower / 100;
-    // Pollo Chef: x1.5 siempre pasivo (+0.5 base)
     let passiveMultiplier = 1;
     if (chickenTypeId === 's_chef') {
       passiveMultiplier = 1 + (0.5 * powerFactor);
     }
     
-    totalEffectiveTime += (normalDuration * passiveMultiplier) + (boostedDuration * 2 * passiveMultiplier);
+    totalEffectiveTime += (normalDuration * passiveMultiplier) + (boostedDuration * boostMultiplier * passiveMultiplier);
   }
 
   for (const event of weatherHistory) {
@@ -61,32 +62,15 @@ export function calculateEffectiveTime(chickenTypeId, lastEggTime, now, boostSta
     
     if (eventEnd > eventStart) {
       const duration = eventEnd - eventStart;
-      
       let weatherMultiplier = 1;
-      
       const powerFactor = clonePower / 100;
       
-      // Habilidades Especiales (Clima)
       if (event.type === 'rain') {
-        if (chickenTypeId === 's_superman' || chickenTypeId === 's_granjero') {
-          weatherMultiplier = 0.5 + (0.5 * powerFactor); // Resiste la penalización proporcionalmente
-        } else {
-          weatherMultiplier = 0.5;
-        }
+        weatherMultiplier = (chickenTypeId === 's_superman' || chickenTypeId === 's_granjero') ? (0.5 + (0.5 * powerFactor)) : 0.5;
       } else if (event.type === 'snow') {
-        if (chickenTypeId === 's_medico' || chickenTypeId === 's_granjero') {
-          weatherMultiplier = 0.5 + (0.5 * powerFactor);
-        } else {
-          weatherMultiplier = 0.5;
-        }
+        weatherMultiplier = (chickenTypeId === 's_medico' || chickenTypeId === 's_granjero') ? (0.5 + (0.5 * powerFactor)) : 0.5;
       } else if (event.type === 'thunder') {
-        if (chickenTypeId === 's_mago') {
-          weatherMultiplier = 0.5 + (1.5 * powerFactor); // Beneficio del mago proporcional
-        } else if (chickenTypeId === 's_granjero') {
-          weatherMultiplier = 0.5 + (0.5 * powerFactor);
-        } else {
-          weatherMultiplier = 0.5;
-        }
+        weatherMultiplier = (chickenTypeId === 's_mago') ? (0.5 + (1.5 * powerFactor)) : ((chickenTypeId === 's_granjero') ? (0.5 + (0.5 * powerFactor)) : 0.5);
       } else if (event.type === 'rainbow' || event.type === 'stars') {
         weatherMultiplier = 2; 
       }
@@ -94,13 +78,7 @@ export function calculateEffectiveTime(chickenTypeId, lastEggTime, now, boostSta
       let boostedDuration = 0;
       let normalDuration = duration;
       
-      if (chickenTypeId === 's_robin') {
-        // Robin Hood: Infinite Boost (x2 original, x1.5 clon)
-        let robinBoost = isHalfSpecial ? 1.5 : 2;
-        // Para simularlo, damos normalDuration = 0 y hacemos el cálculo con un boosted duration modificado
-        // O más fácil, aplicamos el multiplicador pasivo abajo y no tocamos boostedDuration
-        normalDuration = duration;
-      } else if (boostStart && boostEnd) {
+      if (boostStart && boostEnd) {
         const boostOverlapStart = Math.max(eventStart, boostStart);
         const boostOverlapEnd = Math.min(eventEnd, boostEnd);
         if (boostOverlapEnd > boostOverlapStart) {
@@ -109,50 +87,145 @@ export function calculateEffectiveTime(chickenTypeId, lastEggTime, now, boostSta
         }
       }
       
-      // Pollo Chef y Robin
-      let passiveMultiplier = 1;
-      if (chickenTypeId === 's_chef') {
-        passiveMultiplier = 1 + (0.5 * powerFactor);
-      } else if (chickenTypeId === 's_robin') {
-        passiveMultiplier = 1 + (1.0 * powerFactor);
-      }
+      let passiveMultiplier = (chickenTypeId === 's_chef') ? (1 + (0.5 * powerFactor)) : ((chickenTypeId === 's_robin') ? (1 + (1.0 * powerFactor)) : 1);
       
-      totalEffectiveTime += (normalDuration * weatherMultiplier * passiveMultiplier) + (boostedDuration * 2 * weatherMultiplier * passiveMultiplier);
+      totalEffectiveTime += (normalDuration * weatherMultiplier * passiveMultiplier) + (boostedDuration * weatherMultiplier * boostMultiplier * passiveMultiplier);
     }
   }
   
-  return totalEffectiveTime;
+  return totalEffectiveTime * (clonePower / 100);
 }
 
 export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }) {
   const [balance, setBalance] = useState(0);
+  const [eggBalance, setEggBalance] = useState(0);
   const [userData, setUserData] = useState(null);
   const [chickens, setChickens] = useState([]);
   const [pendingRecharges, setPendingRecharges] = useState([]);
+  const [oracleRate, setOracleRate] = useState(100);
 
-  // Lógica local para predecir cuántos huevos hay basados en el tiempo
-  const calculatePendingEggs = (chickenData) => {
+  useEffect(() => {
+    if (!user) return;
+    
+    // Escuchar el Oráculo
+    const oracleRef = doc(db, 'config', 'oracle');
+    const unsubOracle = onSnapshot(oracleRef, (docSnap) => {
+      if (docSnap.exists() && docSnap.data().rate) {
+        setOracleRate(docSnap.data().rate);
+      } else {
+        // Inicializar Oráculo si no existe
+        setDoc(oracleRef, { rate: 100 }, { merge: true });
+        setOracleRate(100);
+      }
+    });
+
+    const userRef = doc(db, 'users', user.uid);
+    const unsubUser = onSnapshot(userRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setUserData(data);
+        setBalance(data.balance || 0);
+        setEggBalance(data.eggBalance || 0);
+      }
+    });
+
+    const chickensRef = collection(db, 'chickens');
+    const q = query(chickensRef, where('userId', '==', user.uid));
+    const unsubChickens = onSnapshot(q, (querySnapshot) => {
+      const c = [];
+      querySnapshot.forEach(doc => {
+        c.push({ id: doc.id, ...doc.data() });
+      });
+      setChickens(c);
+    });
+    
+    const rechargesRef = collection(db, 'recharges');
+    const qr = query(rechargesRef, where('userId', '==', user.uid), where('status', '==', 'pending'));
+    const unsubRecharges = onSnapshot(qr, (querySnapshot) => {
+      const r = [];
+      querySnapshot.forEach(doc => {
+        r.push({ id: doc.id, ...doc.data() });
+      });
+      setPendingRecharges(r);
+    });
+
+    return () => {
+      unsubOracle();
+      unsubUser();
+      unsubChickens();
+      unsubRecharges();
+    };
+  }, [user]);
+
+  const calculatePendingEggs = (chickenData, chickenObj = null) => {
     const typeInfo = CHICKEN_TYPES.find(t => t.id === chickenData.typeId);
     if (!typeInfo) return chickenData;
     
     const now = Date.now();
-    let effectiveTimePassed = calculateEffectiveTime(chickenData.typeId, chickenData.lastEggTime, now, chickenData.boostStartTime, chickenData.boostEndTime, weatherData.history, chickenData.clonePower !== undefined ? chickenData.clonePower : (chickenData.isHalfSpecial ? 50 : 100));
+    let updatedData = { ...chickenData };
+    
+    // Inicializar lastFoxCheckTime si no existe
+    if (!updatedData.lastFoxCheckTime) {
+      updatedData.lastFoxCheckTime = updatedData.lastEggTime || now;
+    }
+    
+    const timeSinceLastCheck = now - updatedData.lastFoxCheckTime;
+    let needsDbUpdate = false;
+
+    if (timeSinceLastCheck > 0) {
+      if (updatedData.hasFox) {
+        // La gallina tiene zorro. El tiempo se CONGELA localmente sin spam a la base de datos.
+        updatedData.lastEggTime += timeSinceLastCheck;
+        if (updatedData.boostStartTime) updatedData.boostStartTime += timeSinceLastCheck;
+        if (updatedData.boostEndTime) updatedData.boostEndTime += timeSinceLastCheck;
+        updatedData.lastFoxCheckTime = now;
+        // NO HACEMOS needsDbUpdate = true aquí para evitar race conditions con el botón de espantar.
+      } else {
+        // No tiene zorro. Verificamos si fue atacada offline o en tiempo real.
+        // Hacemos el check solo si han pasado al menos 2.5s
+        if (timeSinceLastCheck >= 2500) {
+          const intervals = Math.floor(timeSinceLastCheck / 2500);
+          const probability = 1 - Math.pow(1 - 0.0005, intervals); // 0.05% cada 2.5s
+          
+          if (Math.random() < probability) {
+            // ¡EL ZORRO ATACÓ!
+            updatedData.hasFox = true;
+            
+            // ¿En qué punto de la desconexión atacó?
+            const attackInterval = Math.floor(Math.random() * intervals);
+            const timeBeforeAttack = attackInterval * 2500;
+            const timeAfterAttack = timeSinceLastCheck - timeBeforeAttack;
+            
+            // Congelamos el tiempo que pasó DESPUÉS del ataque
+            updatedData.lastEggTime += timeAfterAttack;
+            if (updatedData.boostStartTime) updatedData.boostStartTime += timeAfterAttack;
+            if (updatedData.boostEndTime) updatedData.boostEndTime += timeAfterAttack;
+            needsDbUpdate = true; // Solo guardamos en DB cuando ATACA el zorro
+          }
+          updatedData.lastFoxCheckTime = now;
+        }
+      }
+    }
+    
+    let effectiveTimePassed = calculateEffectiveTime(updatedData.typeId, updatedData.lastEggTime, now, updatedData.boostStartTime, updatedData.boostEndTime, weatherData.history, chickenObj || updatedData);
     
     if (effectiveTimePassed >= CYCLE_DURATION) {
-       return {
-         ...chickenData,
-         currentEggs: 0,
-         lastEggTime: now // Reiniciar ciclo si se murieron los huevos
-       };
+       updatedData.currentEggs = 0;
+       updatedData.lastEggTime = now;
+       if (!updatedData.hasFox) updatedData.lastFoxCheckTime = now;
+       needsDbUpdate = true;
+       effectiveTimePassed = 0;
     }
     
     const expectedEggs = Math.min(5, Math.floor(effectiveTimePassed / typeInfo.eggTime));
     
-    if (expectedEggs > chickenData.currentEggs) {
-      return { ...chickenData, currentEggs: expectedEggs };
+    if (expectedEggs > updatedData.currentEggs) {
+      updatedData.currentEggs = expectedEggs;
+      needsDbUpdate = true;
     }
     
-    return chickenData;
+    // Solo devolvemos needsDbUpdate si realmente hubo cambios importantes que guardar
+    return { ...updatedData, _needsDbUpdate: needsDbUpdate };
   };
 
   useEffect(() => {
@@ -166,12 +239,15 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
         setUserData(data);
         const parsedBalance = parseFloat(data.balance);
         setBalance(!isNaN(parsedBalance) ? parsedBalance : 0);
+        const parsedEggBalance = parseFloat(data.eggBalance);
+        setEggBalance(!isNaN(parsedEggBalance) ? parsedEggBalance : 0);
         if (!data.email) {
           await updateDoc(userRef, { email: user.email });
         }
       } else {
-        await setDoc(userRef, { balance: 0, role: 'player', email: user.email, name: 'Usuario Recuperado', phone: 'No registrado' });
+        await setDoc(userRef, { balance: 0, eggBalance: 0, role: 'player', email: user.email, name: 'Usuario Recuperado', phone: 'No registrado' });
         setBalance(0);
+        setEggBalance(0);
       }
     });
 
@@ -181,11 +257,15 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
       const fetchedChickens = [];
       for (const docSnap of snap.docs) {
         const data = docSnap.data();
-        const updatedData = calculatePendingEggs(data);
-        if (updatedData.currentEggs !== data.currentEggs) {
-          await updateDoc(docSnap.ref, { currentEggs: updatedData.currentEggs, lastEggTime: updatedData.lastEggTime });
+        const updatedData = calculatePendingEggs(data, { ...data, boostType: data.boostType || 'common' });
+        
+        if (updatedData._needsDbUpdate) {
+          const { _needsDbUpdate, id, ...cleanData } = updatedData;
+          await updateDoc(docSnap.ref, cleanData);
         }
-        fetchedChickens.push({ id: docSnap.id, ...updatedData });
+        
+        const { _needsDbUpdate, ...finalData } = updatedData;
+        fetchedChickens.push({ id: docSnap.id, ...finalData });
       }
       setChickens(fetchedChickens);
     });
@@ -205,53 +285,62 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
 
   useEffect(() => {
     if (!user) return;
-    // Simular los huevos cayendo visualmente en tiempo real (cada 2.5s)
+    // Ciclo principal de juego: Actualiza la UI y verifica zorros constantemente
     const interval = setInterval(() => {
       setChickens(prev => {
         let changed = false;
         const newC = prev.map(c => {
-          const up = calculatePendingEggs(c);
-          if (up.currentEggs !== c.currentEggs) changed = true;
-          return up;
+          const updated = calculatePendingEggs(c, { ...c, boostType: c.boostType || 'common' });
+          if (updated._needsDbUpdate) {
+            changed = true;
+            const { _needsDbUpdate, id, ...cleanData } = updated;
+            updateDoc(doc(db, 'chickens', c.id), cleanData);
+          }
+          const { _needsDbUpdate, ...finalData } = updated;
+          return finalData;
         });
-        return changed ? newC : prev;
+        return changed ? newC : [...newC];
       });
     }, 2500);
     return () => clearInterval(interval);
-  }, [user]);
+  }, [user, weatherData]);
 
   const buyChicken = async (typeId) => {
     const type = CHICKEN_TYPES.find(t => t.id === typeId);
-    if (!type || balance < type.price) return Swal.fire('Oops...', 'Saldo insuficiente para comprar esta gallina', 'error');
+    if (!type || eggBalance < type.price) return Swal.fire('Oops...', 'Monedas insuficientes para comprar esta gallina', 'error');
     
-    const newBalance = balance - type.price;
-    setBalance(newBalance);
+    const newEggBalance = eggBalance - type.price;
+    setEggBalance(newEggBalance);
     
     // Guardar en Firestore
     const userRef = doc(db, 'users', user.uid);
-    await updateDoc(userRef, { balance: newBalance });
+    await updateDoc(userRef, { eggBalance: newEggBalance });
     
-    const newChicken = {
+    const chickenRef = collection(db, 'chickens');
+    const now = Date.now();
+    await addDoc(chickenRef, {
       userId: user.uid,
-      typeId,
-      lastEggTime: Date.now(),
-      currentEggs: 0
-    };
-    
-    const docRef = await addDoc(collection(db, 'chickens'), newChicken);
-    // Ya no hacemos setChickens manualmente porque onSnapshot lo hará por nosotros
+      typeId: type.id,
+      purchaseTime: now,
+      lastEggTime: now,
+      lastFoxCheckTime: now,
+      currentEggs: 0,
+      boostStartTime: null,
+      boostEndTime: null,
+      isHalfSpecial: false
+    });
   };
 
   const buyMysteryEgg = async () => {
-    if (balance < 2) return Swal.fire('Oops...', 'Saldo insuficiente para comprar el huevo misterioso ($2 USDT)', 'error');
+    if (eggBalance < 200) return Swal.fire('Oops...', 'Monedas insuficientes para comprar el huevo misterioso (200 Huevos)', 'error');
     
-    const newBalance = balance - 2;
+    const newEggBalance = eggBalance - 200;
     const newEggsCount = (userData?.mysteryEggs || 0) + 1;
-    setBalance(newBalance);
+    setEggBalance(newEggBalance);
     
     // Guardar en Firestore
     const userRef = doc(db, 'users', user.uid);
-    await updateDoc(userRef, { balance: newBalance, mysteryEggs: newEggsCount });
+    await updateDoc(userRef, { eggBalance: newEggBalance, mysteryEggs: newEggsCount });
     
     Swal.fire('¡Comprado!', 'El huevo se guardó en tu granja (Cestita). Ve allá para abrirlo.', 'success');
   };
@@ -259,19 +348,19 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
   const buyFood = async (foodType) => {
     if (!userData) return;
     
-    const price = foodType === 'special' ? 0.25 : 0.10;
+    const price = foodType === 'special' ? 25 : 5;
     const name = foodType === 'special' ? 'Saco Especial' : 'Saco de Maíz';
     const field = foodType === 'special' ? 'specialCornCount' : 'cornCount';
     
-    if (balance < price) return Swal.fire('Oops...', `Saldo insuficiente para comprar ${name} ($${price.toFixed(2)} USDT)`, 'error');
+    if (eggBalance < price) return Swal.fire('Oops...', `Monedas insuficientes para comprar ${name} (${price} Huevos)`, 'error');
     
-    const newBalance = balance - price;
+    const newEggBalance = eggBalance - price;
     const newCount = (userData[field] || 0) + 1;
     
-    setBalance(newBalance);
+    setEggBalance(newEggBalance);
     try {
       const userRef = doc(db, 'users', user.uid);
-      await updateDoc(userRef, { balance: newBalance, [field]: newCount });
+      await updateDoc(userRef, { eggBalance: newEggBalance, [field]: newCount });
       Swal.fire({
         icon: 'success',
         title: `¡${name} Comprado!`,
@@ -305,13 +394,17 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     const userRef = doc(db, 'users', user.uid);
     await updateDoc(userRef, { [field]: newCornCount });
 
-    // Boost dura 12 horas
-    const boostStartTime = Date.now();
-    const boostEndTime = boostStartTime + (12 * 60 * 60 * 1000);
-    const chickenRef = doc(db, 'chickens', chickenId);
-    await updateDoc(chickenRef, { boostStartTime, boostEndTime });
+    // Configurar boost (ambos duran 24h y multiplican la velocidad x10 en calculateEffectiveTime)
+    const boostDurationHours = 24;
+    const boostMultiplier = 10;
     
-    Swal.fire('¡Gallina Alimentada!', `Has gastado ${requiredBags} Saco(s). Su producción está acelerada por 12 horas.`, 'success');
+    const boostStartTime = Date.now();
+    const boostEndTime = boostStartTime + (boostDurationHours * 60 * 60 * 1000);
+    const chickenRef = doc(db, 'chickens', chickenId);
+    await updateDoc(chickenRef, { boostStartTime, boostEndTime, boostType: foodType });
+    
+    const actionText = `¡Su producción ha sido multiplicada x10 por ${boostDurationHours} horas!`;
+    Swal.fire('¡Gallina Alimentada!', `Has gastado ${requiredBags} Saco(s). ${actionText}`, 'success');
   };
 
   const openMysteryEgg = async () => {
@@ -337,10 +430,12 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
       wonId = rareIds[Math.floor(Math.random() * rareIds.length)];
     }
     
+    const now = Date.now();
     const newChicken = {
       userId: user.uid,
       typeId: wonId,
-      lastEggTime: Date.now(),
+      lastEggTime: now,
+      lastFoxCheckTime: now,
       currentEggs: 0
     };
     
@@ -360,16 +455,40 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     });
   };
 
+  const scareFox = async (chickenId) => {
+    const chicken = chickens.find(c => c.id === chickenId);
+    if (!chicken) return;
+
+    const cost = 10;
+    if (eggBalance < cost) return Swal.fire('Oops...', `Necesitas ${cost} Monedas Huevo para comprar un Perro Espantazorros.`, 'error');
+    const newEggBalance = eggBalance - cost;
+    setEggBalance(newEggBalance);
+    const userRef = doc(db, 'users', user.uid);
+    await updateDoc(userRef, { eggBalance: newEggBalance });
+    
+    // Al espantar, enviamos a la DB el lastEggTime LOCAL que fue empujado hacia adelante durante la congelación
+    const chickenRef = doc(db, 'chickens', chickenId);
+    await updateDoc(chickenRef, { 
+      hasFox: false, 
+      lastFoxCheckTime: Date.now(),
+      lastEggTime: chicken.lastEggTime,
+      boostStartTime: chicken.boostStartTime || null,
+      boostEndTime: chicken.boostEndTime || null
+    });
+    
+    Swal.fire('¡Zorro Ahuyentado!', 'Has usado un Perro Espantazorros. La gallina retoma su producción donde la había dejado.', 'success');
+  };
+
   const sellChicken = async (chickenId) => {
     const chicken = chickens.find(c => c.id === chickenId);
     if (!chicken) return;
     
     const type = CHICKEN_TYPES.find(t => t.id === chicken.typeId);
-    const sellPrice = type.price / 2;
+    const sellPrice = type.price / 2; // Devuelve la mitad de lo que costó en Huevos
     
     const result = await Swal.fire({
       title: '¿Vender gallina?',
-      text: `Obtendrás $${sellPrice.toFixed(2)} USDT por vender esta gallina ${type.name}. Esta acción no se puede deshacer.`,
+      text: `Obtendrás ${sellPrice} Huevos por vender esta gallina ${type.name}. Esta acción no se puede deshacer.`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Sí, vender',
@@ -378,108 +497,106 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     });
 
     if (result.isConfirmed) {
-      const newBalance = balance + sellPrice;
-      setBalance(newBalance);
+      const newEggBalance = eggBalance + sellPrice;
+      setEggBalance(newEggBalance);
       
       const userRef = doc(db, 'users', user.uid);
-      await updateDoc(userRef, { balance: newBalance });
+      await updateDoc(userRef, { eggBalance: newEggBalance });
       
       const chickenRef = doc(db, 'chickens', chickenId);
       await deleteDoc(chickenRef);
       
-      Swal.fire('Vendida', `Gallina vendida por $${sellPrice.toFixed(2)} USDT.`, 'success');
+      Swal.fire('¡Vendida!', `Has vendido tu gallina y recibido ${sellPrice} Huevos.`, 'success');
     }
   };
 
   const collectEggs = async (chickenId) => {
     const chicken = chickens.find(c => c.id === chickenId);
-    if (!chicken || chicken.currentEggs === 0) return;
-    
-    const earnedEggs = chicken.currentEggs;
-    
-    // Explorador da x3 XP
-    let xpMultiplier = 1;
-    if (chicken.typeId === 's_explorador') {
-      const powerFactor = chicken.clonePower !== undefined ? chicken.clonePower / 100 : (chicken.isHalfSpecial ? 0.5 : 1);
-      xpMultiplier = 1 + (2 * powerFactor);
-    }
-    const xpEarned = earnedEggs * 10 * xpMultiplier;
-    
-    const newXp = (userData?.xp || 0) + xpEarned;
-    
-    // Añadir al inventario
-    const currentInventory = userData?.eggInventory || {};
-    const currentCount = currentInventory[chicken.typeId] || 0;
-    const newInventory = { ...currentInventory, [chicken.typeId]: currentCount + earnedEggs };
-    
-    const userRef = doc(db, 'users', user.uid);
-    await updateDoc(userRef, { xp: newXp, eggInventory: newInventory });
-    
-    const chickenRef = doc(db, 'chickens', chickenId);
-    await updateDoc(chickenRef, { currentEggs: 0, lastEggTime: Date.now() });
-  };
+    if (!chicken || chicken.currentEggs === 0 || chicken.hasFox) return;
 
-  const sellEggs = async (typeId, count) => {
-    const currentInventory = userData?.eggInventory || {};
-    const available = currentInventory[typeId] || 0;
-    if (available < count) return Swal.fire('Oops...', 'No tienes suficientes huevos de este tipo.', 'error');
-    
-    const typeInfo = CHICKEN_TYPES.find(t => t.id === typeId);
+    const typeInfo = CHICKEN_TYPES.find(t => t.id === chicken.typeId);
     if (!typeInfo) return;
     
-    let moneyEarned = count * typeInfo.incomePerEgg;
-    
-    // El Pirata original da x2 del precio base? En CHICKEN_TYPES el precio base ya es 0.30 (que es x2).
-    // Así que el pirata CLON dará la mitad (x1.5 = 0.225)
-    if (typeId === 's_pirata') {
-      // Como solo los clones afectan aquí y se venden de forma agrupada, 
-      // esto es un problema porque el inventario mezcla huevos de clones y originales.
-      // ¡Espera! Si un jugador tiene un pirata original y uno clon, producen el mismo tipo de huevo.
-      // Asumiremos que el Huevo del Pirata vale 0.30 siempre.
-      // O podríamos separar el typeId del clon: 's_pirata_half'.
-      // Para no complicarlo, el huevo en sí vale lo mismo, pero el clon produce más lento? No, produce igual.
-      // El prompt dice: "todos sus skill del original son a las mita".
-    }
+    // Sonido de recolección
+    const audio = new Audio('/img/sound/collect-egg.mp3');
+    audio.play().catch(e => console.log('Audio error', e));
 
-    const newInventory = { ...currentInventory, [typeId]: available - count };
-    const newBalance = balance + moneyEarned;
+    const earnedEggsCount = chicken.currentEggs;
+    const earnedEggCoins = earnedEggsCount * typeInfo.incomePerEgg;
     
-    // Track daily income
+    let xpMultiplier = 1;
+    if (chicken.typeId === 's_explorador') {
+      const powerFactor = chicken.clonePower !== undefined ? chicken.clonePower / 100 : 1;
+      xpMultiplier = 1 + (2 * powerFactor);
+    }
+    const xpEarned = earnedEggsCount * 10 * xpMultiplier;
+    
+    const newXp = (userData?.xp || 0) + xpEarned;
+    const newEggBalance = eggBalance + earnedEggCoins;
+    
+    // Track daily income (now in EggCoins!)
     const today = new Date().toISOString().split('T')[0];
     const newDailyIncomeObj = { ...(userData?.dailyIncome || {}) };
-    newDailyIncomeObj[today] = (newDailyIncomeObj[today] || 0) + moneyEarned;
+    newDailyIncomeObj[today] = (newDailyIncomeObj[today] || 0) + earnedEggCoins;
     
+    setEggBalance(newEggBalance);
+    
+    const userRef = doc(db, 'users', user.uid);
+    await updateDoc(userRef, { xp: newXp, eggBalance: newEggBalance, dailyIncome: newDailyIncomeObj });
+    
+    const chickenRef = doc(db, 'chickens', chickenId);
+    const now = Date.now();
+    await updateDoc(chickenRef, { currentEggs: 0, lastEggTime: now, lastFoxCheckTime: now });
+  };
+
+  const exchangeUsdtToEggs = async (usdtAmount) => {
+    if (balance < usdtAmount) return Swal.fire('Oops...', 'Saldo USDT insuficiente para este intercambio.', 'error');
+    
+    const eggsToReceive = usdtAmount * oracleRate;
+    
+    const newBalance = balance - usdtAmount;
+    const newEggBalance = eggBalance + eggsToReceive;
+    
+    setBalance(newBalance);
+    setEggBalance(newEggBalance);
+    
+    const userRef = doc(db, 'users', user.uid);
+    await updateDoc(userRef, { balance: newBalance, eggBalance: newEggBalance });
+    
+    Swal.fire('¡Intercambio Exitoso!', `Has comprado ${eggsToReceive} Huevos por $${usdtAmount} USDT.`, 'success');
+  };
+
+  const exchangeEggsToUsdt = async (eggAmount) => {
+    if (eggBalance < eggAmount) return Swal.fire('Oops...', 'No tienes suficientes Huevos para este intercambio.', 'error');
+    
+    const usdtToReceive = eggAmount / oracleRate;
+    
+    const newEggBalance = eggBalance - eggAmount;
+    const newBalance = balance + usdtToReceive;
+    
+    setEggBalance(newEggBalance);
     setBalance(newBalance);
     
     const userRef = doc(db, 'users', user.uid);
-    await updateDoc(userRef, { balance: newBalance, eggInventory: newInventory, dailyIncome: newDailyIncomeObj });
+    await updateDoc(userRef, { balance: newBalance, eggBalance: newEggBalance });
     
-    Swal.fire('¡Huevos Vendidos!', `Has vendido ${count} huevos por $${moneyEarned.toFixed(2)} USDT.`, 'success');
+    Swal.fire('¡Intercambio Exitoso!', `Has vendido ${eggAmount} Huevos y recibido $${usdtToReceive.toFixed(2)} USDT.`, 'success');
   };
 
-  const incubateEggs = async (typeId) => {
-    // Definimos el costo en huevos por tipo (Opción B: 1000, 600, 200, 100)
-    const costMap = {
-      '1': 1000,
-      '2': 600,
-      '3': 200,
-      '4': 100
-    };
+  const sellEggs = async () => {}; // Obsoleto
+
+  const incubateEggs = async () => {
+    const cost = 1000;
     
-    // Costo por defecto si meten huevos especiales (ej. 20)
-    const cost = costMap[typeId] || 20;
-    
-    const currentInventory = userData?.eggInventory || {};
-    const available = currentInventory[typeId] || 0;
-    
-    if (available < cost) {
-      throw new Error(`Necesitas ${cost} huevos de este tipo para usar la incubadora.`);
+    if (eggBalance < cost) {
+      throw new Error(`Necesitas ${cost} Monedas Huevo para usar la incubadora.`);
     }
     
     // Descontar huevos
-    const newInventory = { ...currentInventory, [typeId]: available - cost };
+    const newEggBalance = eggBalance - cost;
+    setEggBalance(newEggBalance);
     const userRef = doc(db, 'users', user.uid);
-    await updateDoc(userRef, { eggInventory: newInventory });
+    await updateDoc(userRef, { eggBalance: newEggBalance });
     
     // 2% Especial Original, 98% Especial Clon
     const isHalfSpecial = Math.random() > 0.02;
@@ -490,11 +607,13 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     
     const specialIds = ['s_chef', 's_superman', 's_medico', 's_mago', 's_robin', 's_pirata', 's_explorador', 's_granjero'];
     const wonId = specialIds[Math.floor(Math.random() * specialIds.length)];
+    const now = Date.now();
     
     const newChicken = {
       userId: user.uid,
       typeId: wonId,
-      lastEggTime: Date.now(),
+      lastEggTime: now,
+      lastFoxCheckTime: now,
       currentEggs: 0,
       isHalfSpecial: isHalfSpecial,
       clonePower: clonePower
@@ -512,17 +631,12 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
   };
 
   const addTestEggs = async () => {
-    const currentInventory = userData?.eggInventory || {};
-    const newInventory = {
-      ...currentInventory,
-      '1': (currentInventory['1'] || 0) + 2000,
-      '2': (currentInventory['2'] || 0) + 2000,
-      '3': (currentInventory['3'] || 0) + 2000,
-      '4': (currentInventory['4'] || 0) + 2000
-    };
-    const userRef = doc(db, 'users', user.uid);
-    await updateDoc(userRef, { eggInventory: newInventory });
-    Swal.fire('¡Cheat activado!', 'Se han añadido 2000 huevos de cada tipo base para pruebas.', 'success');
+    // Para probar la recolección, llenamos todas las gallinas actuales con 5 huevos
+    for (const chicken of chickens) {
+      const chickenRef = doc(db, 'chickens', chicken.id);
+      await updateDoc(chickenRef, { currentEggs: 5 });
+    }
+    Swal.fire('¡Cheat activado!', 'Se han rellenado todas tus gallinas con huevos listos para recolectar.', 'success');
   };
 
   const rechargeBalance = async (amountUsd, reference, amountBs) => {
@@ -587,5 +701,5 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     }, 0);
   };
 
-  return { balance, userData, chickens, buyChicken, buyMysteryEgg, buyFood, feedChicken, openMysteryEgg, sellChicken, collectEggs, sellEggs, incubateEggs, addTestEggs, rechargeBalance, requestWithdrawal, incomePerDay: calculateMaxDailyIncome(), pendingRecharges };
+  return { balance, eggBalance, userData, chickens, oracleRate, buyChicken, buyMysteryEgg, buyFood, feedChicken, scareFox, openMysteryEgg, sellChicken, collectEggs, sellEggs, incubateEggs, exchangeUsdtToEggs, exchangeEggsToUsdt, addTestEggs, rechargeBalance, requestWithdrawal, incomePerDay: calculateMaxDailyIncome(), pendingRecharges };
 }
