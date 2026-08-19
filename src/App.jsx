@@ -236,7 +236,8 @@ function MainApp({ user }) {
     snow: { icon: '❄️', text: 'Relentiza x2', color: '#bfdbfe' },
     rainbow: { icon: '🌈', text: 'Acelera x0.5', color: '#fbcfe8' },
     stars: { icon: '✨', text: 'Acelera x0.5', color: '#fef08a' },
-    bugs: { icon: '🦟', text: 'Aumenta x0.2', color: '#a3e635' }
+    bugs: { icon: '🦟', text: 'Aumenta x0.2', color: '#a3e635' },
+    butterflies: { icon: '🦋', text: 'Aumenta x0.3', color: '#f472b6' }
   };
 
   return (

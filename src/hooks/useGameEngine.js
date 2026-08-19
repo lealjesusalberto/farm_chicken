@@ -4,7 +4,7 @@ import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, addD
 import Swal from 'sweetalert2';
 
 const EGG_TIME = 24 * 60 * 60 * 1000; // 24 horas por huevo
-const CYCLE_DURATION = 24 * 60 * 60 * 1000; // 24 horas en total
+// Remove global CYCLE_DURATION
 
 export const CHICKEN_TYPES = [
   { id: '1', name: 'Blanca', price: 100, incomePerEgg: 0.5, img: '/img/chicken_1.png', depletedImg: '/img/chicken_1_1.png', eggImg: '/img/egg_1.png', eggTime: EGG_TIME, description: 'Gallina básica.', foodType: 'common', foodBagsRequired: 1 },
@@ -75,6 +75,8 @@ export function calculateEffectiveTime(chickenTypeId, lastEggTime, now, boostSta
         weatherMultiplier = 2; 
       } else if (event.type === 'bugs') {
         weatherMultiplier = 1.2;
+      } else if (event.type === 'butterflies') {
+        weatherMultiplier = 1.3;
       }
 
       let boostedDuration = 0;
@@ -223,6 +225,10 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     
     let effectiveTimePassed = calculateEffectiveTime(updatedData.typeId, updatedData.lastEggTime, now, updatedData.boostStartTime, updatedData.boostEndTime, weatherRef.current.history, chickenObj || updatedData);
     
+    const EGG_TIME_5 = typeInfo.eggTime * 5;
+    const GRACE_PERIOD = 120 * 60 * 1000;
+    const CYCLE_DURATION = EGG_TIME_5 + GRACE_PERIOD;
+
     if (effectiveTimePassed >= CYCLE_DURATION) {
        updatedData.currentEggs = 0;
        updatedData.lastEggTime = now;
@@ -561,7 +567,7 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
 
   const collectEggs = async (chickenId) => {
     const chicken = chickens.find(c => c.id === chickenId);
-    if (!chicken || chicken.currentEggs === 0 || chicken.hasFox) return;
+    if (!chicken || chicken.currentEggs === 0) return;
 
     const typeInfo = CHICKEN_TYPES.find(t => t.id === chicken.typeId);
     if (!typeInfo) return;

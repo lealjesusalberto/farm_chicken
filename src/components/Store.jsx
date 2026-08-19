@@ -134,7 +134,7 @@ export function Store({ balance, eggBalance, onBuy, onBuyMysteryEgg, onBuyFood, 
           </p>
           
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
-            <img src="/img/super_corn.png" alt="Saco Común" style={{ width: '70px', height: '70px', objectFit: 'contain', filter: 'drop-shadow(0 4px 10px rgba(74,222,128,0.4))' }} />
+            <img src="/img/super_corn.png" alt="Saco Común" style={{ width: '70px', height: '70px', objectFit: 'cover', borderRadius: '50%', filter: 'drop-shadow(0 4px 10px rgba(74,222,128,0.4))' }} />
           </div>
           
           <div style={{ fontSize: '1.4rem', fontWeight: 'bold', marginBottom: '1rem', color: '#fcd535' }}>

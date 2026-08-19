@@ -30,7 +30,7 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
   }, []);
 
   const handleCollect = (e, chicken) => {
-    if (chicken.currentEggs > 0 && !chicken.hasFox) {
+    if (chicken.currentEggs > 0) {
       const numParticles = 6;
       const newParticles = Array.from({length: numParticles}).map((_, i) => ({
         id: Date.now() + i + Math.random(),
@@ -200,7 +200,7 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
               {userData?.cornCount > 0 && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   <div style={{ position: 'relative' }}>
-                    <img src="/img/super_corn.png" alt="Saco Común" style={{ width: '40px', height: '40px' }} />
+                    <img src="/img/super_corn.png" alt="Saco Común" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                     <span style={{ position: 'absolute', top: '-5px', right: '-10px', background: '#4ade80', color: '#000', fontWeight: 'bold', borderRadius: '50%', padding: '2px 8px' }}>{userData.cornCount}</span>
                   </div>
                   <div style={{ textAlign: 'left' }}>
@@ -254,6 +254,7 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
       {weather === 'rainbow' && <div className="weather-overlay weather-rainbow"></div>}
       {weather === 'stars' && <div className="weather-overlay weather-stars"></div>}
       {weather === 'bugs' && <div className="weather-overlay weather-bugs"></div>}
+      {weather === 'butterflies' && <div className="weather-overlay weather-butterflies"></div>}
 
       {(userData?.mysteryEggs > 0 || userData?.cornCount > 0 || userData?.specialCornCount > 0) && (
         <div className="inventory-widget">
@@ -283,7 +284,7 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
             {userData?.cornCount > 0 && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <div style={{ position: 'relative' }}>
-                  <img src="/img/super_corn.png" alt="Saco Común" style={{ width: '40px', height: '40px' }} />
+                  <img src="/img/super_corn.png" alt="Saco Común" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                   <span style={{ position: 'absolute', top: '-5px', right: '-10px', background: '#4ade80', color: '#000', fontWeight: 'bold', borderRadius: '50%', padding: '2px 8px' }}>{userData.cornCount}</span>
                 </div>
                 <div style={{ textAlign: 'left' }}>
@@ -339,6 +340,8 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
             currentMultiplier = 2;
           } else if (weather === 'bugs') {
             currentMultiplier = 1.2;
+          } else if (weather === 'butterflies') {
+            currentMultiplier = 1.3;
           }
           
           const weatherColors = {
@@ -347,15 +350,17 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
             thunder: '#a78bfa',
             rainbow: '#fbcfe8',
             stars: '#fef08a',
-            bugs: '#a3e635'
+            bugs: '#a3e635',
+            butterflies: '#f472b6'
           };
           
           const weatherMultiplierOnly = currentMultiplier;
           
           if (chicken.typeId === 's_chef') currentMultiplier *= 1.5;
           
-          const CYCLE_DURATION = 24 * 60 * 60 * 1000;
           const EGG_TIME_5 = type.eggTime * 5;
+          const GRACE_PERIOD = 120 * 60 * 1000;
+          const CYCLE_DURATION = EGG_TIME_5 + GRACE_PERIOD;
           
           let progress = 0;
           let timeLeftMins = 0;
@@ -520,7 +525,7 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
               </div>
               
               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-                {chicken.currentEggs > 0 && !chicken.hasFox && (
+                {chicken.currentEggs > 0 && (
                   <span style={{ 
                     background: 'var(--accent-color)', color: 'white', 
                     padding: '4px 12px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 'bold', 

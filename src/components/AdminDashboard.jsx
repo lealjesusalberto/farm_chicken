@@ -484,6 +484,9 @@ export function AdminDashboard({ onLogout }) {
                 <button onClick={() => changeWeather('bugs')} style={{ border: 'none', padding: '1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', background: currentWeather === 'bugs' ? '#a3e635' : 'rgba(255,255,255,0.1)', color: currentWeather === 'bugs' ? '#000' : '#fff' }}>
                   🦟 Plaga (Aumenta x0.2)
                 </button>
+                <button onClick={() => changeWeather('butterflies')} style={{ border: 'none', padding: '1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', background: currentWeather === 'butterflies' ? '#f472b6' : 'rgba(255,255,255,0.1)', color: currentWeather === 'butterflies' ? '#000' : '#fff' }}>
+                  🦋 Mariposas
+                </button>
               </div>
             </div>
           </div>

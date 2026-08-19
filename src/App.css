@@ -53,6 +53,16 @@
   opacity: 0.8;
 }
 
+.weather-butterflies {
+  background-color: rgba(244, 114, 182, 0.05);
+  background-image: 
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Ctext x='20' y='50' font-size='24'%3E🦋%3C/text%3E%3Ctext x='150' y='120' font-size='18'%3E🦋%3C/text%3E%3Ctext x='250' y='200' font-size='28'%3E🦋%3C/text%3E%3Ctext x='80' y='260' font-size='20'%3E🦋%3C/text%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Ctext x='100' y='80' font-size='22'%3E🦋%3C/text%3E%3Ctext x='300' y='180' font-size='30'%3E🦋%3C/text%3E%3Ctext x='50' y='320' font-size='16'%3E🦋%3C/text%3E%3C/svg%3E");
+  background-size: 300px 300px, 400px 400px;
+  animation: bugsFlight 15s linear infinite;
+  opacity: 0.8;
+}
+
 .weather-stars {
   background-color: rgba(0, 0, 30, 0.6);
 }
@@ -85,6 +95,12 @@
     padding-left: 0 !important;
     margin-right: 0 !important;
   }
+  .weather-pill {
+    width: auto !important;
+    display: inline-flex !important;
+    flex-wrap: nowrap !important;
+    padding: 0.3rem 0.8rem !important;
+  }
   .header-right-actions {
     justify-content: center;
     width: 100%;
@@ -114,7 +130,7 @@
 
 @media (max-width: 420px) {
   .weather-text {
-    display: none;
+    font-size: 0.7rem !important;
   }
   .game-stats-pill span {
     font-size: 0.9rem !important;
