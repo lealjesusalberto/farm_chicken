@@ -214,6 +214,10 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
             if (updatedData.boostStartTime) updatedData.boostStartTime += timeAfterAttack;
             if (updatedData.boostEndTime) updatedData.boostEndTime += timeAfterAttack;
             needsDbUpdate = true; // Solo guardamos en DB cuando ATACA el zorro
+          } else if (timeSinceLastCheck >= 300000) {
+            // Si la DB está desactualizada por más de 5 minutos, forzamos guardado.
+            // Esto evita el bug donde onSnapshot evalúa probabilidades gigantes múltiples veces.
+            needsDbUpdate = true;
           }
           updatedData.lastFoxCheckTime = now;
         }
