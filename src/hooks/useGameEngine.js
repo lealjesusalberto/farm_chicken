@@ -162,6 +162,9 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     if (!updatedData.lastFoxCheckTime) {
       updatedData.lastFoxCheckTime = updatedData.lastEggTime || now;
     }
+    if (!updatedData.lastFoxAttackTime) {
+      updatedData.lastFoxAttackTime = updatedData.lastEggTime || now;
+    }
     
     const timeSinceLastCheck = now - updatedData.lastFoxCheckTime;
     let needsDbUpdate = false;
@@ -178,18 +181,14 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
         // No tiene zorro. Verificamos si fue atacada offline o en tiempo real.
         // Hacemos el check solo si han pasado al menos 2.5s
         if (timeSinceLastCheck >= 2500) {
-          const intervals = Math.floor(timeSinceLastCheck / 2500);
-          const intervalSeconds = (foxIntervalHours || 4) * 60 * 60;
-          const probability = 1 - Math.pow(1 - (2.5 / intervalSeconds), intervals);
+          const intervalMs = (foxIntervalHours || 4) * 60 * 60 * 1000;
           
-          if (Math.random() < probability) {
+          if (now - updatedData.lastFoxAttackTime >= intervalMs) {
             // ¡EL ZORRO ATACÓ!
             updatedData.hasFox = true;
             
-            // ¿En qué punto de la desconexión atacó?
-            const attackInterval = Math.floor(Math.random() * intervals);
-            const timeBeforeAttack = attackInterval * 2500;
-            const timeAfterAttack = timeSinceLastCheck - timeBeforeAttack;
+            // ¿Cuánto tiempo pasó desde que el zorro apareció exactamente?
+            const timeAfterAttack = now - (updatedData.lastFoxAttackTime + intervalMs);
             
             // Congelamos el tiempo que pasó DESPUÉS del ataque
             updatedData.lastEggTime += timeAfterAttack;
@@ -198,7 +197,6 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
             needsDbUpdate = true; // Solo guardamos en DB cuando ATACA el zorro
           } else if (timeSinceLastCheck >= 300000) {
             // Si la DB está desactualizada por más de 5 minutos, forzamos guardado.
-            // Esto evita el bug donde onSnapshot evalúa probabilidades gigantes múltiples veces.
             needsDbUpdate = true;
           }
           updatedData.lastFoxCheckTime = now;
@@ -220,7 +218,10 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     if (effectiveTimePassed >= CYCLE_DURATION) {
        updatedData.currentEggs = 0;
        updatedData.lastEggTime = now;
-       if (!updatedData.hasFox) updatedData.lastFoxCheckTime = now;
+       if (!updatedData.hasFox) {
+         updatedData.lastFoxCheckTime = now;
+         updatedData.lastFoxAttackTime = now;
+       }
        needsDbUpdate = true;
        effectiveTimePassed = 0;
     }
@@ -449,6 +450,7 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
         typeId: wonId,
         lastEggTime: now,
         lastFoxCheckTime: now,
+        lastFoxAttackTime: now,
         currentEggs: 0,
         isStarter: true,
         clonePower: 60
@@ -490,6 +492,7 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
       typeId: wonId,
       lastEggTime: now,
       lastFoxCheckTime: now,
+      lastFoxAttackTime: now,
       currentEggs: 0
     };
     
@@ -528,6 +531,7 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     await updateDoc(chickenRef, { 
       hasFox: false, 
       lastFoxCheckTime: Date.now(),
+      lastFoxAttackTime: Date.now(),
       lastEggTime: updatedChicken.lastEggTime,
       boostStartTime: updatedChicken.boostStartTime || null,
       boostEndTime: updatedChicken.boostEndTime || null
