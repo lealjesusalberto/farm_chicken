@@ -315,7 +315,7 @@ export function Arena({ userData, userChickens, onBattleWin, onStartBattle }) {
       <div className="arena-stats">
         <div className="stat-box">
           <Zap size={24} color="#fbbf24" />
-          <span>Energía: {userData.arenaEnergy}/5</span>
+          <span>Energía: ILIMITADA (Test)</span>
         </div>
         <div className="stat-box">
           <Shield size={24} color="#a855f7" />
