@@ -267,8 +267,22 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
         setBalance(!isNaN(parsedBalance) ? parsedBalance : 0);
         const parsedEggBalance = parseFloat(data.eggBalance);
         setEggBalance(!isNaN(parsedEggBalance) ? parsedEggBalance : 0);
-        if (!data.email) {
-          await updateDoc(userRef, { email: user.email });
+        
+        const updates = {};
+        if (!data.email) updates.email = user.email;
+        
+        const today = new Date().toISOString().split('T')[0];
+        if (data.lastEnergyReset !== today || data.arenaEnergy === undefined) {
+          updates.arenaEnergy = 5;
+          updates.lastEnergyReset = today;
+        }
+        
+        if (data.arenaWave === undefined) {
+          updates.arenaWave = 1;
+        }
+        
+        if (Object.keys(updates).length > 0) {
+          await updateDoc(userRef, updates);
         }
       } else {
         // Doc doesn't exist (possibly offline cache miss). 
@@ -691,7 +705,29 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     };
   };
 
+  const startArenaBattle = async () => {
+    // MODO PRUEBA: No descontar energía
+    // if (userData.arenaEnergy < 1) return false;
+    // const newEnergy = userData.arenaEnergy - 1;
+    // await updateDoc(doc(db, 'users', user.uid), { arenaEnergy: newEnergy });
+    return true;
+  };
 
+  const handleArenaBattle = async (isWin) => {
+    if (isWin) {
+      // Recompensa aleatoria: entre 10 y 20 Monedas Huevo
+      const reward = Math.floor(Math.random() * 11) + 10;
+      const newEggBalance = eggBalance + reward;
+      setEggBalance(newEggBalance);
+      
+      await updateDoc(doc(db, 'users', user.uid), { 
+        eggBalance: newEggBalance,
+        arenaWave: (userData.arenaWave || 1) + 1
+      });
+      return reward;
+    }
+    return 0;
+  };
 
   const rechargeBalance = async (amountUsd, reference, amountBs) => {
     try {
@@ -770,5 +806,30 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     }, 0);
   };
 
-  return { balance, eggBalance, userData, chickens, oracleRate, buyChicken, buyMysteryEgg, buyFood, feedChicken, scareFox, openMysteryEgg, openStarterEgg, sellChicken, collectEggs, sellEggs, incubateEggs, exchangeUsdtToEggs, exchangeEggsToUsdt, rechargeBalance, requestWithdrawal, incomePerDay: calculateMaxDailyIncome(), pendingRecharges };
+  return { 
+    balance, 
+    eggBalance, 
+    userData, 
+    chickens, 
+    oracleRate, 
+    buyChicken, 
+    buyMysteryEgg, 
+    buyFood, 
+    feedChicken, 
+    scareFox, 
+    openMysteryEgg, 
+    openStarterEgg, 
+    sellChicken, 
+    collectEggs, 
+    sellEggs, 
+    incubateEggs, 
+    exchangeUsdtToEggs, 
+    exchangeEggsToUsdt, 
+    rechargeBalance,    
+    requestWithdrawal,
+    startArenaBattle,
+    handleArenaBattle,
+    incomePerDay: calculateMaxDailyIncome(), 
+    pendingRecharges 
+  };
 }

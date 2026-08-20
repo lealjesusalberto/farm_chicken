@@ -4,12 +4,13 @@ import { Store } from './components/Store';
 import { Farm } from './components/Farm';
 import { Basket } from './components/Basket';
 import { AdminDashboard } from './components/AdminDashboard';
+import { Arena } from './components/Arena';
 import { Sidebar } from './components/Sidebar';
 import { useGameEngine } from './hooks/useGameEngine';
 import { useExchangeRate } from './hooks/useExchangeRate';
 import { auth, db } from './firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail } from 'firebase/auth';
-import { LogOut, Coins, ShieldCheck, Wallet, ShoppingCart, ShoppingBag, TrendingUp, Link, Users, Eye, EyeOff, X, Clock } from 'lucide-react';
+import { LogOut, Coins, ShieldCheck, Wallet, ShoppingCart, ShoppingBag, TrendingUp, Link, Users, Eye, EyeOff, X, Clock, Swords, Smartphone } from 'lucide-react';
 import { LandingPage } from './components/LandingPage';
 import './App.css';
 import { collection, setDoc, doc, getCountFromServer, onSnapshot, query, where, getDocs, updateDoc } from 'firebase/firestore';
@@ -181,12 +182,13 @@ function Auth({ initialMode = false, onBack }) {
 function MainApp({ user }) {
   const [weatherData, setWeatherData] = useState({ type: 'sunny', history: [] });
   const weather = weatherData.type || 'sunny';
-  const { balance, eggBalance, userData, chickens, oracleRate, buyChicken, buyMysteryEgg, buyFood, feedChicken, scareFox, openMysteryEgg, openStarterEgg, sellChicken, collectEggs, sellEggs, incubateEggs, exchangeUsdtToEggs, exchangeEggsToUsdt, rechargeBalance, requestWithdrawal, incomePerDay, pendingRecharges } = useGameEngine(user, weatherData);
+  const { balance, eggBalance, userData, chickens, oracleRate, buyChicken, buyMysteryEgg, buyFood, feedChicken, scareFox, openMysteryEgg, openStarterEgg, sellChicken, collectEggs, sellEggs, incubateEggs, exchangeUsdtToEggs, exchangeEggsToUsdt, rechargeBalance, requestWithdrawal, startArenaBattle, handleArenaBattle, incomePerDay, pendingRecharges } = useGameEngine(user, weatherData);
   const { rate, loading: rateLoading } = useExchangeRate();
   const [showStore, setShowStore] = useState(false);
   const [showWallet, setShowWallet] = useState(false);
   const [showBasket, setShowBasket] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [showArena, setShowArena] = useState(false);
   const [farmingUsers, setFarmingUsers] = useState(89);
 
   useEffect(() => {
@@ -355,6 +357,11 @@ function MainApp({ user }) {
         <button className="game-fab" onClick={() => setShowBasket(true)} style={{ background: '#f97316', borderColor: '#f97316' }}>
           <ShoppingBag size={24} />
         </button>
+        {userData?.hasArenaAccess && (
+          <button className="game-fab" onClick={() => setShowArena(true)} style={{ background: '#10b981', borderColor: '#10b981' }} title="Arena de Combate">
+            ⚔️
+          </button>
+        )}
         <button className="game-fab" onClick={() => setShowStore(true)} style={{ background: 'var(--primary-color)', borderColor: 'var(--primary-color)' }}>
           <ShoppingCart size={24} />
         </button>
@@ -373,6 +380,25 @@ function MainApp({ user }) {
             <div style={{ flex: 1, overflowY: 'auto' }}>
               <Store balance={balance} eggBalance={eggBalance} onBuy={buyChicken} onBuyMysteryEgg={buyMysteryEgg} onBuyFood={buyFood} exchangeUsdtToEggs={exchangeUsdtToEggs} exchangeEggsToUsdt={exchangeEggsToUsdt} rate={rate} oracleRate={oracleRate} />
             </div>
+          </div>
+        </div>
+      )}
+
+      {showArena && (
+        <div className="arena-fullscreen-view" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 9999, background: '#0f172a', display: 'flex', flexDirection: 'column' }}>
+          
+          <div className="arena-portrait-warning" style={{ display: 'none', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#fff', textAlign: 'center', padding: '2rem' }}>
+            <Smartphone size={64} color="#fcd535" style={{ marginBottom: '1rem', animation: 'rotate-phone 2s infinite ease-in-out' }} />
+            <h2 style={{ marginBottom: '0.5rem' }}>Gira tu dispositivo</h2>
+            <p style={{ color: '#cbd5e1', maxWidth: '300px' }}>La Arena de Batalla es una experiencia inmersiva diseñada exclusivamente para ser jugada en modo horizontal.</p>
+            <button className="btn-primary" onClick={() => setShowArena(false)} style={{ marginTop: '2rem' }}>Volver a la Granja</button>
+          </div>
+
+          <div className="arena-content-wrapper" style={{ flex: 1, overflowY: 'auto', width: '100%', height: '100%' }}>
+            <button className="btn-icon" style={{ position: 'absolute', top: '20px', right: '20px', background: 'rgba(255,0,0,0.5)', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', border: '2px solid rgba(255,255,255,0.3)', cursor: 'pointer', zIndex: 9999, backdropFilter: 'blur(5px)' }} onClick={() => setShowArena(false)}>
+              <X size={24} color="#fff" />
+            </button>
+            <Arena userData={userData} userChickens={chickens} onBattleWin={handleArenaBattle} onStartBattle={startArenaBattle} />
           </div>
         </div>
       )}

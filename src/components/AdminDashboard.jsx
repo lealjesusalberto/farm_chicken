@@ -3,7 +3,7 @@ import { db } from '../firebase';
 import { collection, query, where, getDocs, doc, updateDoc, getDoc, onSnapshot, setDoc } from 'firebase/firestore';
 import { useExchangeRate } from '../hooks/useExchangeRate';
 import { CHICKEN_TYPES } from '../hooks/useGameEngine';
-import { Users, CreditCard, Settings, LogOut, Search, Check, Pause, Ban } from 'lucide-react';
+import { Users, CreditCard, Settings, LogOut, Search, Check, Pause, Ban, Swords } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 export function AdminDashboard({ onLogout }) {
@@ -161,6 +161,16 @@ export function AdminDashboard({ onLogout }) {
     } catch (e) {
       console.error(e);
       Swal.fire('Error', 'No se pudo suspender', 'error');
+    }
+  };
+
+  const handleToggleArenaAccess = async (u) => {
+    try {
+      await updateDoc(doc(db, 'users', u.id), { hasArenaAccess: !u.hasArenaAccess });
+      Swal.fire('Actualizado', `Acceso a la Arena ${!u.hasArenaAccess ? 'concedido' : 'revocado'} para ${u.name || u.email}.`, 'success');
+    } catch (e) {
+      console.error(e);
+      Swal.fire('Error', 'No se pudo actualizar el acceso a la arena', 'error');
     }
   };
 
@@ -416,6 +426,9 @@ export function AdminDashboard({ onLogout }) {
                                   <Ban size={16} strokeWidth={3} />
                                 </button>
                               )}
+                              <button title={u.hasArenaAccess ? "Revocar acceso a Arena" : "Conceder acceso a Arena"} onClick={() => handleToggleArenaAccess(u)} style={{ cursor: 'pointer', border: 'none', borderRadius: '50%', background: u.hasArenaAccess ? '#a855f7' : 'rgba(255,255,255,0.1)', color: '#fff', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                                <Swords size={16} strokeWidth={3} />
+                              </button>
                             </div>
                           </td>
                         </tr>
