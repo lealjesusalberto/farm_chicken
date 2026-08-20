@@ -639,6 +639,44 @@
   align-self: center;
 }
 
+@media (max-height: 600px) {
+  .arena-lobby {
+    padding: 1rem !important;
+  }
+  .arena-lobby h2 {
+    font-size: 1.5rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+  .premium-card {
+    min-height: 150px !important;
+    padding: 1rem 0.5rem 0.5rem 0.5rem !important;
+  }
+  .premium-card-title {
+    font-size: 0.9rem !important;
+    margin: 0.5rem 0 0.2rem 0 !important;
+  }
+  .premium-stats {
+    font-size: 0.7rem !important;
+  }
+  .glow-badge {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 0.8rem !important;
+    top: -5px !important;
+    right: -5px !important;
+  }
+  .skill-mini-icon {
+    width: 16px !important;
+    height: 16px !important;
+  }
+  .start-battle-btn {
+    margin-top: 0.5rem !important;
+    padding: 0.5rem 1rem !important;
+    font-size: 0.9rem !important;
+  }
+}
+
+
 
 /* Premium Combat UI Styles */
 .arena-combat-container {
@@ -790,6 +828,34 @@
   border-color: #38bdf8;
   box-shadow: 0 0 20px rgba(56, 189, 248, 0.6), 0 15px 30px rgba(0,0,0,1);
 }
+
+@media (max-height: 600px) {
+  .battlefield.arena-bg-image {
+    min-height: auto !important;
+    padding: 0.5rem !important;
+  }
+  .card-hand-container {
+    bottom: 0px !important;
+  }
+  .skill-card-axie {
+    width: 100px !important;
+    height: 150px !important;
+    transform: translateY(5px) !important;
+  }
+  .skill-card-axie:hover {
+    transform: translateY(-5px) !important;
+  }
+  .skill-card-axie.active-skill-card {
+    transform: translateY(-10px) !important;
+  }
+  .fighter-card img {
+    height: 60px !important;
+  }
+  .action-panel {
+    padding: 0.5rem !important;
+  }
+}
+
 .card-axie-img {
   flex: 1;
   background-size: cover;
