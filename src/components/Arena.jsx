@@ -38,38 +38,44 @@ export function Arena({ userData, userChickens, onBattleWin, onStartBattle }) {
   };
 
   const startBattle = async () => {
-    if (selectedChickens.length === 0) return Swal.fire('Error', 'Debes seleccionar al menos una gallina.', 'error');
-    // if (userData.arenaEnergy < 1) return Swal.fire('Sin Energía', 'No tienes suficiente energía. Vuelve mañana.', 'error');
-    
-    const success = await onStartBattle();
-    if (!success) return Swal.fire('Error', 'No se pudo iniciar la batalla.', 'error');
-    
-    // Init Player Team
-    const pTeam = selectedChickens.map(c => {
-      const type = CHICKEN_TYPES.find(t => t.id === c.typeId);
-      const stats = ARENA_CHICKEN_STATS[c.typeId];
-      return {
-        ...c,
-        name: type.name,
-        img: type.img,
-        hp: stats.hp,
-        maxHp: stats.maxHp,
-        atk: stats.atk,
-        speed: stats.speed,
-        skills: stats.skills,
-        isDead: false
-      };
-    });
+    try {
+      if (selectedChickens.length === 0) return Swal.fire('Error', 'Debes seleccionar al menos una gallina.', 'error');
+      
+      const success = await onStartBattle();
+      if (!success) return Swal.fire('Error', 'No se pudo iniciar la batalla.', 'error');
+      
+      // Init Player Team
+      const pTeam = selectedChickens.map(c => {
+        const type = CHICKEN_TYPES.find(t => t.id === c.typeId);
+        const stats = ARENA_CHICKEN_STATS[c.typeId];
+        if (!stats) throw new Error(`Faltan stats para la gallina ${type?.name || c.typeId}`);
+        return {
+          ...c,
+          name: type.name,
+          img: type.img,
+          hp: stats.hp,
+          maxHp: stats.maxHp,
+          atk: stats.atk,
+          speed: stats.speed,
+          skills: stats.skills,
+          isDead: false
+        };
+      });
 
-    // Init Enemy Team
-    const eTeam = getEnemiesForWave(userData.arenaWave).map(e => ({ ...e, isDead: false }));
+      // Init Enemy Team
+      const wave = userData?.arenaWave || 1;
+      const eTeam = getEnemiesForWave(wave).map(e => ({ ...e, isDead: false }));
 
-    setPlayerTeam(pTeam);
-    setEnemyTeam(eTeam);
-    setBattleLog([{ msg: `¡Oleada ${userData.arenaWave} ha comenzado!`, type: 'info' }]);
-    setTurn('player');
-    setActiveChickenIndex(0);
-    setView('combat');
+      setPlayerTeam(pTeam);
+      setEnemyTeam(eTeam);
+      setBattleLog([{ msg: `¡Oleada ${wave} ha comenzado!`, type: 'info' }]);
+      setTurn('player');
+      setActiveChickenIndex(0);
+      setView('combat');
+    } catch (error) {
+      console.error("Error starting battle:", error);
+      Swal.fire('Error Técnico', 'Ocurrió un error al iniciar la batalla: ' + error.message, 'error');
+    }
   };
 
   const logMessage = (msg, type = 'info') => {
