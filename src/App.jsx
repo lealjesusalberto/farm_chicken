@@ -394,7 +394,7 @@ function MainApp({ user }) {
             <button className="btn-primary" onClick={() => setShowArena(false)} style={{ marginTop: '2rem' }}>Volver a la Granja</button>
           </div>
 
-          <div className="arena-content-wrapper" style={{ flex: 1, overflow: 'hidden', width: '100%', height: '100%' }}>
+          <div className="arena-content-wrapper" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', width: '100%', height: '100%' }}>
             <button className="btn-icon" style={{ position: 'absolute', top: '20px', right: '20px', background: 'rgba(255,0,0,0.5)', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', border: '2px solid rgba(255,255,255,0.3)', cursor: 'pointer', zIndex: 9999, backdropFilter: 'blur(5px)' }} onClick={() => setShowArena(false)}>
               <X size={24} color="#fff" />
             </button>
