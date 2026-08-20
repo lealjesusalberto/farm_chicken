@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { CHICKEN_TYPES } from '../hooks/useGameEngine';
+import { useGameConfig } from '../contexts/GameConfigContext';
 import { ShoppingCart, Info, ArrowRightLeft } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 export function Store({ balance, eggBalance, onBuy, onBuyMysteryEgg, onBuyFood, exchangeUsdtToEggs, exchangeEggsToUsdt, rate, oracleRate = 100 }) {
+  const { chickenTypes } = useGameConfig();
   const [exchangeAmount, setExchangeAmount] = useState('');
   const [operationMode, setOperationMode] = useState(null);
   
@@ -190,7 +191,7 @@ export function Store({ balance, eggBalance, onBuy, onBuyMysteryEgg, onBuyFood, 
 
       <h3 style={{ margin: '1rem 0 0.5rem', color: '#fff', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>Gallinas Normales</h3>
       <div className="store-grid">
-        {CHICKEN_TYPES.filter(c => !c.isSpecial).map(chicken => (
+        {chickenTypes.filter(c => !c.isSpecial).map(chicken => (
           <div key={chicken.id} className="glass-panel store-item" style={{ padding: '1rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', position: 'relative', height: '100%' }}>
             
             <div className="info-tooltip" title={`Esta gallina produce ${chicken.incomePerEgg} Huevos por huevo puesto. Tiempo por huevo: ${(chicken.eggTime / (60*60*1000)).toFixed(1)} horas. Max: 5 huevos por ciclo.`} style={{ position: 'absolute', top: '10px', right: '10px', cursor: 'help', opacity: 0.7 }}>
@@ -238,7 +239,7 @@ export function Store({ balance, eggBalance, onBuy, onBuyMysteryEgg, onBuyFood, 
 
       <h3 style={{ margin: '2rem 0 0.5rem', color: '#fcd535', borderBottom: '1px solid rgba(252,213,53,0.3)', paddingBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>✨ Gallinas Especiales</h3>
       <div className="store-grid">
-        {CHICKEN_TYPES.filter(c => c.isSpecial).map(chicken => (
+        {chickenTypes.filter(c => c.isSpecial).map(chicken => (
           <div key={chicken.id} className="glass-panel store-item" style={{ padding: '1rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', position: 'relative', height: '100%', border: '1px solid rgba(252,213,53,0.3)', background: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(252,213,53,0.05))' }}>
             
             <div 

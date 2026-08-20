@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { ARENA_CHICKEN_STATS, getEnemiesForWave } from '../utils/arenaEngine';
-import { CHICKEN_TYPES } from '../hooks/useGameEngine';
+import { useGameConfig } from '../contexts/GameConfigContext';
 import { Shield, Zap, Heart, Crosshair, Sparkles, Coins, Gift } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 export function Arena({ userData, userChickens, onBattleWin, onStartBattle }) {
+  const { chickenTypes } = useGameConfig();
   const [view, setView] = useState('lobby'); // 'lobby' or 'combat'
   const [selectedChickens, setSelectedChickens] = useState([]);
   
@@ -21,7 +22,7 @@ export function Arena({ userData, userChickens, onBattleWin, onStartBattle }) {
   const [isCinematic, setIsCinematic] = useState(false);
 
   const specialChickens = userChickens.filter(c => {
-    const t = CHICKEN_TYPES.find(type => type.id === c.typeId);
+    const t = chickenTypes.find(type => type.id === c.typeId);
     return t && t.isSpecial;
   });
 
@@ -46,7 +47,7 @@ export function Arena({ userData, userChickens, onBattleWin, onStartBattle }) {
       
       // Init Player Team
       const pTeam = selectedChickens.map(c => {
-        const type = CHICKEN_TYPES.find(t => t.id === c.typeId);
+        const type = chickenTypes.find(t => t.id === c.typeId);
         const stats = ARENA_CHICKEN_STATS[c.typeId];
         if (!stats) throw new Error(`Faltan stats para la gallina ${type?.name || c.typeId}`);
         return {
@@ -336,7 +337,7 @@ export function Arena({ userData, userChickens, onBattleWin, onStartBattle }) {
         ) : (
           <div className="roster-grid">
             {specialChickens.map(c => {
-              const type = CHICKEN_TYPES.find(t => t.id === c.typeId);
+              const type = chickenTypes.find(t => t.id === c.typeId);
               const isSelected = selectedChickens.find(sc => sc.id === c.id);
               const stats = ARENA_CHICKEN_STATS[c.typeId];
               return (

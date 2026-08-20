@@ -2,27 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { db } from '../firebase';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, addDoc, onSnapshot, deleteDoc } from 'firebase/firestore';
 import Swal from 'sweetalert2';
-
-const EGG_TIME = 24 * 60 * 60 * 1000; // 24 horas por huevo
-// Remove global CYCLE_DURATION
-
-export const CHICKEN_TYPES = [
-  { id: '1', name: 'Blanca', price: 100, incomePerEgg: 5, img: '/img/chicken_1.png', depletedImg: '/img/chicken_1_1.png', eggImg: '/img/egg_1.png', eggTime: 4 * 60 * 60 * 1000, description: 'Gallina básica.', foodType: 'common', foodBagsRequired: 1 },
-  { id: '2', name: 'Turquesa', price: 300, incomePerEgg: 7, img: '/img/chicken_2.png', depletedImg: '/img/chicken_2_2.png', eggImg: '/img/egg_2.png', eggTime: 6 * 60 * 60 * 1000, description: 'Un poco mejor.', foodType: 'common', foodBagsRequired: 1 },
-  { id: '3', name: 'Amarilla', price: 700, incomePerEgg: 15, img: '/img/chicken_3.png', depletedImg: '/img/chicken_3_3.png', eggImg: '/img/egg_3.png', eggTime: 8 * 60 * 60 * 1000, description: 'Buena producción.', foodType: 'common', foodBagsRequired: 2 },
-  { id: '4', name: 'Lila', price: 1500, incomePerEgg: 30, img: '/img/chicken_4.png', depletedImg: '/img/chicken_4_4.png', eggImg: '/img/egg_4.png', eggTime: 12 * 60 * 60 * 1000, description: 'Excelente productora.', foodType: 'common', foodBagsRequired: 3 },
-  // Especiales
-  { id: 's_chef', name: 'Chef', price: 2000, incomePerEgg: 20, img: '/img/specials/pollo_chef.png', depletedImg: '/img/specials/pollo_chef.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME / 2, isSpecial: true, description: 'Cocina rápido. x1.5 de velocidad pasiva.', auraColor: '#ffffff', foodType: 'special', foodBagsRequired: 2 },
-  { id: 's_superman', name: 'Superman', price: 2000, incomePerEgg: 20, img: '/img/specials/pollo_superman.png', depletedImg: '/img/specials/pollo_superman.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME / 2, isSpecial: true, description: 'Inmune a los retrasos por lluvia.', auraColor: '#3b82f6', foodType: 'special', foodBagsRequired: 2 },
-  { id: 's_medico', name: 'Médico', price: 2000, incomePerEgg: 20, img: '/img/specials/pollo_medico.png', depletedImg: '/img/specials/pollo_medico.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME / 2, isSpecial: true, description: 'Inmune a los retrasos por nieve.', auraColor: '#ef4444', foodType: 'special', foodBagsRequired: 2 },
-  { id: 's_mago', name: 'Mago', price: 2200, incomePerEgg: 22, img: '/img/specials/pollo_mago.png', depletedImg: '/img/specials/pollo_mago.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME / 2, isSpecial: true, description: 'La tormenta eléctrica duplica su velocidad.', auraColor: '#a855f7', foodType: 'special', foodBagsRequired: 2 },
-  { id: 's_robin', name: 'Robin Hood', price: 2000, incomePerEgg: 15, img: '/img/specials/pollo_robinhoood.png', depletedImg: '/img/specials/pollo_robinhoood.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME / 2, isSpecial: true, description: 'Velocidad x2 siempre (Maíz infinito).', auraColor: '#22c55e', foodType: 'special', foodBagsRequired: 2 },
-  { id: 's_pirata', name: 'Pirata', price: 2500, incomePerEgg: 25, img: '/img/specials/pollo_pirata.png', depletedImg: '/img/specials/pollo_pirata.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME / 2, isSpecial: true, description: 'Pone tesoros. Sus huevos valen el doble.', auraColor: '#fcd535', foodType: 'special', foodBagsRequired: 2 },
-  { id: 's_explorador', name: 'Explorador', price: 2000, incomePerEgg: 15, img: '/img/specials/pollo_explorador.png', depletedImg: '/img/specials/pollo_explorador.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME / 2, isSpecial: true, description: 'Otorga x3 de Experiencia (XP).', auraColor: '#f97316', foodType: 'special', foodBagsRequired: 2 },
-  { id: 's_granjero', name: 'Granjero', price: 2500, incomePerEgg: 25, img: '/img/specials/pollo_granjero.png', depletedImg: '/img/specials/pollo_granjero.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME / 2, isSpecial: true, description: 'El superviviente. Inmune a TODOS los climas.', auraColor: '#8b5cf6', foodType: 'special', foodBagsRequired: 2 }
-];
-
-
+import { useGameConfig } from '../contexts/GameConfigContext';
 
 export function calculateEffectiveTime(chickenTypeId, lastEggTime, now, boostStart, boostEnd, weatherHistory, chickenRef = null) {
   let totalEffectiveTime = 0;
@@ -103,6 +83,7 @@ export function calculateEffectiveTime(chickenTypeId, lastEggTime, now, boostSta
 }
 
 export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }) {
+  const { chickenTypes, foxIntervalHours } = useGameConfig();
   const [balance, setBalance] = useState(0);
   const [eggBalance, setEggBalance] = useState(0);
   const [userData, setUserData] = useState(null);
@@ -171,7 +152,7 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
   }, [user]);
 
   const calculatePendingEggs = (chickenData, chickenObj = null) => {
-    const typeInfo = CHICKEN_TYPES.find(t => t.id === chickenData.typeId);
+    const typeInfo = chickenTypes.find(t => t.id === chickenData.typeId);
     if (!typeInfo) return chickenData;
     
     const now = Date.now();
@@ -198,7 +179,8 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
         // Hacemos el check solo si han pasado al menos 2.5s
         if (timeSinceLastCheck >= 2500) {
           const intervals = Math.floor(timeSinceLastCheck / 2500);
-          const probability = 1 - Math.pow(1 - 0.0001736, intervals); // Probabilidad promedio de 1 zorro cada 4 horas
+          const intervalSeconds = (foxIntervalHours || 4) * 60 * 60;
+          const probability = 1 - Math.pow(1 - (2.5 / intervalSeconds), intervals);
           
           if (Math.random() < probability) {
             // ¡EL ZORRO ATACÓ!
@@ -347,7 +329,7 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
   }, [user, weatherData]);
 
   const buyChicken = async (typeId) => {
-    const type = CHICKEN_TYPES.find(t => t.id === typeId);
+    const type = chickenTypes.find(t => t.id === typeId);
     if (!type || eggBalance < type.price) return Swal.fire('Oops...', 'Monedas insuficientes para comprar esta gallina', 'error');
     
     const newEggBalance = eggBalance - type.price;
@@ -420,7 +402,7 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     const chicken = chickens.find(c => c.id === chickenId);
     if (!chicken) return;
     
-    const typeInfo = CHICKEN_TYPES.find(t => t.id === chicken.typeId);
+    const typeInfo = chickenTypes.find(t => t.id === chicken.typeId);
     const requiredBags = typeInfo?.foodBagsRequired || 1;
     const foodType = typeInfo?.foodType || 'common';
     const field = foodType === 'special' ? 'specialCornCount' : 'cornCount';
@@ -459,7 +441,7 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
 
       const starterIds = ['1', '2', '3', '4'];
       const wonId = starterIds[Math.floor(Math.random() * starterIds.length)];
-      const wonType = CHICKEN_TYPES.find(t => t.id === wonId);
+      const wonType = chickenTypes.find(t => t.id === wonId);
 
       const now = Date.now();
       const newChicken = {
@@ -513,7 +495,7 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     
     await addDoc(collection(db, 'chickens'), newChicken);
     
-    const wonType = CHICKEN_TYPES.find(t => t.id === wonId);
+    const wonType = chickenTypes.find(t => t.id === wonId);
     
     // Mostrar animación al usuario de lo que ganó
     Swal.fire({
@@ -558,7 +540,7 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     const chicken = chickens.find(c => c.id === chickenId);
     if (!chicken) return;
     
-    const type = CHICKEN_TYPES.find(t => t.id === chicken.typeId);
+    const type = chickenTypes.find(t => t.id === chicken.typeId);
     const sellPrice = type.price / 2; // Devuelve la mitad de lo que costó en Huevos
     
     const result = await Swal.fire({
@@ -589,7 +571,7 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     const chicken = chickens.find(c => c.id === chickenId);
     if (!chicken || chicken.currentEggs === 0) return;
 
-    const typeInfo = CHICKEN_TYPES.find(t => t.id === chicken.typeId);
+    const typeInfo = chickenTypes.find(t => t.id === chicken.typeId);
     if (!typeInfo) return;
     
     // Sonido de recolección
@@ -696,7 +678,7 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     
     await addDoc(collection(db, 'chickens'), newChicken);
     
-    const wonType = CHICKEN_TYPES.find(t => t.id === wonId);
+    const wonType = chickenTypes.find(t => t.id === wonId);
     
     return {
       wonType,
@@ -786,7 +768,7 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
 
   const calculateMaxDailyIncome = () => {
     return chickens.reduce((acc, chicken) => {
-      const type = CHICKEN_TYPES.find(c => c.id === chicken.typeId);
+      const type = chickenTypes.find(c => c.id === chicken.typeId);
       if (!type) return acc;
       
       let passiveMultiplier = 1;

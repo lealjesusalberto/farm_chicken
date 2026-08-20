@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, User, History, LogOut, TrendingUp, DollarSign, Activity } from 'lucide-react';
-import { CHICKEN_TYPES } from '../hooks/useGameEngine';
+import { useGameConfig } from '../contexts/GameConfigContext';
 import { db } from '../firebase';
 import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 
@@ -17,6 +17,7 @@ const COUNTRIES = {
 };
 
 export function Sidebar({ isOpen, onClose, userData, balance, eggBalance, chickens, onLogout }) {
+  const { chickenTypes } = useGameConfig();
   const [history, setHistory] = useState([]);
   const [oracleRate, setOracleRate] = useState(100);
 
@@ -52,7 +53,7 @@ export function Sidebar({ isOpen, onClose, userData, balance, eggBalance, chicke
   let totalEggsPerDay = 0;
   
   chickens.forEach(chicken => {
-    const type = CHICKEN_TYPES.find(t => t.id === chicken.typeId);
+    const type = chickenTypes.find(t => t.id === chicken.typeId);
     if (!type) return;
     
     let passiveMultiplier = 1;

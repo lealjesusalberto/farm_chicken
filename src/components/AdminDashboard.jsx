@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { collection, query, where, getDocs, doc, updateDoc, getDoc, onSnapshot, setDoc } from 'firebase/firestore';
 import { useExchangeRate } from '../hooks/useExchangeRate';
-import { CHICKEN_TYPES } from '../hooks/useGameEngine';
+import { useGameConfig } from '../contexts/GameConfigContext';
 import { Users, CreditCard, Settings, LogOut, Search, Check, Pause, Ban, Swords } from 'lucide-react';
 import Swal from 'sweetalert2';
 
@@ -17,7 +17,10 @@ export function AdminDashboard({ onLogout }) {
   const [activeTab, setActiveTab] = useState('transactions');
   const [txTab, setTxTab] = useState('pending');
   const { rate, loading: rateLoading } = useExchangeRate();
-
+  const { chickenTypes, foxIntervalHours } = useGameConfig();
+  const [newFoxInterval, setNewFoxInterval] = useState('');
+  const [editingChicken, setEditingChicken] = useState(null);
+  
   useEffect(() => {
     // Escuchar transacciones en tiempo real
     const txQ = query(collection(db, 'transactions'));
@@ -106,6 +109,39 @@ export function AdminDashboard({ onLogout }) {
     } catch (e) {
       console.error(e);
       Swal.fire('Error', 'Error cambiando el clima', 'error');
+    }
+  };
+
+  const updateFoxInterval = async () => {
+    if (!newFoxInterval || isNaN(newFoxInterval) || Number(newFoxInterval) <= 0) return Swal.fire('Error', 'Ingresa un valor válido en horas', 'error');
+    try {
+      await updateDoc(doc(db, 'config', 'gameSettings'), { foxIntervalHours: Number(newFoxInterval) });
+      setNewFoxInterval('');
+      Swal.fire('Actualizado', 'Frecuencia de zorros actualizada.', 'success');
+    } catch (e) {
+      console.error(e);
+      Swal.fire('Error', 'No se pudo actualizar', 'error');
+    }
+  };
+
+  const handleSaveChicken = async (e) => {
+    e.preventDefault();
+    try {
+      let updatedTypes = [...chickenTypes];
+      if (editingChicken.isNew) {
+        delete editingChicken.isNew;
+        updatedTypes.push(editingChicken);
+      } else {
+        const idx = updatedTypes.findIndex(c => c.id === editingChicken.id);
+        if (idx !== -1) updatedTypes[idx] = editingChicken;
+      }
+      
+      await updateDoc(doc(db, 'config', 'gameSettings'), { chickenTypes: updatedTypes });
+      setEditingChicken(null);
+      Swal.fire('Guardado', 'La gallina se guardó correctamente.', 'success');
+    } catch (err) {
+      console.error(err);
+      Swal.fire('Error', 'No se pudo guardar la gallina', 'error');
     }
   };
 
@@ -389,7 +425,7 @@ export function AdminDashboard({ onLogout }) {
                           {(() => {
                             const userChickens = allChickens.filter(c => c.userId === u.id);
                             const totalDailyEggs = userChickens.reduce((sum, c) => {
-                              const type = CHICKEN_TYPES.find(t => t.id === c.typeId);
+                              const type = chickenTypes.find(t => t.id === c.typeId);
                               if (!type) return sum;
                               const cPower = c.clonePower !== undefined ? c.clonePower : 100;
                               return sum + (type.incomePerEgg * (cPower / 100));
@@ -505,8 +541,151 @@ export function AdminDashboard({ onLogout }) {
                 </button>
               </div>
             </div>
+            
+            {/* Control de Zorros */}
+            <div className="glass-panel" style={{ padding: '2rem' }}>
+              <h3>🦊 Frecuencia de Zorros</h3>
+              <p style={{ fontSize: '0.85rem', color: '#aaa', marginBottom: '1.5rem', lineHeight: '1.4' }}>
+                Establece cada cuántas horas (en promedio) ataca un zorro a una gallina.
+              </p>
+              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1.5rem', borderRadius: '8px', marginBottom: '1rem' }}>
+                <p style={{ margin: 0, fontSize: '1.2rem' }}>Frecuencia Actual: <strong style={{ color: '#ff4c4c' }}>1 cada {foxIntervalHours} horas</strong></p>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <input 
+                  type="number" 
+                  step="0.1"
+                  value={newFoxInterval} 
+                  onChange={(e) => setNewFoxInterval(e.target.value)} 
+                  placeholder="Horas (Ej: 4 o 0.5)"
+                  style={{ flex: 1, padding: '0.8rem', borderRadius: '8px', border: 'none', outline: 'none' }}
+                />
+                <button 
+                  onClick={updateFoxInterval}
+                  style={{ background: '#ff4c4c', color: '#fff', border: 'none', padding: '0.8rem 1.5rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  Actualizar
+                </button>
+              </div>
+            </div>
+            
+            {/* Gestión de Gallinas */}
+            <div className="glass-panel" style={{ padding: '2rem', gridColumn: '1 / -1' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <h3>🐔 Gestión de Gallinas</h3>
+                <button 
+                  onClick={() => setEditingChicken({ id: Date.now().toString(), name: '', price: 100, incomePerEgg: 5, eggTime: 14400000, img: '', depletedImg: '', eggImg: '', description: '', foodType: 'common', foodBagsRequired: 1, isSpecial: false, isNew: true })}
+                  style={{ background: '#4ade80', color: '#000', border: 'none', padding: '0.5rem 1rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  + Crear Nueva
+                </button>
+              </div>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.2)', textAlign: 'left' }}>
+                      <th style={{ padding: '0.5rem' }}>Img</th>
+                      <th style={{ padding: '0.5rem' }}>Nombre</th>
+                      <th style={{ padding: '0.5rem' }}>Precio</th>
+                      <th style={{ padding: '0.5rem' }}>Rendimiento /Huevo</th>
+                      <th style={{ padding: '0.5rem' }}>Tiempo /Huevo (hrs)</th>
+                      <th style={{ padding: '0.5rem' }}>Tipo</th>
+                      <th style={{ padding: '0.5rem' }}>Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {chickenTypes.map(c => (
+                      <tr key={c.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <td style={{ padding: '0.5rem' }}><img src={c.img} alt={c.name} style={{ width: '40px', height: '40px', objectFit: 'contain' }} /></td>
+                        <td style={{ padding: '0.5rem', fontWeight: 'bold' }}>{c.name}</td>
+                        <td style={{ padding: '0.5rem', color: '#fcd535' }}>{c.price} CKF</td>
+                        <td style={{ padding: '0.5rem', color: '#4ade80' }}>{c.incomePerEgg} Huevos</td>
+                        <td style={{ padding: '0.5rem' }}>{(c.eggTime / 3600000).toFixed(2)} hrs</td>
+                        <td style={{ padding: '0.5rem' }}>{c.isSpecial ? '⭐ Especial' : 'Básica'}</td>
+                        <td style={{ padding: '0.5rem' }}>
+                          <button onClick={() => setEditingChicken({...c})} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', padding: '0.3rem 0.8rem', borderRadius: '4px', cursor: 'pointer' }}>Editar</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
           </div>
         )}
+
+        {/* Modal de Edición de Gallina */}
+        {editingChicken && (
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '1rem' }}>
+            <div className="glass-panel" style={{ width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', padding: '2rem', position: 'relative' }}>
+              <button onClick={() => setEditingChicken(null)} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer' }}>✖</button>
+              <h2 style={{ marginBottom: '1.5rem', color: '#fcd535' }}>{editingChicken.isNew ? 'Crear Gallina' : 'Editar Gallina'}</h2>
+              <form onSubmit={handleSaveChicken} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', marginBottom: '0.3rem', color: '#aaa' }}>Nombre</label>
+                    <input type="text" required value={editingChicken.name} onChange={e => setEditingChicken({...editingChicken, name: e.target.value})} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: 'none', outline: 'none' }} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', marginBottom: '0.3rem', color: '#aaa' }}>ID (Identificador único)</label>
+                    <input type="text" required disabled={!editingChicken.isNew} value={editingChicken.id} onChange={e => setEditingChicken({...editingChicken, id: e.target.value})} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: 'none', outline: 'none', opacity: editingChicken.isNew ? 1 : 0.5 }} />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', marginBottom: '0.3rem', color: '#aaa' }}>Precio (CKF)</label>
+                    <input type="number" required value={editingChicken.price} onChange={e => setEditingChicken({...editingChicken, price: Number(e.target.value)})} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: 'none', outline: 'none' }} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', marginBottom: '0.3rem', color: '#aaa' }}>Ganancia por Huevo (Huevos)</label>
+                    <input type="number" required value={editingChicken.incomePerEgg} onChange={e => setEditingChicken({...editingChicken, incomePerEgg: Number(e.target.value)})} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: 'none', outline: 'none' }} />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', marginBottom: '0.3rem', color: '#aaa' }}>Tiempo por Huevo (Horas)</label>
+                    <input type="number" step="0.1" required value={editingChicken.eggTime / 3600000} onChange={e => setEditingChicken({...editingChicken, eggTime: Number(e.target.value) * 3600000})} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: 'none', outline: 'none' }} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', marginBottom: '0.3rem', color: '#aaa' }}>Sacos de Comida Requeridos</label>
+                    <input type="number" required value={editingChicken.foodBagsRequired} onChange={e => setEditingChicken({...editingChicken, foodBagsRequired: Number(e.target.value)})} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: 'none', outline: 'none' }} />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', marginBottom: '0.3rem', color: '#aaa' }}>Descripción / Habilidad</label>
+                  <input type="text" required value={editingChicken.description} onChange={e => setEditingChicken({...editingChicken, description: e.target.value})} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: 'none', outline: 'none' }} />
+                </div>
+
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', marginBottom: '0.3rem', color: '#aaa' }}>Ruta de Imagen (URL o /img/...)</label>
+                    <input type="text" required value={editingChicken.img} onChange={e => setEditingChicken({...editingChicken, img: e.target.value})} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: 'none', outline: 'none' }} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', marginBottom: '0.3rem', color: '#aaa' }}>Imagen Agotada (Opcional)</label>
+                    <input type="text" value={editingChicken.depletedImg} onChange={e => setEditingChicken({...editingChicken, depletedImg: e.target.value})} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: 'none', outline: 'none' }} />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginTop: '1rem' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                    <input type="checkbox" checked={editingChicken.isSpecial} onChange={e => setEditingChicken({...editingChicken, isSpecial: e.target.checked, foodType: e.target.checked ? 'special' : 'common'})} style={{ width: '20px', height: '20px' }} />
+                    Es Gallina Especial (USA Maíz Especial)
+                  </label>
+                </div>
+
+                <button type="submit" style={{ background: '#4ade80', color: '#000', border: 'none', padding: '1rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', marginTop: '1rem', fontSize: '1.1rem' }}>
+                  Guardar Gallina
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );

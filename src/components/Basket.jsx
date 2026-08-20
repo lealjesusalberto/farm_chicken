@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { CHICKEN_TYPES } from '../hooks/useGameEngine';
+import { useGameConfig } from '../contexts/GameConfigContext';
 import { Flame, Info, Sparkles } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 export function Basket({ userData, onIncubateEggs }) {
+  const { chickenTypes } = useGameConfig();
   const [isIncubating, setIsIncubating] = useState(false);
   const [incubatingType, setIncubatingType] = useState(null);
   
@@ -17,7 +18,7 @@ export function Basket({ userData, onIncubateEggs }) {
 
   const handleIncubateClick = async (typeId) => {
     try {
-      const type = CHICKEN_TYPES.find(t => t.id === typeId);
+      const type = chickenTypes.find(t => t.id === typeId);
       setIncubatingType(type);
       setIsIncubating(true);
       

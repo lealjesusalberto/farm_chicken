@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { CHICKEN_TYPES, calculateEffectiveTime } from '../hooks/useGameEngine';
+import { calculateEffectiveTime } from '../hooks/useGameEngine';
+import { useGameConfig } from '../contexts/GameConfigContext';
 import { Info, Volume2, VolumeX, Backpack, Flame, Sparkles } from 'lucide-react';
 import Swal from 'sweetalert2';
 
-export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEgg, onSell, onFeed, onScareFox, weatherData }) {
+export function Farm({ chickens, onSell, onCollect, maxCapacity, currentEggs, onFeed, onScareFox, balance, oracleRate, onOpenEgg, onOpenStarterEgg, userData, weatherData }) {
+  const { chickenTypes } = useGameConfig();
+  const [selectedChicken, setSelectedChicken] = useState(null);
   const [now, setNow] = useState(Date.now());
   const [isMuted, setIsMuted] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -373,7 +376,7 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
       
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3rem', justifyContent: 'center', zIndex: 1, position: 'relative', paddingBottom: '2rem', paddingTop: isMobile ? '120px' : '0px' }}>
         {chickens.map((chicken) => {
-          const type = CHICKEN_TYPES.find(c => c.id === chicken.typeId);
+          const type = chickenTypes.find(c => c.id === chicken.typeId);
           const isDepleted = chicken.currentEggs >= 5;
           const currentImg = isDepleted ? type.depletedImg : type.img;
 
@@ -570,8 +573,18 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
                 </div>
               </div>
               
+              {/* Información de Producción */}
+              <div style={{ marginTop: '25px', textAlign: 'center', color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)', zIndex: 11, position: 'relative' }}>
+                <div style={{ fontWeight: 'bold', fontSize: '0.9rem', color: type.auraColor || '#fcd535' }}>
+                  {type.name}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#ddd' }}>
+                  {type.incomePerEgg} huevos / {(type.eggTime / 3600000).toFixed(1)} hrs
+                </div>
+              </div>
+
               {/* Barra de progreso */}
-              <div style={{ marginTop: '25px', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100px' }}>
+              <div style={{ marginTop: '5px', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100px', zIndex: 11, position: 'relative' }}>
                 <div style={{ width: '100%', height: '8px', background: 'rgba(0,0,0,0.6)', borderRadius: '4px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
                   <div style={{ 
                     height: '100%', 
