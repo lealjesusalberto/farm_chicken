@@ -307,7 +307,7 @@ export function Arena({ userData, userChickens, onBattleWin, onStartBattle }) {
         )}
 
         <div className="battle-log glass-panel" style={{ zIndex: 300 }}>
-          {battleLog.slice(-5).map((log, i) => (
+          {battleLog.slice(-1).map((log, i) => (
             <p key={i} className={`log-${log.type}`}>{log.msg}</p>
           ))}
         </div>

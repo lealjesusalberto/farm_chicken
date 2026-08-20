@@ -861,7 +861,10 @@
   .skill-card-axie.active-skill-card {
     transform: translateY(-10px) !important;
   }
-  .fighter-card img {
+  .floating-chicken {
+    height: 35px !important;
+  }
+  .floating-enemy {
     height: 45px !important;
   }
   .hp-bar-bg {
@@ -871,14 +874,26 @@
   .arena-fighter span {
     font-size: 0.6rem !important;
   }
-  .action-panel {
-    padding: 0.5rem !important;
-  }
   .card-axie-info h5 {
     font-size: 0.7rem !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .card-axie-info small {
-    font-size: 0.55rem !important;
+    display: none;
+  }
+  .active-skill-card {
+    height: 130px !important;
+    transform: translateY(-15px) !important;
+  }
+  .active-skill-card .card-axie-info h5 {
+    white-space: normal;
+  }
+  .active-skill-card .card-axie-info small {
+    display: block;
+    font-size: 0.5rem !important;
+    margin-top: 0.2rem;
   }
 }
 
