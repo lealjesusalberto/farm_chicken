@@ -280,7 +280,7 @@ export function Arena({ userData, userChickens, onBattleWin, onStartBattle }) {
             <div className="card-hand">
               {playerTeam[activeChickenIndex].skills.map((skill, sIdx) => (
                 <div key={sIdx} className={`skill-card-axie ${skill.isSpecial ? 'special-card' : 'basic-card'} ${selectedSkill?.id === skill.id ? 'active-skill-card' : ''}`} onClick={() => {
-                  if (skill.id === 'skill_heal' || skill.id === 'skill_aoe' || skill.id === 'skill_buff' || skill.id === 'skill_heal_self') {
+                  if (skill.id === 'skill_heal' || skill.id === 'skill_buff' || skill.id === 'skill_heal_self') {
                     executePlayerAction(skill, null);
                   } else {
                     setSelectedSkill(skill);

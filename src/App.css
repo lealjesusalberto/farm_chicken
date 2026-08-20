@@ -874,6 +874,15 @@
   .arena-fighter span {
     font-size: 0.6rem !important;
   }
+  .battle-log.glass-panel {
+    top: 5px !important;
+    right: 50% !important;
+    transform: translateX(50%) !important;
+    width: 250px !important;
+    padding: 0.2rem 0.5rem !important;
+    font-size: 0.6rem !important;
+    text-align: center !important;
+  }
   .card-axie-info h5 {
     font-size: 0.7rem !important;
     white-space: nowrap;
