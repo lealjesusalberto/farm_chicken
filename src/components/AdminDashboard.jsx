@@ -487,6 +487,9 @@ export function AdminDashboard({ onLogout }) {
                 <button onClick={() => changeWeather('butterflies')} style={{ border: 'none', padding: '1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', background: currentWeather === 'butterflies' ? '#f472b6' : 'rgba(255,255,255,0.1)', color: currentWeather === 'butterflies' ? '#000' : '#fff' }}>
                   🦋 Mariposas
                 </button>
+                <button onClick={() => changeWeather('aurora')} style={{ border: 'none', padding: '1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', background: currentWeather === 'aurora' ? '#10b981' : 'rgba(255,255,255,0.1)', color: currentWeather === 'aurora' ? '#000' : '#fff' }}>
+                  🌌 Auroras Boreales (Acelera x1.9)
+                </button>
               </div>
             </div>
           </div>

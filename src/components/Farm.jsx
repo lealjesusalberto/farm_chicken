@@ -34,7 +34,7 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
   }, []);
 
   const weather = weatherData?.type || 'sunny';
-  const isFavorableEvent = ['rainbow', 'stars', 'bugs', 'butterflies'].includes(weather);
+  const isFavorableEvent = ['rainbow', 'stars', 'bugs', 'butterflies', 'aurora'].includes(weather);
 
   useEffect(() => {
     if (farmAudioRef.current && eventAudioRef.current) {
@@ -401,6 +401,8 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
             currentMultiplier = 1.2;
           } else if (weather === 'butterflies') {
             currentMultiplier = 1.3;
+          } else if (weather === 'aurora') {
+            currentMultiplier = 1.9;
           }
           
           const weatherColors = {
@@ -410,7 +412,8 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
             rainbow: '#fbcfe8',
             stars: '#fef08a',
             bugs: '#a3e635',
-            butterflies: '#f472b6'
+            butterflies: '#f472b6',
+            aurora: '#10b981'
           };
           
           const weatherMultiplierOnly = currentMultiplier;
@@ -444,6 +447,7 @@ export function Farm({ chickens, userData, onCollect, onOpenEgg, onOpenStarterEg
           return (
             <div key={chicken.id} className="animate-float" style={{ animationDelay: `${Math.random()}s`, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <div 
+                className={weather === 'aurora' ? 'aurora-chicken-wrapper' : ''}
                 style={{ 
                   cursor: 'default',
                   position: 'relative'

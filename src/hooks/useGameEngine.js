@@ -7,10 +7,10 @@ const EGG_TIME = 24 * 60 * 60 * 1000; // 24 horas por huevo
 // Remove global CYCLE_DURATION
 
 export const CHICKEN_TYPES = [
-  { id: '1', name: 'Blanca', price: 100, incomePerEgg: 0.5, img: '/img/chicken_1.png', depletedImg: '/img/chicken_1_1.png', eggImg: '/img/egg_1.png', eggTime: EGG_TIME, description: 'Gallina básica.', foodType: 'common', foodBagsRequired: 1 },
-  { id: '2', name: 'Turquesa', price: 300, incomePerEgg: 1.7, img: '/img/chicken_2.png', depletedImg: '/img/chicken_2_2.png', eggImg: '/img/egg_2.png', eggTime: EGG_TIME, description: 'Un poco mejor.', foodType: 'common', foodBagsRequired: 1 },
-  { id: '3', name: 'Amarilla', price: 700, incomePerEgg: 5, img: '/img/chicken_3.png', depletedImg: '/img/chicken_3_3.png', eggImg: '/img/egg_3.png', eggTime: EGG_TIME, description: 'Buena producción.', foodType: 'common', foodBagsRequired: 2 },
-  { id: '4', name: 'Lila', price: 1500, incomePerEgg: 12.5, img: '/img/chicken_4.png', depletedImg: '/img/chicken_4_4.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, description: 'Excelente productora.', foodType: 'common', foodBagsRequired: 3 },
+  { id: '1', name: 'Blanca', price: 100, incomePerEgg: 5, img: '/img/chicken_1.png', depletedImg: '/img/chicken_1_1.png', eggImg: '/img/egg_1.png', eggTime: 4 * 60 * 60 * 1000, description: 'Gallina básica.', foodType: 'common', foodBagsRequired: 1 },
+  { id: '2', name: 'Turquesa', price: 300, incomePerEgg: 7, img: '/img/chicken_2.png', depletedImg: '/img/chicken_2_2.png', eggImg: '/img/egg_2.png', eggTime: 6 * 60 * 60 * 1000, description: 'Un poco mejor.', foodType: 'common', foodBagsRequired: 1 },
+  { id: '3', name: 'Amarilla', price: 700, incomePerEgg: 15, img: '/img/chicken_3.png', depletedImg: '/img/chicken_3_3.png', eggImg: '/img/egg_3.png', eggTime: 8 * 60 * 60 * 1000, description: 'Buena producción.', foodType: 'common', foodBagsRequired: 2 },
+  { id: '4', name: 'Lila', price: 1500, incomePerEgg: 30, img: '/img/chicken_4.png', depletedImg: '/img/chicken_4_4.png', eggImg: '/img/egg_4.png', eggTime: 12 * 60 * 60 * 1000, description: 'Excelente productora.', foodType: 'common', foodBagsRequired: 3 },
   // Especiales
   { id: 's_chef', name: 'Chef', price: 2000, incomePerEgg: 20, img: '/img/specials/pollo_chef.png', depletedImg: '/img/specials/pollo_chef.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Cocina rápido. x1.5 de velocidad pasiva.', auraColor: '#ffffff', foodType: 'special', foodBagsRequired: 2 },
   { id: 's_superman', name: 'Superman', price: 2000, incomePerEgg: 20, img: '/img/specials/pollo_superman.png', depletedImg: '/img/specials/pollo_superman.png', eggImg: '/img/egg_4.png', eggTime: EGG_TIME, isSpecial: true, description: 'Inmune a los retrasos por lluvia.', auraColor: '#3b82f6', foodType: 'special', foodBagsRequired: 2 },
@@ -77,6 +77,8 @@ export function calculateEffectiveTime(chickenTypeId, lastEggTime, now, boostSta
         weatherMultiplier = 1.2;
       } else if (event.type === 'butterflies') {
         weatherMultiplier = 1.3;
+      } else if (event.type === 'aurora') {
+        weatherMultiplier = 1.9;
       }
 
       let boostedDuration = 0;
@@ -196,7 +198,7 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
         // Hacemos el check solo si han pasado al menos 2.5s
         if (timeSinceLastCheck >= 2500) {
           const intervals = Math.floor(timeSinceLastCheck / 2500);
-          const probability = 1 - Math.pow(1 - 0.0001, intervals); // 0.01% cada 2.5s (reducción para evitar spam)
+          const probability = 1 - Math.pow(1 - 0.0001736, intervals); // Probabilidad promedio de 1 zorro cada 4 horas
           
           if (Math.random() < probability) {
             // ¡EL ZORRO ATACÓ!
