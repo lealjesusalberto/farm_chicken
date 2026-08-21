@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, query, where, getDocs, doc, updateDoc, getDoc, onSnapshot, setDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, getDoc, onSnapshot, setDoc, deleteDoc } from 'firebase/firestore';
 import { useExchangeRate } from '../hooks/useExchangeRate';
 import { useGameConfig } from '../contexts/GameConfigContext';
-import { Users, CreditCard, Settings, LogOut, Search, Check, Pause, Ban, Swords, Activity, Eye } from 'lucide-react';
+import { Users, CreditCard, Settings, LogOut, Search, Check, Pause, Ban, Swords, Activity, Eye, Trash2 } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 export function AdminDashboard({ onLogout, onImpersonate }) {
@@ -272,8 +272,29 @@ export function AdminDashboard({ onLogout, onImpersonate }) {
       Swal.fire('Rechazado', `La solicitud ha sido rechazada ${isWithdrawal ? '(saldo devuelto al jugador)' : ''}`, 'info');
       // No necesitamos fetchData() por onSnapshot
     } catch (e) {
-      console.error(e);
       Swal.fire('Error', 'No se pudo rechazar', 'error');
+    }
+  };
+
+  const handleDeleteTx = async (tx) => {
+    const result = await Swal.fire({
+      title: '¿Eliminar registro?',
+      text: 'Esto borrará la transacción del historial y ajustará el Balance en Caja. (Nota: No modificará el saldo actual que ya tenga el jugador).',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#ff4c4c'
+    });
+    
+    if (result.isConfirmed) {
+      try {
+        await deleteDoc(doc(db, 'transactions', tx.id));
+        Swal.fire('Eliminada', 'La transacción fue borrada exitosamente.', 'success');
+      } catch (e) {
+        console.error(e);
+        Swal.fire('Error', 'No se pudo eliminar', 'error');
+      }
     }
   };
 
@@ -299,16 +320,32 @@ export function AdminDashboard({ onLogout, onImpersonate }) {
               <p style={{ fontSize: '0.9rem', color: '#ffcc00' }}>{tx.type === 'withdrawal' ? `Binance Pay: ${tx.binanceId}` : `Ref: ${tx.reference}`}</p>
               <p style={{ fontSize: '0.8rem', color: '#aaa' }}>{new Date(tx.createdAt).toLocaleString()}</p>
             </div>
-            {showActions ? (
-              <div className="admin-tx-actions" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                <button onClick={() => handleApprove(tx)} style={{ cursor: 'pointer', border: 'none', borderRadius: '8px', background: '#4ade80', color: '#000', padding: '0.5rem 1rem', fontWeight: 'bold' }}>Aprobar</button>
-                <button onClick={() => handleReject(tx)} style={{ cursor: 'pointer', border: 'none', borderRadius: '8px', background: '#ff4c4c', color: '#fff', padding: '0.5rem 1rem', fontWeight: 'bold' }}>Rechazar</button>
-              </div>
-            ) : (
-              <div style={{ padding: '0.3rem 0.8rem', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 'bold', background: tx.status === 'approved' ? 'rgba(74, 222, 128, 0.2)' : 'rgba(255, 76, 76, 0.2)', color: tx.status === 'approved' ? '#4ade80' : '#ff4c4c' }}>
-                {tx.status === 'approved' ? 'APROBADO' : 'RECHAZADO'}
-              </div>
-            )}
+            
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              {showActions ? (
+                <>
+                  <button className="btn-primary" onClick={() => handleApprove(tx)} style={{ background: '#4ade80', borderColor: '#4ade80', color: '#000', padding: '0.5rem 1rem' }}>
+                    Aprobar
+                  </button>
+                  <button className="btn-primary" onClick={() => handleReject(tx)} style={{ background: '#ff4c4c', borderColor: '#ff4c4c', padding: '0.5rem 1rem' }}>
+                    Rechazar
+                  </button>
+                </>
+              ) : (
+                <div style={{ padding: '0.3rem 0.8rem', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 'bold', background: tx.status === 'approved' ? 'rgba(74, 222, 128, 0.2)' : 'rgba(255, 76, 76, 0.2)', color: tx.status === 'approved' ? '#4ade80' : '#ff4c4c' }}>
+                  {tx.status === 'approved' ? 'APROBADO' : 'RECHAZADO'}
+                </div>
+              )}
+              
+              <button 
+                className="btn-icon" 
+                onClick={() => handleDeleteTx(tx)} 
+                title="Eliminar Registro"
+                style={{ background: 'rgba(255, 0, 0, 0.2)', color: '#ff4c4c', border: '1px solid rgba(255,0,0,0.5)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', marginLeft: '0.5rem' }}
+              >
+                <Trash2 size={18} />
+              </button>
+            </div>
           </li>
         ))}
       </ul>
