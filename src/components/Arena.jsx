@@ -20,6 +20,7 @@ export function Arena({ userData, userChickens, onBattleWin, onStartBattle }) {
   const [activeProjectile, setActiveProjectile] = useState(null);
   const [activeHitEffect, setActiveHitEffect] = useState(null);
   const [isCinematic, setIsCinematic] = useState(false);
+  const [enemyTurnCounter, setEnemyTurnCounter] = useState(0);
 
   const demoChickenIds = ['s_mago', 's_chef', 's_pirata', 's_granjero'];
   const specialChickens = demoChickenIds.map(id => {
@@ -76,6 +77,7 @@ export function Arena({ userData, userChickens, onBattleWin, onStartBattle }) {
       setBattleLog([{ msg: `¡Oleada ${wave} ha comenzado!`, type: 'info' }]);
       setTurn('player');
       setActiveChickenIndex(0);
+      setEnemyTurnCounter(0);
       setView('combat');
     } catch (error) {
       console.error("Error starting battle:", error);
@@ -192,8 +194,9 @@ export function Arena({ userData, userChickens, onBattleWin, onStartBattle }) {
     const alivePlayers = currentPTeam.filter(p => !p.isDead);
     if (alivePlayers.length === 0) return;
 
-    // Efecto visual: Elegir flame.png o dragon.png aleatoriamente para el ataque del zorro
-    const foxAttackImg = Math.random() > 0.5 ? '/img/skills/flame.png' : '/img/skills/dragon.png';
+    // Efecto visual: dragón cada 4 turnos (counter % 4 === 3)
+    const isDragonAttack = enemyTurnCounter % 4 === 3;
+    const foxAttackImg = isDragonAttack ? '/img/skills/dragon.png' : '/img/skills/flame.png';
     const firstEnemyIdx = eTeam.findIndex(e => !e.isDead);
     const targetIdx = currentPTeam.findIndex(p => !p.isDead);
 
@@ -203,7 +206,8 @@ export function Arena({ userData, userChickens, onBattleWin, onStartBattle }) {
       targetIndex: targetIdx,
       sourceIndex: firstEnemyIdx,
       flip: true, // Zorro ataca hacia la izquierda
-      isSpecial: true
+      isSpecial: isDragonAttack,
+      isEnemy: true // Para aplicar la clase .projectile-enemy
     });
 
     setTimeout(() => {
@@ -211,7 +215,7 @@ export function Arena({ userData, userChickens, onBattleWin, onStartBattle }) {
       setActiveHitEffect({
         img: foxAttackImg,
         targetIndices: [targetIdx],
-        isSpecial: true,
+        isSpecial: isDragonAttack,
         flip: true
       });
 
@@ -241,6 +245,7 @@ export function Arena({ userData, userChickens, onBattleWin, onStartBattle }) {
           setView('lobby');
         }, 1500);
       } else {
+        setEnemyTurnCounter(prev => prev + 1);
         setTurn('player');
         setActiveChickenIndex(0);
       }
@@ -271,7 +276,7 @@ export function Arena({ userData, userChickens, onBattleWin, onStartBattle }) {
               key={activeProjectile.key} 
               src={activeProjectile.img} 
               alt="Poder" 
-              className={`skill-projectile ${activeProjectile.isSpecial ? 'special-projectile' : ''}`}
+              className={`skill-projectile ${activeProjectile.isSpecial ? 'special-projectile' : ''} ${activeProjectile.isEnemy ? 'projectile-enemy' : ''}`}
               style={{
                 '--target-y': activeProjectile.targetIndex === 0 ? '-100px' : activeProjectile.targetIndex === 2 ? '100px' : '0px',
                 '--source-y': activeProjectile.sourceIndex === 0 ? '-100px' : activeProjectile.sourceIndex === 2 ? '100px' : '0px',

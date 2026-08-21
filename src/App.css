@@ -544,6 +544,28 @@
   100% { transform: translate(95vw, calc(-50% + var(--target-y, 0px))) scale(2) scaleX(var(--flip-x, 1)) rotate(calc(45deg * var(--flip-x, 1))); opacity: 0; }
 }
 
+.skill-projectile.projectile-enemy {
+  animation: projectile-fly-enemy 0.5s linear forwards;
+}
+.skill-projectile.special-projectile.projectile-enemy {
+  animation: projectile-fly-special-enemy 0.8s cubic-bezier(.36,.07,.19,.97) forwards;
+}
+
+@keyframes projectile-fly-enemy {
+  0% { transform: translate(80vw, calc(-50% + var(--source-y, 0px))) scale(0.5) scaleX(var(--flip-x, 1)) rotate(var(--rot, 0deg)); opacity: 0; }
+  20% { opacity: 1; transform: translate(60vw, calc(-50% + var(--source-y, 0px))) scale(1) scaleX(var(--flip-x, 1)) rotate(var(--rot, 0deg)); }
+  80% { opacity: 1; transform: translate(0, calc(-50% + var(--target-y, 0px))) scale(1) scaleX(var(--flip-x, 1)) rotate(var(--rot, 0deg)); }
+  100% { transform: translate(-20vw, calc(-50% + var(--target-y, 0px))) scale(1.5) scaleX(var(--flip-x, 1)) rotate(var(--rot, 0deg)); opacity: 0; }
+}
+
+@keyframes projectile-fly-special-enemy {
+  0% { transform: translate(80vw, calc(-50% + var(--source-y, 0px))) scale(0.5) scaleX(var(--flip-x, 1)) rotate(calc(-45deg * var(--flip-x, 1))); opacity: 0; }
+  20% { opacity: 1; transform: translate(70vw, calc(-200% + var(--source-y, 0px))) scale(0.8) scaleX(var(--flip-x, 1)) rotate(calc(-30deg * var(--flip-x, 1))); }
+  50% { opacity: 1; transform: translate(40vw, calc(-400% + var(--source-y, 0px))) scale(1) scaleX(var(--flip-x, 1)) rotate(0deg); }
+  80% { opacity: 1; transform: translate(5vw, calc(-200% + var(--target-y, 0px))) scale(1.5) scaleX(var(--flip-x, 1)) rotate(calc(30deg * var(--flip-x, 1))); }
+  100% { transform: translate(-15vw, calc(-50% + var(--target-y, 0px))) scale(2) scaleX(var(--flip-x, 1)) rotate(calc(45deg * var(--flip-x, 1))); opacity: 0; }
+}
+
 
 .hit-explosion {
   position: absolute;
