@@ -665,7 +665,7 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     
     // Volcano Egg Logic
     let droppedVolcano = false;
-    if (weatherData?.type === 'volcano' && weatherData?.start && chicken.typeId === '1') {
+    if (weatherData?.type === 'volcano' && weatherData?.start && (chicken.typeId === '1' || chicken.typeId === 1)) {
       if (userData?.lastVolcanoEventId !== weatherData.start) {
         updatePayload.volcanoEggs = (userData?.volcanoEggs || 0) + 1;
         updatePayload.lastVolcanoEventId = weatherData.start;
@@ -677,11 +677,22 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     await updateDoc(userRef, updatePayload);
     
     if (droppedVolcano) {
+      await logActivity('Evento Volcán', `¡Encontró 1 Huevo Volcánico al recolectar de la Gallina Blanca!`);
       Swal.fire({
         title: '¡Huevo Volcánico Encontrado!',
-        text: '¡Una de tus gallinas ha puesto un misterioso huevo envuelto en llamas durante la erupción!',
+        text: '¡La Gallina Blanca ha puesto un misterioso huevo envuelto en llamas durante la erupción!',
         iconHtml: `<span style="font-size: 50px;">🌋</span>`,
-        confirmButtonText: '¡Asombroso!'
+        showCancelButton: true,
+        confirmButtonText: '¡Incubar Ahora!',
+        cancelButtonText: 'Guardar',
+        confirmButtonColor: '#dc2626'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Pequeno timeout para asegurar que el estado de react se actualice con el nuevo huevo
+          setTimeout(() => {
+            openVolcanoEgg();
+          }, 500);
+        }
       });
     }
     
