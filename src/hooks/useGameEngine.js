@@ -670,6 +670,13 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
         updatePayload.volcanoEggs = (userData?.volcanoEggs || 0) + 1;
         updatePayload.lastVolcanoEventId = weatherData.start;
         droppedVolcano = true;
+      } else {
+        Swal.fire({
+          title: 'Ya reclamaste',
+          text: 'Ya obtuviste tu único Huevo Volcánico en esta erupción. ¡Espera a que el Administrador active la siguiente!',
+          icon: 'info',
+          confirmButtonText: 'Entendido'
+        });
       }
     }
     
