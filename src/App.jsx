@@ -189,6 +189,7 @@ function MainApp({ user }) {
   const [showBasket, setShowBasket] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showArena, setShowArena] = useState(false);
+  const [showArenaDemoModal, setShowArenaDemoModal] = useState(false);
   const [farmingUsers, setFarmingUsers] = useState(89);
 
   useEffect(() => {
@@ -372,7 +373,7 @@ function MainApp({ user }) {
           <ShoppingBag size={24} />
         </button>
         {userData?.hasArenaAccess && (
-          <button className="game-fab" onClick={() => setShowArena(true)} style={{ background: '#10b981', borderColor: '#10b981' }} title="Arena de Combate">
+          <button className="game-fab" onClick={() => setShowArenaDemoModal(true)} style={{ background: '#10b981', borderColor: '#10b981' }} title="Arena de Combate">
             ⚔️
           </button>
         )}
@@ -413,6 +414,38 @@ function MainApp({ user }) {
               <X size={24} color="#fff" />
             </button>
             <Arena userData={userData} userChickens={chickens} onBattleWin={handleArenaBattle} onStartBattle={startArenaBattle} />
+          </div>
+        </div>
+      )}
+
+      {showArenaDemoModal && (
+        <div className="game-modal-overlay" style={{ zIndex: 10000, padding: '1rem', background: 'rgba(0,0,0,0.8)' }}>
+          <div className="game-modal-content" style={{ maxWidth: '600px', width: '100%', overflow: 'hidden', padding: 0, position: 'relative' }}>
+            <button className="close-modal-btn" onClick={() => setShowArenaDemoModal(false)} style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 10, background: 'rgba(0,0,0,0.5)', borderRadius: '50%', padding: '5px', border: 'none', cursor: 'pointer', color: 'white' }}>
+              <X size={20} />
+            </button>
+            
+            <img src="/img/arena_premium_voxel.png" alt="Arena Voxel Demo" style={{ width: '100%', height: 'auto', display: 'block', maxHeight: '350px', objectFit: 'cover' }} />
+            
+            <div style={{ padding: '2rem', textAlign: 'center' }}>
+              <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: '#fcd535', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>ARENA: VERSIÓN DEMO</h2>
+              <p style={{ color: '#cbd5e1', marginBottom: '1.5rem', lineHeight: '1.6' }}>
+                ¡El Coliseo Voxel abrirá sus puertas muy pronto! Por ahora, disfruta de esta versión <strong style={{ color: '#fff' }}>Demo Gratuita</strong>. 
+                <br /><br />
+                En la versión completa podrás ganar Huevos Misteriosos y fichas CKF exclusivas para cambiar por recompensas reales. Hoy, prueba los ataques épicos del Mago, Chef, Pirata y Granjero sin costo.
+              </p>
+              
+              <button 
+                className="btn-primary" 
+                style={{ width: '100%', fontSize: '1.2rem', padding: '1rem', background: 'linear-gradient(90deg, #dc2626, #f97316)' }}
+                onClick={() => {
+                  setShowArenaDemoModal(false);
+                  setShowArena(true);
+                }}
+              >
+                ⚔️ Jugar Arena en Demo ⚔️
+              </button>
+            </div>
           </div>
         </div>
       )}

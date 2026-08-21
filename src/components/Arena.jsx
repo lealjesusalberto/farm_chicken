@@ -21,9 +21,13 @@ export function Arena({ userData, userChickens, onBattleWin, onStartBattle }) {
   const [activeHitEffect, setActiveHitEffect] = useState(null);
   const [isCinematic, setIsCinematic] = useState(false);
 
-  const specialChickens = userChickens.filter(c => {
-    const t = chickenTypes.find(type => type.id === c.typeId);
-    return t && t.isSpecial;
+  const demoChickenIds = ['s_mago', 's_chef', 's_pirata', 's_granjero'];
+  const specialChickens = demoChickenIds.map(id => {
+    return {
+      id: 'demo_' + id,
+      typeId: id,
+      isDemo: true
+    };
   });
 
   const handleSelectChicken = (c) => {
@@ -181,39 +185,71 @@ export function Arena({ userData, userChickens, onBattleWin, onStartBattle }) {
     let currentPTeam = [...pTeam];
     let turnLogs = [];
 
-    eTeam.forEach(e => {
-      if (e.isDead) return;
-      const alivePlayers = currentPTeam.filter(p => !p.isDead);
-      if (alivePlayers.length === 0) return;
-      
-      const target = alivePlayers[Math.floor(Math.random() * alivePlayers.length)];
-      const targetIdx = currentPTeam.findIndex(p => p.id === target.id);
-      
-      currentPTeam[targetIdx].hp = Math.max(0, currentPTeam[targetIdx].hp - e.atk);
-      if (currentPTeam[targetIdx].hp === 0) currentPTeam[targetIdx].isDead = true;
-      
-      turnLogs.push({ msg: `${e.name} atacó a ${target.name} por ${e.atk} de daño.`, type: 'enemy' });
+    // Para no complicar con animaciones secuenciales, mostramos un solo proyectil del primer enemigo vivo.
+    const aliveEnemies = eTeam.filter(e => !e.isDead);
+    if (aliveEnemies.length === 0) return;
+    
+    const alivePlayers = currentPTeam.filter(p => !p.isDead);
+    if (alivePlayers.length === 0) return;
+
+    // Efecto visual: Elegir flame.png o dragon.png aleatoriamente para el ataque del zorro
+    const foxAttackImg = Math.random() > 0.5 ? '/img/skills/flame.png' : '/img/skills/dragon.png';
+    const firstEnemyIdx = eTeam.findIndex(e => !e.isDead);
+    const targetIdx = currentPTeam.findIndex(p => !p.isDead);
+
+    setActiveProjectile({ 
+      img: foxAttackImg, 
+      key: Date.now(), 
+      targetIndex: targetIdx,
+      sourceIndex: firstEnemyIdx,
+      flip: true, // Zorro ataca hacia la izquierda
+      isSpecial: true
     });
 
-    setBattleLog(prev => [...prev, ...turnLogs]);
-    setPlayerTeam(currentPTeam);
+    setTimeout(() => {
+      setActiveProjectile(null);
+      setActiveHitEffect({
+        img: foxAttackImg,
+        targetIndices: [targetIdx],
+        isSpecial: true,
+        flip: true
+      });
 
-    const allPlayersDead = currentPTeam.every(p => p.isDead);
-    if (allPlayersDead) {
-      setTimeout(() => {
-        Swal.fire('Derrota', 'Tu equipo fue vencido. ¡Inténtalo de nuevo mañana!', 'error');
-        onBattleWin(false); // Call with false for lose
-        setView('lobby');
-      }, 1500);
-    } else {
-      setTurn('player');
-      setActiveChickenIndex(0);
-    }
+      eTeam.forEach(e => {
+        if (e.isDead) return;
+        const currentAlivePlayers = currentPTeam.filter(p => !p.isDead);
+        if (currentAlivePlayers.length === 0) return;
+        
+        const target = currentAlivePlayers[Math.floor(Math.random() * currentAlivePlayers.length)];
+        const targetIdxLocal = currentPTeam.findIndex(p => p.id === target.id);
+        
+        currentPTeam[targetIdxLocal].hp = Math.max(0, currentPTeam[targetIdxLocal].hp - e.atk);
+        if (currentPTeam[targetIdxLocal].hp === 0) currentPTeam[targetIdxLocal].isDead = true;
+        
+        turnLogs.push({ msg: `${e.name} atacó a ${target.name} por ${e.atk} de daño.`, type: 'enemy' });
+      });
+
+      setBattleLog(prev => [...prev, ...turnLogs]);
+      setPlayerTeam(currentPTeam);
+      setTimeout(() => setActiveHitEffect(null), 800);
+
+      const allPlayersDead = currentPTeam.every(p => p.isDead);
+      if (allPlayersDead) {
+        setTimeout(() => {
+          Swal.fire('Derrota', 'Tu equipo fue vencido. ¡Inténtalo de nuevo mañana!', 'error');
+          onBattleWin(false); // Call with false for lose
+          setView('lobby');
+        }, 1500);
+      } else {
+        setTurn('player');
+        setActiveChickenIndex(0);
+      }
+    }, 500);
   };
 
   const handleWin = async () => {
-    const reward = await onBattleWin(true);
-    Swal.fire('¡Victoria!', `Has superado la Oleada ${userData.arenaWave}. ¡Ganaste ${reward} Monedas Huevo!`, 'success');
+    await onBattleWin(true);
+    Swal.fire('¡Victoria de Prueba!', `Has superado la Oleada ${userData.arenaWave}. Al ser una versión Demo, no recibes recompensas, ¡pero tu habilidad es indudable!`, 'success');
     setView('lobby');
     setSelectedChickens([]);
   };

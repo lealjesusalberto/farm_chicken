@@ -704,7 +704,7 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
       } else {
         Swal.fire({
           title: 'Ya reclamaste',
-          text: 'Ya obtuviste tu único Huevo Volcánico en esta erupción. ¡Espera a que el Administrador active la siguiente!',
+          text: 'Ya obtuviste tu único Huevo Volcánico en esta erupción. ¡Espera al próximo evento de Volcán!',
           icon: 'info',
           confirmButtonText: 'Entendido'
         });
@@ -834,16 +834,11 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
 
   const handleArenaBattle = async (isWin) => {
     if (isWin) {
-      // Recompensa aleatoria: entre 10 y 20 Monedas Huevo
-      const reward = Math.floor(Math.random() * 11) + 10;
-      const newEggBalance = eggBalance + reward;
-      setEggBalance(newEggBalance);
-      
+      // MODO DEMO: No se entregan recompensas
       await updateDoc(doc(db, 'users', user.uid), { 
-        eggBalance: newEggBalance,
         arenaWave: (userData.arenaWave || 1) + 1
       });
-      return reward;
+      return 0; // 0 recompensa
     }
     return 0;
   };
