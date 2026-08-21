@@ -645,14 +645,16 @@ export function Farm({ chickens, onSell, onCollect, maxCapacity, currentEggs, on
                   <div style={{ 
                     height: '100%', 
                     width: `${progress}%`, 
-                    background: isDepleted ? '#ff4c4c' : '#4ade80',
+                    background: isDepleted ? '#ff4c4c' : (chicken.hasFox ? '#ff4c4c' : '#4ade80'),
                     transition: 'width 1s linear'
                   }}></div>
                 </div>
                 <div style={{ fontSize: '0.75rem', color: '#ddd', marginTop: '6px', fontWeight: 'bold', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
-                  {isDepleted 
-                    ? `¡Recoge! (${Math.max(0, timeLeftMins)}m)` 
-                    : `Huevo ${chicken.currentEggs + 1}: ${Math.floor(progress)}%`}
+                  {chicken.hasFox 
+                    ? 'CONGELADA (ZORRO)' 
+                    : isDepleted 
+                      ? `¡Recoge! (${Math.max(0, timeLeftMins)}m)` 
+                      : `Huevo ${(chicken.currentEggs || 0) + 1}: ${Math.floor(progress)}%`}
                 </div>
               </div>
               

@@ -501,6 +501,7 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
         lastFoxAttackTime: Date.now(),
         clonePower: 20, // Solo produce al 20%
         isVolcanic: true, // Marca de nerfeo de venta
+        currentEggs: 0 // <--- Agregado para arreglar NaN
       });
       
       await logActivity('open_volcano_egg', `Abrió un Huevo de Volcán y obtuvo un clon volcánico de ${selectedType.name}`);
