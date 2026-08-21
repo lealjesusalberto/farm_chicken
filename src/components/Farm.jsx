@@ -473,10 +473,16 @@ export function Farm({ chickens, onSell, onCollect, maxCapacity, currentEggs, on
             progress = Math.min(100, Math.max(0, ((effectiveTimePassed % type.eggTime) / type.eggTime) * 100));
           }
 
+          let wrapperClass = '';
+          if (chicken.isVolcanic || weather === 'volcano') wrapperClass = 'volcano-chicken-wrapper';
+          else if (weather === 'aurora') wrapperClass = 'aurora-chicken-wrapper';
+          else if (weather === 'snow') wrapperClass = 'snow-chicken-wrapper';
+          else if (weather === 'butterflies') wrapperClass = 'butterflies-chicken-wrapper';
+
           return (
             <div key={chicken.id} className="animate-float" style={{ animationDelay: `${Math.random()}s`, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <div 
-                className={(chicken.isVolcanic || weather === 'volcano') ? 'volcano-chicken-wrapper' : (weather === 'aurora' ? 'aurora-chicken-wrapper' : '')}
+                className={wrapperClass}
                 style={{ 
                   cursor: 'default',
                   position: 'relative'
