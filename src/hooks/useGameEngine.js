@@ -664,11 +664,13 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     const updatePayload = { xp: newXp, eggBalance: newEggBalance, dailyIncome: newDailyIncomeObj };
     
     // Volcano Egg Logic
+    const currentEventStart = weatherData?.start || (weatherData?.history && weatherData.history.length > 0 ? weatherData.history[weatherData.history.length - 1].start : null);
+    
     let droppedVolcano = false;
-    if (weatherData?.type === 'volcano' && weatherData?.start && (chicken.typeId === '1' || chicken.typeId === 1)) {
-      if (userData?.lastVolcanoEventId !== weatherData.start) {
+    if (weatherData?.type === 'volcano' && currentEventStart && (chicken.typeId === '1' || chicken.typeId === 1)) {
+      if (userData?.lastVolcanoEventId !== currentEventStart) {
         updatePayload.volcanoEggs = (userData?.volcanoEggs || 0) + 1;
-        updatePayload.lastVolcanoEventId = weatherData.start;
+        updatePayload.lastVolcanoEventId = currentEventStart;
         droppedVolcano = true;
       } else {
         Swal.fire({

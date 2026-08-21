@@ -107,7 +107,7 @@ export function AdminDashboard({ onLogout, onImpersonate }) {
       
       history.push({ type, start: now, end: null });
       
-      await setDoc(weatherRef, { type, history });
+      await setDoc(weatherRef, { type, start: now, history });
       Swal.fire({
         title: 'Clima Actualizado',
         text: `El clima ha cambiado a ${type} para todos los jugadores.`,

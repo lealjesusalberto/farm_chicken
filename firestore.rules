@@ -56,6 +56,13 @@ service cloud.firestore {
       // Así evitamos que el jugador abra la consola y cambie su estado a 'approved' para darse dinero infinito.
       allow update, delete: if isAdmin(); 
     }
+    
+    // Reglas para la colección de recargas
+    match /recharges/{rechargeId} {
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      allow create: if isOwner(request.resource.data.userId) && request.resource.data.status == 'pending';
+      allow update, delete: if isAdmin();
+    }
 
     // Reglas para datos globales (clima)
     match /global/{document} {
