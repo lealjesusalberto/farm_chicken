@@ -420,12 +420,12 @@ function MainApp({ user }) {
 
       {showArenaDemoModal && (
         <div className="game-modal-overlay" style={{ zIndex: 10000, padding: '1rem', background: 'rgba(0,0,0,0.8)' }}>
-          <div className="game-modal-content" style={{ maxWidth: '600px', width: '100%', overflow: 'hidden', padding: 0, position: 'relative' }}>
+          <div className="game-modal-content" style={{ maxWidth: '600px', width: '100%', maxHeight: '90vh', overflowY: 'auto', overflowX: 'hidden', padding: 0, position: 'relative' }}>
             <button className="close-modal-btn" onClick={() => setShowArenaDemoModal(false)} style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 10, background: 'rgba(0,0,0,0.5)', borderRadius: '50%', padding: '5px', border: 'none', cursor: 'pointer', color: 'white' }}>
               <X size={20} />
             </button>
             
-            <img src="/img/arena_premium_voxel.png" alt="Arena Voxel Demo" style={{ width: '100%', height: 'auto', display: 'block', maxHeight: '350px', objectFit: 'cover' }} />
+            <img src="/img/arena_premium_voxel.png" alt="Arena Voxel Demo" style={{ width: '100%', height: 'auto', display: 'block', maxHeight: '250px', objectFit: 'cover' }} />
             
             <div style={{ padding: '2rem', textAlign: 'center' }}>
               <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: '#fcd535', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>ARENA: VERSIÓN DEMO</h2>
