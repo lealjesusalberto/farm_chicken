@@ -68,7 +68,11 @@ export function Farm({ chickens, onSell, onCollect, maxCapacity, currentEggs, on
   // Lógica de Día y Noche y Clima
   const currentHour = new Date(now).getHours();
   const isNight = currentHour >= 18 || currentHour < 6;
-  const currentBg = weatherData?.type === 'volcano' ? '/img/volcano_bg.png' : (isNight ? '/img/farm_bg_night.png' : '/img/farm_bg.jpg');
+  let currentBg = '/img/farm_bg.jpg';
+  if (weatherData?.type === 'volcano') currentBg = '/img/volcano_bg.png';
+  else if (weatherData?.type === 'snow') currentBg = '/img/snow_bg.png';
+  else if (weatherData?.type === 'butterflies') currentBg = '/img/butterflies_bg.png';
+  else if (isNight) currentBg = '/img/farm_bg_night.png';
   
   // Actualizar la interfaz cada 10 segundos para ver cómo avanza la barra
   useEffect(() => {
