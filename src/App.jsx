@@ -182,7 +182,7 @@ function Auth({ initialMode = false, onBack }) {
 function MainApp({ user }) {
   const [weatherData, setWeatherData] = useState({ type: 'sunny', history: [] });
   const weather = weatherData.type || 'sunny';
-  const { balance, eggBalance, userData, chickens, oracleRate, buyChicken, buyMysteryEgg, buyFood, feedChicken, scareFox, openMysteryEgg, openStarterEgg, sellChicken, collectEggs, sellEggs, incubateEggs, exchangeUsdtToEggs, exchangeEggsToUsdt, rechargeBalance, requestWithdrawal, startArenaBattle, handleArenaBattle, incomePerDay, pendingRecharges } = useGameEngine(user, weatherData);
+  const { balance, eggBalance, userData, chickens, oracleRate, buyChicken, buyMysteryEgg, buyFood, feedChicken, scareFox, openMysteryEgg, openVolcanoEgg, openStarterEgg, sellChicken, collectEggs, sellEggs, incubateEggs, exchangeUsdtToEggs, exchangeEggsToUsdt, rechargeBalance, requestWithdrawal, startArenaBattle, handleArenaBattle, incomePerDay, pendingRecharges } = useGameEngine(user, weatherData);
   const { rate, loading: rateLoading } = useExchangeRate();
   const [showStore, setShowStore] = useState(false);
   const [showWallet, setShowWallet] = useState(false);
@@ -221,6 +221,19 @@ function MainApp({ user }) {
       updateDoc(doc(db, 'users', user.uid), { status: 'approved', suspensionEnd: null }).catch(console.error);
     }
   }, [userData?.status, userData?.suspensionEnd, user.uid]);
+
+  useEffect(() => {
+    if (userData?.systemMessage) {
+      Swal.fire({
+        title: 'Mensaje del Sistema',
+        text: userData.systemMessage,
+        icon: 'info',
+        confirmButtonText: 'Entendido'
+      }).then(() => {
+        updateDoc(doc(db, 'users', user.uid), { systemMessage: null }).catch(console.error);
+      });
+    }
+  }, [userData?.systemMessage, user.uid]);
 
   const status = userData?.status || 'approved';
   
@@ -272,7 +285,8 @@ function MainApp({ user }) {
     rainbow: { icon: '🌈', text: 'Acelera x0.5', color: '#fbcfe8' },
     stars: { icon: '✨', text: 'Acelera x0.5', color: '#fef08a' },
     bugs: { icon: '🦟', text: 'Aumenta x0.2', color: '#a3e635' },
-    butterflies: { icon: '🦋', text: 'Aumenta x0.3', color: '#f472b6' }
+    butterflies: { icon: '🦋', text: 'Aumenta x0.3', color: '#f472b6' },
+    volcano: { icon: '🌋', text: 'Evento: +1 Huevo Volcánico', color: '#f97316' }
   };
 
   return (
@@ -346,7 +360,7 @@ function MainApp({ user }) {
 
       {/* Main Farm Area (Fills remaining space) */}
       <main style={{ flex: 1, position: 'relative', width: '100%', height: '100%', overflowY: 'auto', overflowX: 'hidden' }}>
-        <Farm chickens={chickens} userData={userData} weatherData={weatherData} onCollect={collectEggs} onOpenEgg={openMysteryEgg} onOpenStarterEgg={openStarterEgg} onSell={sellChicken} onFeed={feedChicken} onScareFox={scareFox} />
+        <Farm chickens={chickens} userData={userData} weatherData={weatherData} onCollect={collectEggs} onOpenEgg={openMysteryEgg} onOpenVolcanoEgg={openVolcanoEgg} onOpenStarterEgg={openStarterEgg} onSell={sellChicken} onFeed={feedChicken} onScareFox={scareFox} />
       </main>
 
       {/* Bottom Action Bar */}
@@ -435,7 +449,7 @@ function MainApp({ user }) {
               </button>
             </div>
             <div style={{ flex: 1, overflow: 'hidden' }}>
-              <Basket userData={userData} onSellEggs={sellEggs} onIncubateEggs={incubateEggs} />
+              <Basket userData={userData} onSellEggs={sellEggs} onIncubateEggs={incubateEggs} onOpenMysteryEgg={openMysteryEgg} onOpenVolcanoEgg={openVolcanoEgg} />
             </div>
           </div>
         </div>
@@ -450,6 +464,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [showAuth, setShowAuth] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
+  const [impersonatedUser, setImpersonatedUser] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -491,9 +506,29 @@ export default function App() {
   }
 
   if (user.email === 'admin@farmchicken.com') {
+    if (impersonatedUser) {
+      return (
+        <>
+          <div style={{ position: 'fixed', bottom: '20px', right: '20px', background: '#ff4c4c', color: 'white', zIndex: 999999, padding: '1rem', textAlign: 'center', fontWeight: 'bold', display: 'flex', flexDirection: 'column', gap: '0.8rem', boxShadow: '0 10px 25px rgba(0,0,0,0.6)', borderRadius: '16px', maxWidth: '250px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+              <Eye size={20} />
+              <span>Modo Fantasma</span>
+            </div>
+            <div style={{ fontSize: '0.75rem', opacity: 0.9, wordBreak: 'break-all' }}>{impersonatedUser.email}</div>
+            <button 
+              onClick={() => setImpersonatedUser(null)} 
+              style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.5)', color: 'white', padding: '0.5rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.2s' }}
+            >
+              Salir del Modo
+            </button>
+          </div>
+          <MainApp user={{ uid: impersonatedUser.id, email: impersonatedUser.email }} />
+        </>
+      );
+    }
     return (
       <div className="layout-container" style={{ background: '#0f172a', minHeight: '100vh', width: '100vw', margin: 0, overflow: 'auto' }}>
-        <AdminDashboard onLogout={() => signOut(auth)} />
+        <AdminDashboard onLogout={() => signOut(auth)} onImpersonate={(u) => setImpersonatedUser(u)} />
       </div>
     );
   }

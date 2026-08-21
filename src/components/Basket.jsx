@@ -3,7 +3,7 @@ import { useGameConfig } from '../contexts/GameConfigContext';
 import { Flame, Info, Sparkles } from 'lucide-react';
 import Swal from 'sweetalert2';
 
-export function Basket({ userData, onIncubateEggs }) {
+export function Basket({ userData, onIncubateEggs, onOpenMysteryEgg, onOpenVolcanoEgg }) {
   const { chickenTypes } = useGameConfig();
   const [isIncubating, setIsIncubating] = useState(false);
   const [incubatingType, setIncubatingType] = useState(null);
@@ -113,6 +113,50 @@ export function Basket({ userData, onIncubateEggs }) {
 
       <div style={{ padding: '1.5rem', flex: 1, overflowY: 'auto' }}>
         <div>
+
+            {(userData?.volcanoEggs > 0 || userData?.mysteryEggs > 0) && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+                
+                {userData?.volcanoEggs > 0 && (
+                  <div className="glass-panel" style={{ padding: '1.5rem', textAlign: 'center', border: '1px solid #dc2626' }}>
+                    <div style={{ position: 'relative', display: 'inline-block', marginBottom: '1rem' }}>
+                      <img 
+                        src="/img/egg_white.png" 
+                        alt="Huevo Volcánico" 
+                        style={{ 
+                          width: '80px', 
+                          height: '80px', 
+                          objectFit: 'contain',
+                          filter: 'drop-shadow(0 0 10px red) drop-shadow(0 0 20px orange)',
+                          animation: 'pulse 1s infinite alternate'
+                        }} 
+                      />
+                      <span style={{ position: 'absolute', top: '-10px', right: '-10px', background: '#dc2626', color: '#fff', fontWeight: 'bold', borderRadius: '50%', padding: '4px 10px' }}>{userData.volcanoEggs}</span>
+                    </div>
+                    <h4 style={{ margin: '0 0 1rem 0', color: '#fca5a5' }}>Huevo de Volcán</h4>
+                    <button className="btn-primary" onClick={onOpenVolcanoEgg} style={{ width: '100%', background: 'linear-gradient(90deg, #dc2626, #f97316)', padding: '0.8rem' }}>
+                      <Sparkles size={16} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
+                      Eclosionar
+                    </button>
+                  </div>
+                )}
+
+                {userData?.mysteryEggs > 0 && (
+                  <div className="glass-panel" style={{ padding: '1.5rem', textAlign: 'center', border: '1px solid #fcd535' }}>
+                    <div style={{ position: 'relative', display: 'inline-block', marginBottom: '1rem' }}>
+                      <img src="/img/mystery_egg.png" alt="Huevo Misterioso" style={{ width: '80px', height: '80px', objectFit: 'contain', filter: 'drop-shadow(0 4px 15px rgba(252,213,53,0.5))' }} />
+                      <span style={{ position: 'absolute', top: '-10px', right: '-10px', background: '#fcd535', color: '#000', fontWeight: 'bold', borderRadius: '50%', padding: '4px 10px' }}>{userData.mysteryEggs}</span>
+                    </div>
+                    <h4 style={{ margin: '0 0 1rem 0', color: '#fef08a' }}>Huevo Misterioso</h4>
+                    <button className="btn-primary" onClick={onOpenMysteryEgg} style={{ width: '100%', padding: '0.8rem' }}>
+                      <Sparkles size={16} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
+                      Eclosionar
+                    </button>
+                  </div>
+                )}
+                
+              </div>
+            )}
 
             <div style={{ background: 'linear-gradient(135deg, rgba(249,115,22,0.1), rgba(255,0,0,0.1))', border: '1px solid rgba(249,115,22,0.3)', padding: '1.5rem', borderRadius: '12px', marginBottom: '2rem' }}>
               <h3 style={{ color: '#f97316', margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

@@ -98,6 +98,21 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
   const [pendingRecharges, setPendingRecharges] = useState([]);
   const [oracleRate, setOracleRate] = useState(100);
 
+  const logActivity = async (action, details) => {
+    if (!user) return;
+    try {
+      await addDoc(collection(db, 'activityLogs'), {
+        userId: user.uid,
+        email: user.email,
+        action,
+        details,
+        createdAt: Date.now()
+      });
+    } catch (e) {
+      console.error('Error logging activity:', e);
+    }
+  };
+
   useEffect(() => {
     if (!user) return;
     
@@ -349,10 +364,11 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
       lastEggTime: now,
       lastFoxCheckTime: now,
       currentEggs: 0,
-      boostStartTime: null,
       boostEndTime: null,
       isHalfSpecial: false
     });
+    
+    await logActivity('Compró Gallina', `Compró gallina ${type.name} por ${type.price} Huevos`);
   };
 
   const buyMysteryEgg = async () => {
@@ -365,6 +381,8 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     // Guardar en Firestore
     const userRef = doc(db, 'users', user.uid);
     await updateDoc(userRef, { eggBalance: newEggBalance, mysteryEggs: newEggsCount });
+    
+    await logActivity('Compró Huevo Misterioso', `Gastó 200 Huevos en la tienda de consumibles`);
     
     Swal.fire('¡Comprado!', 'El huevo se guardó en tu granja (Cestita). Ve allá para abrirlo.', 'success');
   };
@@ -385,6 +403,9 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     try {
       const userRef = doc(db, 'users', user.uid);
       await updateDoc(userRef, { eggBalance: newEggBalance, [field]: newCount });
+      
+      await logActivity('Compró Consumible', `Compró ${name} por ${price} Huevos`);
+      
       Swal.fire({
         icon: 'success',
         title: `¡${name} Comprado!`,
@@ -429,6 +450,39 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     
     const actionText = `¡Su producción ha sido multiplicada x10 por ${boostDurationHours} horas!`;
     Swal.fire('¡Gallina Alimentada!', `Has gastado ${requiredBags} Saco(s). ${actionText}`, 'success');
+  };
+
+  const openVolcanoEgg = async () => {
+    if (!userData || !userData.volcanoEggs || userData.volcanoEggs <= 0) {
+      Swal.fire('Sin Huevos de Volcán', 'No tienes huevos volcánicos.', 'error');
+      return;
+    }
+    const newEggsCount = userData.volcanoEggs - 1;
+    const userRef = doc(db, 'users', user.uid);
+    await updateDoc(userRef, { volcanoEggs: newEggsCount });
+
+    // Toca una gallina especial
+    const specialChickens = chickenTypes.filter(t => t.isSpecial);
+    const selectedType = specialChickens[Math.floor(Math.random() * specialChickens.length)];
+    
+    await addDoc(collection(db, 'chickens'), {
+      userId: user.uid,
+      typeId: selectedType.id,
+      lastEggTime: Date.now(),
+      hasFox: false,
+      lastFoxCheckTime: Date.now(),
+      lastFoxAttackTime: Date.now(),
+      clonePower: 20, // Solo produce al 20%
+      isVolcanic: true, // Marca de nerfeo de venta
+    });
+    
+    await logActivity('open_volcano_egg', `Abrió un Huevo de Volcán y obtuvo un clon volcánico de ${selectedType.name}`);
+    Swal.fire({
+      title: '¡Eclosión Volcánica!',
+      text: `El huevo de fuego ha estallado y nació una ${selectedType.name} (VOLCÁNICA 20%).`,
+      iconHtml: `<img src="${selectedType.img}" style="width:100px; height:100px; filter: drop-shadow(0 0 10px red);">`,
+      confirmButtonText: '¡Genial!'
+    });
   };
 
   const openStarterEgg = async () => {
@@ -545,7 +599,12 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     if (!chicken) return;
     
     const type = chickenTypes.find(t => t.id === chicken.typeId);
-    const sellPrice = type.price / 2; // Devuelve la mitad de lo que costó en Huevos
+    let sellPrice = type.price / 2; // Devuelve la mitad de lo que costó en Huevos
+    
+    // Si es gallina del volcán, se vende solo por 10%
+    if (chicken.isVolcanic) {
+      sellPrice = Math.floor(type.price * 0.1);
+    }
     
     const result = await Swal.fire({
       title: '¿Vender gallina?',
@@ -602,8 +661,29 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     
     setEggBalance(newEggBalance);
     
+    const updatePayload = { xp: newXp, eggBalance: newEggBalance, dailyIncome: newDailyIncomeObj };
+    
+    // Volcano Egg Logic
+    let droppedVolcano = false;
+    if (weatherData?.type === 'volcano' && weatherData?.start && chicken.typeId === '1') {
+      if (userData?.lastVolcanoEventId !== weatherData.start) {
+        updatePayload.volcanoEggs = (userData?.volcanoEggs || 0) + 1;
+        updatePayload.lastVolcanoEventId = weatherData.start;
+        droppedVolcano = true;
+      }
+    }
+    
     const userRef = doc(db, 'users', user.uid);
-    await updateDoc(userRef, { xp: newXp, eggBalance: newEggBalance, dailyIncome: newDailyIncomeObj });
+    await updateDoc(userRef, updatePayload);
+    
+    if (droppedVolcano) {
+      Swal.fire({
+        title: '¡Huevo Volcánico Encontrado!',
+        text: '¡Una de tus gallinas ha puesto un misterioso huevo envuelto en llamas durante la erupción!',
+        iconHtml: `<span style="font-size: 50px;">🌋</span>`,
+        confirmButtonText: '¡Asombroso!'
+      });
+    }
     
     const chickenRef = doc(db, 'chickens', chickenId);
     const now = Date.now();
@@ -624,6 +704,8 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     const userRef = doc(db, 'users', user.uid);
     await updateDoc(userRef, { balance: newBalance, eggBalance: newEggBalance });
     
+    await logActivity('Intercambio Oráculo', `Cambió ${usdtAmount} USDT por ${eggsToReceive} Huevos`);
+    
     Swal.fire('¡Intercambio Exitoso!', `Has comprado ${eggsToReceive} Huevos por ${usdtAmount} CKF.`, 'success');
   };
 
@@ -640,6 +722,8 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     
     const userRef = doc(db, 'users', user.uid);
     await updateDoc(userRef, { balance: newBalance, eggBalance: newEggBalance });
+    
+    await logActivity('Intercambio Oráculo', `Cambió ${eggAmount} Huevos por ${usdtToReceive.toFixed(2)} USDT`);
     
     Swal.fire('¡Intercambio Exitoso!', `Has vendido ${eggAmount} Huevos y recibido ${usdtToReceive.toFixed(2)} CKF.`, 'success');
   };
@@ -804,6 +888,7 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
     feedChicken, 
     scareFox, 
     openMysteryEgg, 
+    openVolcanoEgg,
     openStarterEgg, 
     sellChicken, 
     collectEggs, 

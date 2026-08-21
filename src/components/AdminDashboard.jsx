@@ -3,12 +3,13 @@ import { db } from '../firebase';
 import { collection, query, where, getDocs, doc, updateDoc, getDoc, onSnapshot, setDoc } from 'firebase/firestore';
 import { useExchangeRate } from '../hooks/useExchangeRate';
 import { useGameConfig } from '../contexts/GameConfigContext';
-import { Users, CreditCard, Settings, LogOut, Search, Check, Pause, Ban, Swords } from 'lucide-react';
+import { Users, CreditCard, Settings, LogOut, Search, Check, Pause, Ban, Swords, Activity, Eye } from 'lucide-react';
 import Swal from 'sweetalert2';
 
-export function AdminDashboard({ onLogout }) {
+export function AdminDashboard({ onLogout, onImpersonate }) {
   const [users, setUsers] = useState([]);
   const [transactions, setTransactions] = useState([]);
+  const [activityLogs, setActivityLogs] = useState([]);
   const [allChickens, setAllChickens] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentWeather, setCurrentWeather] = useState('sunny');
@@ -57,12 +58,20 @@ export function AdminDashboard({ onLogout }) {
       }
     });
 
+    // Escuchar Actividad
+    const unsubActivity = onSnapshot(collection(db, 'activityLogs'), (snap) => {
+      setActivityLogs(snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => b.createdAt - a.createdAt));
+    }, (error) => {
+      console.error("Error cargando logs:", error);
+    });
+
     return () => {
       unsubTx();
       unsubUsers();
       unsubWeather();
       unsubChickens();
       unsubOracle();
+      unsubActivity();
     };
   }, []);
 
@@ -321,6 +330,10 @@ export function AdminDashboard({ onLogout }) {
           <Users size={20} /> Usuarios
         </button>
         
+        <button onClick={() => setActiveTab('activity')} style={{ background: activeTab === 'activity' ? 'rgba(255,255,255,0.1)' : 'transparent', border: 'none', color: activeTab === 'activity' ? '#fcd535' : '#fff', padding: '1rem', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.8rem', fontWeight: 'bold', transition: 'all 0.2s', textAlign: 'left' }}>
+          <Activity size={20} /> Actividad
+        </button>
+        
         <button onClick={() => setActiveTab('config')} style={{ background: activeTab === 'config' ? 'rgba(255,255,255,0.1)' : 'transparent', border: 'none', color: activeTab === 'config' ? '#fcd535' : '#fff', padding: '1rem', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.8rem', fontWeight: 'bold', transition: 'all 0.2s', textAlign: 'left' }}>
           <Settings size={20} /> Configuración Global
         </button>
@@ -333,7 +346,7 @@ export function AdminDashboard({ onLogout }) {
       </div>
 
       {/* Main Content Area */}
-      <div style={{ flex: 1, padding: '2rem', overflowY: 'auto', maxHeight: '100vh', background: 'rgba(0,0,0,0.2)' }}>
+      <div className="admin-content-area" style={{ flex: 1, padding: '2rem', overflowY: 'auto', maxHeight: '100vh', background: 'rgba(0,0,0,0.2)' }}>
         
         {(() => {
           const totalDeposits = transactions.filter(t => t.type === 'deposit' && t.status === 'approved').reduce((sum, t) => sum + Number(t.amount || 0), 0);
@@ -381,95 +394,145 @@ export function AdminDashboard({ onLogout }) {
           <div className="glass-panel" style={{ padding: '1rem', minHeight: '80vh' }}>
             <h3 style={{ marginBottom: '1.5rem', fontSize: '1.2rem' }}>👥 Usuarios Registrados</h3>
             {loading ? <p>Cargando...</p> : (
-              <div style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto', overflowX: 'auto' }}>
-                <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
-                  <thead style={{ position: 'sticky', top: 0, background: 'rgba(20,20,20,0.9)', zIndex: 5, whiteSpace: 'nowrap' }}>
-                    <tr style={{ borderBottom: '1px solid #444' }}>
-                      <th style={{ padding: '1rem', textAlign: 'left' }}>Nombre / CI</th>
-                      <th style={{ padding: '1rem', textAlign: 'left' }}>Contacto</th>
-                      <th style={{ padding: '1rem', textAlign: 'center' }}>Estado</th>
-                      <th style={{ padding: '1rem', textAlign: 'center' }}>Saldo</th>
-                      <th style={{ padding: '1rem', textAlign: 'center' }}>Gallinas</th>
-                      <th style={{ padding: '1rem', textAlign: 'center' }}>Prod. Diaria</th>
-                      <th style={{ padding: '1rem', textAlign: 'center' }}>Acciones</th>
+              <div className="admin-user-card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem', maxHeight: 'calc(100vh - 200px)', overflowY: 'auto', paddingRight: '1rem' }}>
+                {users.map(u => {
+                  const status = u.status || 'approved';
+                  let statusColor = '#4ade80';
+                  let statusText = 'Aprobado';
+                  if (status === 'pending') { statusColor = '#fcd535'; statusText = 'Pendiente'; }
+                  if (status === 'suspended') { statusColor = '#f97316'; statusText = 'Suspendido'; }
+                  if (status === 'blocked') { statusColor = '#ff4c4c'; statusText = 'Bloqueado'; }
+                  
+                  const userChickens = allChickens.filter(c => c.userId === u.id);
+                  const totalDailyEggs = userChickens.reduce((sum, c) => {
+                    const type = chickenTypes.find(t => t.id === c.typeId);
+                    if (!type) return sum;
+                    const cPower = c.clonePower !== undefined ? c.clonePower : 100;
+                    return sum + (type.incomePerEgg * (cPower / 100));
+                  }, 0);
+                  const totalDailyUSDT = (totalDailyEggs / oracleRate).toFixed(2);
+                  
+                  return (
+                    <div key={u.id} className="admin-user-card" style={{ background: 'rgba(0,0,0,0.4)', border: `1px solid ${status === 'pending' ? '#fcd535' : 'rgba(255,255,255,0.1)'}`, borderRadius: '12px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div>
+                          <div className="admin-user-card-title" style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#fff' }}>{u.name || 'Sin Nombre'}</div>
+                          <div style={{ fontSize: '0.85rem', color: '#aaa', marginTop: '0.2rem' }}>CI: {u.cedula || 'N/A'}</div>
+                        </div>
+                        <span style={{ padding: '0.3rem 0.6rem', borderRadius: '20px', background: `${statusColor}22`, color: statusColor, fontWeight: 'bold', fontSize: '0.75rem' }}>
+                          {statusText}
+                        </span>
+                      </div>
+
+                      <div className="admin-user-card-info" style={{ background: 'rgba(255,255,255,0.05)', padding: '0.8rem', borderRadius: '8px' }}>
+                        <div style={{ fontSize: '0.9rem', color: '#ddd' }}>📧 {u.email}</div>
+                        <div style={{ fontSize: '0.9rem', color: '#ddd', marginTop: '0.3rem' }}>📱 {u.phone || 'Sin teléfono'}</div>
+                      </div>
+
+                      <div className="admin-user-card-stats" style={{ display: 'grid', gridTemplateColumns: '1fr 1px 1fr 1px 1fr', gap: '0.5rem', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.1)', borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '0.8rem 0' }}>
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontSize: '0.75rem', color: '#aaa', textTransform: 'uppercase' }}>Saldo ($)</div>
+                          <div className="admin-user-card-stats-val" style={{ color: '#4ade80', fontWeight: 'bold', fontSize: '1.1rem' }}>${(u.balance || 0).toFixed(2)}</div>
+                        </div>
+                        <div style={{ width: '1px', height: '30px', background: 'rgba(255,255,255,0.1)' }}></div>
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontSize: '0.75rem', color: '#aaa', textTransform: 'uppercase' }}>Huevos (H)</div>
+                          <div className="admin-user-card-stats-val" style={{ color: '#fff', fontWeight: 'bold', fontSize: '1.1rem' }}>{(u.eggBalance || 0).toFixed(1)}</div>
+                        </div>
+                        <div style={{ width: '1px', height: '30px', background: 'rgba(255,255,255,0.1)' }}></div>
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontSize: '0.75rem', color: '#aaa', textTransform: 'uppercase' }}>Prod/Día</div>
+                          <div className="admin-user-card-stats-val" style={{ color: '#fcd535', fontWeight: 'bold', fontSize: '1.1rem' }}>{totalDailyEggs.toFixed(1)} <span style={{fontSize:'0.7rem'}}>H</span></div>
+                          <div style={{ fontSize: '0.75rem', color: '#4ade80' }}>~${totalDailyUSDT}</div>
+                        </div>
+                      </div>
+
+                      {userChickens.length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                          <div style={{ fontSize: '0.85rem', color: '#aaa', fontWeight: 'bold' }}>Gallinas ({userChickens.length}):</div>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '0.5rem' }}>
+                            {userChickens.map((c, i) => {
+                              const type = chickenTypes.find(t => t.id === c.typeId);
+                              if (!type) return null;
+                              return (
+                                <div key={c.id || i} style={{ background: 'rgba(255,255,255,0.05)', padding: '0.5rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                  <img src={type.img} alt={type.name} style={{ width: '30px', height: '30px', objectFit: 'contain' }} />
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ fontSize: '0.8rem', fontWeight: 'bold', color: type.auraColor || '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{type.name}</div>
+                                    <div style={{ fontSize: '0.7rem', color: '#aaa', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                      {type.incomePerEgg} H / {(type.eggTime / 3600000).toFixed(1)}h
+                                    </div>
+                                    {c.clonePower && c.clonePower < 100 && (
+                                      <div style={{ fontSize: '0.65rem', color: '#ff4c4c', fontWeight: 'bold' }}>CLON {c.clonePower}%</div>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: '0.85rem', color: '#aaa', fontStyle: 'italic', textAlign: 'center' }}>No tiene gallinas</div>
+                      )}
+
+                      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginTop: 'auto', paddingTop: '1rem' }}>
+                        {status !== 'approved' && (
+                          <button title="Aprobar Usuario" onClick={() => handleApproveUser(u)} style={{ cursor: 'pointer', border: 'none', borderRadius: '50%', background: '#4ade80', color: '#000', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                            <Check size={18} strokeWidth={3} />
+                          </button>
+                        )}
+                        {status !== 'suspended' && (
+                          <button title="Suspender Usuario" onClick={() => handleSuspendUser(u)} style={{ cursor: 'pointer', border: 'none', borderRadius: '50%', background: '#f97316', color: '#fff', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                            <Pause size={18} strokeWidth={3} />
+                          </button>
+                        )}
+                        {status !== 'blocked' && (
+                          <button title="Bloquear Usuario" onClick={() => handleBlockUser(u)} style={{ cursor: 'pointer', border: 'none', borderRadius: '50%', background: '#ff4c4c', color: '#fff', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                            <Ban size={18} strokeWidth={3} />
+                          </button>
+                        )}
+                        <button title={u.hasArenaAccess ? "Revocar acceso a Arena" : "Conceder acceso a Arena"} onClick={() => handleToggleArenaAccess(u)} style={{ cursor: 'pointer', border: 'none', borderRadius: '50%', background: u.hasArenaAccess ? '#a855f7' : 'rgba(255,255,255,0.1)', color: '#fff', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                          <Swords size={18} strokeWidth={3} />
+                        </button>
+                        <button title="Ver Granja (Modo Fantasma)" onClick={() => onImpersonate(u)} style={{ cursor: 'pointer', border: 'none', borderRadius: '50%', background: '#3b82f6', color: '#fff', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                          <Eye size={18} strokeWidth={3} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'activity' && (
+          <div className="glass-panel" style={{ padding: '2rem', minHeight: '80vh' }}>
+            <h3 style={{ marginBottom: '1.5rem', fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.8rem' }}><Activity size={24} /> Historial de Actividad</h3>
+            <p style={{ color: '#aaa', marginBottom: '2rem' }}>Monitorea las compras, intercambios y uso de recursos de los usuarios en tiempo real.</p>
+            
+            {activityLogs.length === 0 ? (
+              <p style={{ color: '#aaa' }}>No hay actividad registrada aún.</p>
+            ) : (
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                  <thead>
+                    <tr style={{ background: 'rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                      <th style={{ padding: '1rem', textAlign: 'left', color: '#fcd535' }}>Fecha y Hora</th>
+                      <th style={{ padding: '1rem', textAlign: 'left', color: '#fcd535' }}>Usuario</th>
+                      <th style={{ padding: '1rem', textAlign: 'left', color: '#fcd535' }}>Acción</th>
+                      <th style={{ padding: '1rem', textAlign: 'left', color: '#fcd535' }}>Detalles</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {users.map(u => {
-                      const status = u.status || 'approved';
-                      let statusColor = '#4ade80';
-                      let statusText = 'Aprobado';
-                      if (status === 'pending') { statusColor = '#fcd535'; statusText = 'Pendiente'; }
-                      if (status === 'suspended') { statusColor = '#f97316'; statusText = 'Suspendido'; }
-                      if (status === 'blocked') { statusColor = '#ff4c4c'; statusText = 'Bloqueado'; }
-                      
-                      return (
-                        <tr key={u.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', background: status === 'pending' ? 'rgba(252, 213, 53, 0.05)' : 'transparent' }}>
-                          <td style={{ padding: '1rem', verticalAlign: 'middle' }}>
-                            <div style={{ fontWeight: 'bold', fontSize: '0.95rem' }}>{u.name || '-'}</div>
-                            <div style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '0.2rem' }}>CI: {u.cedula || 'N/A'}</div>
-                          </td>
-                          <td style={{ padding: '1rem', verticalAlign: 'middle', wordBreak: 'break-all' }}>
-                            <div style={{ fontSize: '0.95rem' }}>{u.email}</div>
-                            <div style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '0.2rem' }}>{u.phone}</div>
-                          </td>
-                          <td style={{ padding: '1rem', textAlign: 'center', verticalAlign: 'middle' }}>
-                            <span style={{ padding: '0.3rem 0.6rem', borderRadius: '20px', background: `${statusColor}22`, color: statusColor, fontWeight: 'bold', fontSize: '0.8rem' }}>
-                              {statusText}
-                            </span>
-                          </td>
-                          <td style={{ padding: '1rem', textAlign: 'center', verticalAlign: 'middle', color: '#4ade80', fontWeight: 'bold', fontSize: '1.1rem' }}>
-                            ${(u.balance || 0).toFixed(2)}
-                          </td>
-                          
-                          {(() => {
-                            const userChickens = allChickens.filter(c => c.userId === u.id);
-                            const totalDailyEggs = userChickens.reduce((sum, c) => {
-                              const type = chickenTypes.find(t => t.id === c.typeId);
-                              if (!type) return sum;
-                              const cPower = c.clonePower !== undefined ? c.clonePower : 100;
-                              return sum + (type.incomePerEgg * (cPower / 100));
-                            }, 0);
-                            const totalDailyUSDT = (totalDailyEggs / oracleRate).toFixed(2);
-                            
-                            return (
-                              <>
-                                <td style={{ padding: '1rem', textAlign: 'center', verticalAlign: 'middle' }}>
-                                  <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{userChickens.length}</div>
-                                </td>
-                                <td style={{ padding: '1rem', textAlign: 'center', verticalAlign: 'middle' }}>
-                                  <div style={{ fontWeight: 'bold', color: '#fcd535', fontSize: '1rem' }}>{totalDailyEggs.toFixed(1)} <span style={{fontSize:'0.7rem'}}>Huevos</span></div>
-                                  <div style={{ fontSize: '0.8rem', color: '#4ade80', marginTop: '0.2rem' }}>~${totalDailyUSDT}</div>
-                                </td>
-                              </>
-                            );
-                          })()}
-
-                          <td style={{ padding: '1rem', verticalAlign: 'middle' }}>
-                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                              {status !== 'approved' && (
-                                <button title="Aprobar Usuario" onClick={() => handleApproveUser(u)} style={{ cursor: 'pointer', border: 'none', borderRadius: '50%', background: '#4ade80', color: '#000', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
-                                  <Check size={16} strokeWidth={3} />
-                                </button>
-                              )}
-                              {status !== 'suspended' && (
-                                <button title="Suspender Usuario" onClick={() => handleSuspendUser(u)} style={{ cursor: 'pointer', border: 'none', borderRadius: '50%', background: '#f97316', color: '#fff', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
-                                  <Pause size={16} strokeWidth={3} />
-                                </button>
-                              )}
-                              {status !== 'blocked' && (
-                                <button title="Bloquear Usuario" onClick={() => handleBlockUser(u)} style={{ cursor: 'pointer', border: 'none', borderRadius: '50%', background: '#ff4c4c', color: '#fff', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
-                                  <Ban size={16} strokeWidth={3} />
-                                </button>
-                              )}
-                              <button title={u.hasArenaAccess ? "Revocar acceso a Arena" : "Conceder acceso a Arena"} onClick={() => handleToggleArenaAccess(u)} style={{ cursor: 'pointer', border: 'none', borderRadius: '50%', background: u.hasArenaAccess ? '#a855f7' : 'rgba(255,255,255,0.1)', color: '#fff', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
-                                <Swords size={16} strokeWidth={3} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                    {activityLogs.map(log => (
+                      <tr key={log.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <td style={{ padding: '1rem', color: '#aaa' }}>{new Date(log.createdAt).toLocaleString()}</td>
+                        <td style={{ padding: '1rem', fontWeight: 'bold' }}>{log.email}</td>
+                        <td style={{ padding: '1rem', color: '#4ade80' }}>{log.action}</td>
+                        <td style={{ padding: '1rem' }}>{log.details}</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -534,7 +597,10 @@ export function AdminDashboard({ onLogout }) {
                   🦟 Plaga (Aumenta x0.2)
                 </button>
                 <button onClick={() => changeWeather('butterflies')} style={{ border: 'none', padding: '1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', background: currentWeather === 'butterflies' ? '#f472b6' : 'rgba(255,255,255,0.1)', color: currentWeather === 'butterflies' ? '#000' : '#fff' }}>
-                  🦋 Mariposas
+                  🦋 Mariposas (Aumenta x0.3)
+                </button>
+                <button onClick={() => changeWeather('volcano')} style={{ border: 'none', padding: '1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', background: currentWeather === 'volcano' ? '#dc2626' : 'rgba(255,255,255,0.1)', color: currentWeather === 'volcano' ? '#fff' : '#fff' }}>
+                  🌋 Volcán (Evento Huevo Fuego)
                 </button>
                 <button onClick={() => changeWeather('aurora')} style={{ border: 'none', padding: '1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', background: currentWeather === 'aurora' ? '#10b981' : 'rgba(255,255,255,0.1)', color: currentWeather === 'aurora' ? '#000' : '#fff' }}>
                   🌌 Auroras Boreales (Acelera x1.9)

@@ -553,3 +553,33 @@ body {
     backdrop-filter: blur(10px);
   }
 }
+
+@media (max-width: 768px) {
+  .admin-content-area {
+    padding: 1rem !important;
+  }
+  .admin-user-card-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+    padding-right: 0 !important;
+  }
+  .admin-user-card {
+    padding: 1rem !important;
+  }
+  .admin-user-card-title {
+    font-size: 1rem !important;
+  }
+  .admin-user-card-info {
+    font-size: 0.8rem !important;
+    padding: 0.5rem !important;
+  }
+  .admin-user-card-stats {
+    padding: 0.5rem 0 !important;
+  }
+  .admin-user-card-stats-val {
+    font-size: 1rem !important;
+  }
+  .admin-chicken-item {
+    grid-template-columns: 1fr !important;
+  }
+}

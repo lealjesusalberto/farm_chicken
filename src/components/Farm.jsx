@@ -4,7 +4,7 @@ import { useGameConfig } from '../contexts/GameConfigContext';
 import { Info, Volume2, VolumeX, Backpack, Flame, Sparkles } from 'lucide-react';
 import Swal from 'sweetalert2';
 
-export function Farm({ chickens, onSell, onCollect, maxCapacity, currentEggs, onFeed, onScareFox, balance, oracleRate, onOpenEgg, onOpenStarterEgg, userData, weatherData }) {
+export function Farm({ chickens, onSell, onCollect, maxCapacity, currentEggs, onFeed, onScareFox, balance, oracleRate, onOpenEgg, onOpenVolcanoEgg, onOpenStarterEgg, userData, weatherData }) {
   const { chickenTypes } = useGameConfig();
   const [selectedChicken, setSelectedChicken] = useState(null);
   const [now, setNow] = useState(Date.now());
@@ -65,10 +65,10 @@ export function Farm({ chickens, onSell, onCollect, maxCapacity, currentEggs, on
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
-  // Lógica de Día y Noche
+  // Lógica de Día y Noche y Clima
   const currentHour = new Date(now).getHours();
   const isNight = currentHour >= 18 || currentHour < 6;
-  const currentBg = isNight ? '/img/farm_bg_night.png' : '/img/farm_bg.jpg';
+  const currentBg = weatherData?.type === 'volcano' ? '/img/volcano_bg.png' : (isNight ? '/img/farm_bg_night.png' : '/img/farm_bg.jpg');
   
   // Actualizar la interfaz cada 10 segundos para ver cómo avanza la barra
   useEffect(() => {
@@ -235,7 +235,7 @@ export function Farm({ chickens, onSell, onCollect, maxCapacity, currentEggs, on
         )}
 
         {/* Top Inventory Bar */}
-        {(userData?.mysteryEggs > 0 || userData?.cornCount > 0 || userData?.specialCornCount > 0) && (
+        {(userData?.mysteryEggs > 0 || userData?.volcanoEggs > 0 || userData?.cornCount > 0 || userData?.specialCornCount > 0) && (
           <div className="inventory-widget">
             {isMobile && (
               <button onClick={() => setIsInventoryOpen(!isInventoryOpen)} style={{ background: 'var(--primary-color)', border: 'none', color: '#fff', width: '50px', height: '50px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.5)' }}>
@@ -256,6 +256,19 @@ export function Farm({ chickens, onSell, onCollect, maxCapacity, currentEggs, on
                     <h3 style={{ margin: 0, color: '#fcd535', fontSize: '1rem' }}>Cesta de Huevos</h3>
                   </div>
                   <button className="btn-primary" onClick={onOpenEgg} style={{ marginLeft: '0.5rem', padding: '0.3rem 0.8rem', fontSize: '0.8rem', position: 'relative', zIndex: 100 }}>Abrir</button>
+                </div>
+              )}
+
+              {userData?.volcanoEggs > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{ position: 'relative' }}>
+                    <img src="/img/egg_white.png" alt="Volcán" style={{ width: '40px', height: '40px', filter: 'drop-shadow(0 0 5px red) drop-shadow(0 0 10px orange)' }} />
+                    <span style={{ position: 'absolute', top: '-5px', right: '-10px', background: '#dc2626', color: '#fff', fontWeight: 'bold', borderRadius: '50%', padding: '2px 8px' }}>{userData.volcanoEggs}</span>
+                  </div>
+                  <div style={{ textAlign: 'left' }}>
+                    <h3 style={{ margin: 0, color: '#fca5a5', fontSize: '1rem' }}>Huevo Volcánico</h3>
+                  </div>
+                  <button className="btn-primary" onClick={onOpenVolcanoEgg} style={{ marginLeft: '0.5rem', padding: '0.3rem 0.8rem', fontSize: '0.8rem', position: 'relative', zIndex: 100, background: 'linear-gradient(90deg, #dc2626, #f97316)' }}>Abrir</button>
                 </div>
               )}
 
@@ -318,7 +331,7 @@ export function Farm({ chickens, onSell, onCollect, maxCapacity, currentEggs, on
       {weather === 'bugs' && <div className="weather-overlay weather-bugs"></div>}
       {weather === 'butterflies' && <div className="weather-overlay weather-butterflies"></div>}
 
-      {(userData?.mysteryEggs > 0 || userData?.cornCount > 0 || userData?.specialCornCount > 0) && (
+      {(userData?.mysteryEggs > 0 || userData?.volcanoEggs > 0 || userData?.cornCount > 0 || userData?.specialCornCount > 0) && (
         <div className="inventory-widget">
           {isMobile && (
             <button onClick={() => setIsInventoryOpen(!isInventoryOpen)} style={{ background: 'var(--primary-color)', border: 'none', color: '#fff', width: '50px', height: '50px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.5)' }}>
@@ -340,6 +353,19 @@ export function Farm({ chickens, onSell, onCollect, maxCapacity, currentEggs, on
                   <h3 style={{ margin: 0, color: '#fcd535', fontSize: '1rem' }}>Cesta de Huevos</h3>
                 </div>
                 <button className="btn-primary" onClick={onOpenEgg} style={{ marginLeft: '0.5rem', padding: '0.3rem 0.8rem', fontSize: '0.8rem', position: 'relative', zIndex: 100 }}>Abrir</button>
+              </div>
+            )}
+
+            {userData?.volcanoEggs > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ position: 'relative' }}>
+                  <img src="/img/egg_white.png" alt="Volcán" style={{ width: '40px', height: '40px', filter: 'drop-shadow(0 0 5px red) drop-shadow(0 0 10px orange)' }} />
+                  <span style={{ position: 'absolute', top: '-5px', right: '-10px', background: '#dc2626', color: '#fff', fontWeight: 'bold', borderRadius: '50%', padding: '2px 8px' }}>{userData.volcanoEggs}</span>
+                </div>
+                <div style={{ textAlign: 'left' }}>
+                  <h3 style={{ margin: 0, color: '#fca5a5', fontSize: '1rem' }}>Huevo Volcánico</h3>
+                </div>
+                <button className="btn-primary" onClick={onOpenVolcanoEgg} style={{ marginLeft: '0.5rem', padding: '0.3rem 0.8rem', fontSize: '0.8rem', position: 'relative', zIndex: 100, background: 'linear-gradient(90deg, #dc2626, #f97316)' }}>Abrir</button>
               </div>
             )}
 
@@ -450,7 +476,7 @@ export function Farm({ chickens, onSell, onCollect, maxCapacity, currentEggs, on
           return (
             <div key={chicken.id} className="animate-float" style={{ animationDelay: `${Math.random()}s`, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <div 
-                className={weather === 'aurora' ? 'aurora-chicken-wrapper' : ''}
+                className={(chicken.isVolcanic || weather === 'volcano') ? 'volcano-chicken-wrapper' : (weather === 'aurora' ? 'aurora-chicken-wrapper' : '')}
                 style={{ 
                   cursor: 'default',
                   position: 'relative'
@@ -458,7 +484,9 @@ export function Farm({ chickens, onSell, onCollect, maxCapacity, currentEggs, on
               >
                 {isBoosted && <div style={{ position: 'absolute', top: '-15px', left: '50%', transform: 'translateX(-50%)', color: type.auraColor || '#4ade80', fontWeight: 'bold', fontSize: '0.8rem', whiteSpace: 'nowrap', textShadow: '0 2px 4px rgba(0,0,0,0.8)', zIndex: 2 }}>{type.foodType === 'special' ? '✨ 2x BOOST ✨' : '⚡ +50% Vel'}</div>}
                 
-                {chicken.isHalfSpecial && !chicken.isStarter && <div style={{ position: 'absolute', top: '5px', left: '0', background: 'rgba(255,0,0,0.7)', color: '#fff', fontSize: '0.65rem', padding: '2px 5px', borderRadius: '4px', zIndex: 3, fontWeight: 'bold', border: '1px solid #ff4c4c' }}>CLON {chicken.clonePower || 50}%</div>}
+                {chicken.isHalfSpecial && !chicken.isStarter && !chicken.isVolcanic && <div style={{ position: 'absolute', top: '5px', left: '0', background: 'rgba(255,0,0,0.7)', color: '#fff', fontSize: '0.65rem', padding: '2px 5px', borderRadius: '4px', zIndex: 3, fontWeight: 'bold', border: '1px solid #ff4c4c' }}>CLON {chicken.clonePower || 50}%</div>}
+                
+                {chicken.isVolcanic && <div style={{ position: 'absolute', top: '5px', left: '0', background: 'linear-gradient(90deg, #dc2626, #f97316)', color: '#fff', fontSize: '0.65rem', padding: '2px 5px', borderRadius: '4px', zIndex: 3, fontWeight: 'bold', border: '1px solid #fca5a5' }}>VOLCÁNICA {chicken.clonePower || 20}%</div>}
                 
                 {chicken.isStarter && <div style={{ position: 'absolute', top: '5px', left: '0', background: 'rgba(168, 85, 247, 0.8)', color: '#fff', fontSize: '0.65rem', padding: '2px 5px', borderRadius: '4px', zIndex: 3, fontWeight: 'bold', border: '1px solid #d8b4fe' }}>GRATIS {chicken.clonePower || 60}%</div>}
                 
@@ -482,9 +510,11 @@ export function Farm({ chickens, onSell, onCollect, maxCapacity, currentEggs, on
                         title: `<span style="color: var(--primary-color);">${type.name}</span>`, 
                         html: `<div style="text-align: left; font-size: 0.95rem; line-height: 1.5; padding: 0.5rem 0;">
                                 <strong style="color: #fff;">Habilidad:</strong> <span style="color: #ddd;">${type.description}</span><br/><br/>
-                                ${chicken.isHalfSpecial 
-                                  ? `<div style="background: rgba(255,0,0,0.15); padding: 0.8rem; border-radius: 12px; border: 1px solid rgba(255,0,0,0.3); color: #ffcccc; font-size: 0.85rem;">⚠️ Este es un <b>CLON</b>. Su poder de producción está al <b>${chicken.clonePower || 50}%</b>.</div>` 
-                                  : `<div style="background: rgba(251, 191, 36, 0.15); padding: 0.8rem; border-radius: 12px; border: 1px solid rgba(251, 191, 36, 0.3); color: #fde68a; font-size: 0.85rem;">✨ <b>Leyenda Original</b>. Su poder de producción está al <b>100%</b>.</div>`}
+                                ${chicken.isVolcanic 
+                                  ? `<div style="background: rgba(255,100,0,0.15); padding: 0.8rem; border-radius: 12px; border: 1px solid rgba(255,100,0,0.3); color: #ffccaa; font-size: 0.85rem;">🌋 Esta es una gallina <b>VOLCÁNICA</b>. Su poder de producción está al <b>${chicken.clonePower || 20}%</b> y su valor de reventa es solo del <b>10%</b>.</div>` 
+                                  : (chicken.isHalfSpecial 
+                                    ? `<div style="background: rgba(255,0,0,0.15); padding: 0.8rem; border-radius: 12px; border: 1px solid rgba(255,0,0,0.3); color: #ffcccc; font-size: 0.85rem;">⚠️ Este es un <b>CLON</b>. Su poder de producción está al <b>${chicken.clonePower || 50}%</b>.</div>` 
+                                    : `<div style="background: rgba(251, 191, 36, 0.15); padding: 0.8rem; border-radius: 12px; border: 1px solid rgba(251, 191, 36, 0.3); color: #fde68a; font-size: 0.85rem;">✨ <b>Leyenda Original</b>. Su poder de producción está al <b>100%</b>.</div>`)}
                               </div>`, 
                         icon: 'info',
                         iconColor: 'var(--primary-color)',
@@ -504,8 +534,34 @@ export function Farm({ chickens, onSell, onCollect, maxCapacity, currentEggs, on
                     <Info size={14} />
                   </button>
                 )}
-                
-                <img src={currentImg} alt="Gallina" style={{ height: '120px', objectFit: 'contain', filter: type.auraColor ? (chicken.isHalfSpecial ? `drop-shadow(0 0 10px ${type.auraColor}66)` : `drop-shadow(0 0 20px ${type.auraColor}99)`) : (isBoosted ? 'drop-shadow(0 0 15px rgba(74,222,128,0.8))' : 'drop-shadow(0 10px 10px rgba(0,0,0,0.6))'), opacity: (chicken.isHalfSpecial || chicken.isStarter) ? 0.85 : 1, transition: 'all 0.3s' }} />
+                {(() => {
+                  let currentFilter = 'drop-shadow(0 10px 10px rgba(0,0,0,0.6))';
+                  let additionalStyles = {};
+                  if (chicken.isVolcanic || weather === 'volcano') {
+                    currentFilter = 'drop-shadow(0 0 8px #ff0000) drop-shadow(0 0 15px #000000) drop-shadow(0 0 25px #ff0000)';
+                    additionalStyles = { animation: 'pulse-volcanic 1.5s infinite alternate' };
+                  } else if (type.auraColor) {
+                    currentFilter = chicken.isHalfSpecial ? `drop-shadow(0 0 10px ${type.auraColor}66)` : `drop-shadow(0 0 20px ${type.auraColor}99)`;
+                  } else if (isBoosted) {
+                    currentFilter = 'drop-shadow(0 0 15px rgba(74,222,128,0.8))';
+                  }
+                  
+                  return (
+                    <img 
+                      src={currentImg} 
+                      alt="Gallina" 
+                      className={chicken.isVolcanic ? 'volcanic-chicken' : ''}
+                      style={{ 
+                        height: '120px', 
+                        objectFit: 'contain', 
+                        filter: currentFilter, 
+                        opacity: (chicken.isHalfSpecial || chicken.isStarter) ? 0.85 : 1, 
+                        transition: 'all 0.3s',
+                        ...additionalStyles
+                      }} 
+                    />
+                  );
+                })()}
                 
                 {chicken.hasFox && (
                   <div style={{ position: 'absolute', top: '10px', left: '-20px', zIndex: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
