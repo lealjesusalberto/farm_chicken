@@ -333,6 +333,10 @@ export function AdminDashboard({ onLogout, onImpersonate }) {
         <button onClick={() => setActiveTab('activity')} style={{ background: activeTab === 'activity' ? 'rgba(255,255,255,0.1)' : 'transparent', border: 'none', color: activeTab === 'activity' ? '#fcd535' : '#fff', padding: '1rem', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.8rem', fontWeight: 'bold', transition: 'all 0.2s', textAlign: 'left' }}>
           <Activity size={20} /> Actividad
         </button>
+
+        <button onClick={() => setActiveTab('arena_report')} style={{ background: activeTab === 'arena_report' ? 'rgba(255,255,255,0.1)' : 'transparent', border: 'none', color: activeTab === 'arena_report' ? '#fcd535' : '#fff', padding: '1rem', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.8rem', fontWeight: 'bold', transition: 'all 0.2s', textAlign: 'left' }}>
+          <Swords size={20} /> Reporte de Arena
+        </button>
         
         <button onClick={() => setActiveTab('config')} style={{ background: activeTab === 'config' ? 'rgba(255,255,255,0.1)' : 'transparent', border: 'none', color: activeTab === 'config' ? '#fcd535' : '#fff', padding: '1rem', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.8rem', fontWeight: 'bold', transition: 'all 0.2s', textAlign: 'left' }}>
           <Settings size={20} /> Configuración Global
@@ -748,6 +752,34 @@ export function AdminDashboard({ onLogout, onImpersonate }) {
                   Guardar Gallina
                 </button>
               </form>
+            </div>
+          </div>
+        )}
+        
+        {activeTab === 'arena_report' && (
+          <div className="glass-panel" style={{ padding: '2rem', minHeight: '80vh' }}>
+            <h3 style={{ marginBottom: '1.5rem', fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.8rem' }}><Swords color="#fcd535" /> Reporte de Jugadores en Arena</h3>
+            
+            <p style={{ marginBottom: '2rem', color: '#cbd5e1' }}>Lista de usuarios que han jugado en el Coliseo Voxel y su progreso (Oleada actual):</p>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
+              {users.filter(u => u.arenaWave && u.arenaWave > 1).sort((a,b) => b.arenaWave - a.arenaWave).map(u => (
+                <div key={u.id} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '1.5rem', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <div style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '0.5rem', color: '#fcd535' }}>{u.name || 'Sin Nombre'}</div>
+                  <div style={{ fontSize: '0.9rem', color: '#aaa', marginBottom: '1rem' }}>{u.email}</div>
+                  
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '8px' }}>
+                    <span style={{ fontWeight: 'bold' }}>Oleada Alcanzada:</span>
+                    <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#4ade80' }}>{u.arenaWave}</span>
+                  </div>
+                </div>
+              ))}
+              
+              {users.filter(u => u.arenaWave && u.arenaWave > 1).length === 0 && (
+                <div style={{ gridColumn: '1 / -1', padding: '3rem', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', color: '#aaa' }}>
+                  Aún no hay usuarios registrados que hayan avanzado en la Arena.
+                </div>
+              )}
             </div>
           </div>
         )}
