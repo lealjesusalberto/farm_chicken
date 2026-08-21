@@ -457,31 +457,60 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
       Swal.fire('Sin Huevos de Volcán', 'No tienes huevos volcánicos.', 'error');
       return;
     }
-    const newEggsCount = userData.volcanoEggs - 1;
-    const userRef = doc(db, 'users', user.uid);
-    await updateDoc(userRef, { volcanoEggs: newEggsCount });
+    
+    // Reproducir sonido si existe (opcional)
+    const audio = new Audio('/img/sound/event-sound.ogg');
+    audio.play().catch(e => console.log('Audio error', e));
 
-    // Toca una gallina especial
-    const specialChickens = chickenTypes.filter(t => t.isSpecial);
-    const selectedType = specialChickens[Math.floor(Math.random() * specialChickens.length)];
-    
-    await addDoc(collection(db, 'chickens'), {
-      userId: user.uid,
-      typeId: selectedType.id,
-      lastEggTime: Date.now(),
-      hasFox: false,
-      lastFoxCheckTime: Date.now(),
-      lastFoxAttackTime: Date.now(),
-      clonePower: 20, // Solo produce al 20%
-      isVolcanic: true, // Marca de nerfeo de venta
-    });
-    
-    await logActivity('open_volcano_egg', `Abrió un Huevo de Volcán y obtuvo un clon volcánico de ${selectedType.name}`);
     Swal.fire({
-      title: '¡Eclosión Volcánica!',
-      text: `El huevo de fuego ha estallado y nació una ${selectedType.name} (VOLCÁNICA 20%).`,
-      iconHtml: `<img src="${selectedType.img}" style="width:100px; height:100px; filter: drop-shadow(0 0 10px red);">`,
-      confirmButtonText: '¡Genial!'
+      title: 'Incubando Huevo Volcánico...',
+      html: `
+        <div style="margin: 20px 0; animation: pulse 1s infinite alternate;">
+          <img src="/img/egg_white.png" style="width: 150px; height: 150px; object-fit: contain; filter: drop-shadow(0 0 20px red) drop-shadow(0 0 40px orange);" />
+        </div>
+        <p style="color: #f97316; font-weight: bold;">El calor es abrasador...</p>
+      `,
+      showConfirmButton: false,
+      allowOutsideClick: false,
+      background: '#1e1e1e',
+      color: '#fff',
+      timer: 3500,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    }).then(async () => {
+      const newEggsCount = userData.volcanoEggs - 1;
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, { volcanoEggs: newEggsCount });
+
+      // Toca una gallina especial
+      const specialChickens = chickenTypes.filter(t => t.isSpecial);
+      const selectedType = specialChickens[Math.floor(Math.random() * specialChickens.length)];
+      
+      await addDoc(collection(db, 'chickens'), {
+        userId: user.uid,
+        typeId: selectedType.id,
+        lastEggTime: Date.now(),
+        hasFox: false,
+        lastFoxCheckTime: Date.now(),
+        lastFoxAttackTime: Date.now(),
+        clonePower: 20, // Solo produce al 20%
+        isVolcanic: true, // Marca de nerfeo de venta
+      });
+      
+      await logActivity('open_volcano_egg', `Abrió un Huevo de Volcán y obtuvo un clon volcánico de ${selectedType.name}`);
+      Swal.fire({
+        title: '¡Gallina Volcánica!',
+        text: `¡Épico! Has obtenido un clon volcánico de ${selectedType.name} (Poder al 20%).`,
+        imageUrl: selectedType.img,
+        imageWidth: 150,
+        imageHeight: 150,
+        imageAlt: 'Gallina Especial',
+        confirmButtonText: '¡Asombroso!',
+        confirmButtonColor: '#dc2626',
+        background: '#1e1e1e',
+        color: '#fff'
+      });
     });
   };
 
