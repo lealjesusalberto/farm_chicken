@@ -443,7 +443,7 @@ function MainApp({ user }) {
                   setShowArena(true);
                 }}
               >
-                ⚔️ Jugar Arena en Demo ⚔️
+                Entrar
               </button>
             </div>
           </div>

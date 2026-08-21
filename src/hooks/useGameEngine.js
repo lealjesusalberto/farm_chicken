@@ -453,7 +453,12 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
   };
 
   const openVolcanoEgg = async () => {
-    if (!userData || !userData.volcanoEggs || userData.volcanoEggs <= 0) {
+    // Evitar problemas de estado de React (closures antiguos)
+    const userRef = doc(db, 'users', user.uid);
+    const userSnap = await getDoc(userRef);
+    const latestUserData = userSnap.data();
+
+    if (!latestUserData || !latestUserData.volcanoEggs || latestUserData.volcanoEggs <= 0) {
       Swal.fire('Sin Huevos de Volcán', 'No tienes huevos volcánicos.', 'error');
       return;
     }
@@ -466,7 +471,7 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
       title: 'Incubando Huevo Volcánico...',
       html: `
         <div style="margin: 20px 0; animation: pulse 1s infinite alternate;">
-          <img src="/img/egg_white.png" style="width: 150px; height: 150px; object-fit: contain; filter: drop-shadow(0 0 20px red) drop-shadow(0 0 40px orange);" />
+          <img src="/img/mystery_egg.png" style="width: 150px; height: 150px; object-fit: contain; filter: drop-shadow(0 0 20px red) drop-shadow(0 0 40px orange);" />
         </div>
         <p style="color: #f97316; font-weight: bold;">El calor es abrasador...</p>
       `,
@@ -719,7 +724,10 @@ export function useGameEngine(user, weatherData = { type: 'sunny', history: [] }
       Swal.fire({
         title: '¡Huevo Volcánico Encontrado!',
         text: '¡La Gallina Blanca ha puesto un misterioso huevo envuelto en llamas durante la erupción!',
-        iconHtml: `<span style="font-size: 50px;">🌋</span>`,
+        iconHtml: `<img src="/img/mystery_egg.png" style="width: 100px; height: 100px; object-fit: contain; filter: drop-shadow(0 0 20px red) drop-shadow(0 0 40px orange);" />`,
+        customClass: {
+          icon: 'no-border-icon'
+        },
         showCancelButton: true,
         confirmButtonText: '¡Incubar Ahora!',
         cancelButtonText: 'Guardar',
