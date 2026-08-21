@@ -33,7 +33,6 @@
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
-  animation: snowAnim 8s linear infinite;
 }
 
 .weather-rainbow {
@@ -57,8 +56,6 @@
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
-  animation: bugsFlight 15s linear infinite;
-  opacity: 0.8;
 }
 
 .weather-stars {
